@@ -1,0 +1,107 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "eslint:recommended",
+    "plugin:import/recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended"
+  ],
+  "plugins": ["prettier", "@typescript-eslint"],
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+      }
+    },
+    "react": {
+      "version": "17.0.2"
+    }
+  },
+  "parserOptions": {
+    "requireConfigFile": false
+  },
+  "overrides": [
+    {
+      "files": ["*.ts", "*.tsx"],
+      "extends": ["plugin:@typescript-eslint/recommended"],
+      "parserOptions": {
+        "tsconfigRootDir": "",
+        "project": ["./tsconfig.json"]
+      },
+      "rules": {
+        "prefer-const": "warn",
+        "no-undef": "off",
+        "import/named": "off",
+        "import/no-unresolved": "off",
+        "no-shadow": "off",
+        "@typescript-eslint/ban-ts-ignore": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/explicit-module-boundary-types": "off",
+        "@typescript-eslint/ban-ts-comment": "off",
+        "@typescript-eslint/no-empty-function": "warn"
+      }
+    }
+  ],
+  "rules": {
+    "import/no-unresolved": "warn",
+    "import/namespace": "off",
+    "import/export": "off",
+    "no-unused-vars": "off",
+    "react/display-name": "off",
+    "react-hooks/exhaustive-deps": "off",
+    "react-hooks/rules-of-hooks": "off",
+    "react/prop-types": "off",
+    "react/forbid-prop-types": "off",
+    "consistent-this": ["error", "self"],
+    "max-len": [
+      "error",
+      200,
+      2,
+      {
+        "ignoreUrls": true,
+        "ignoreStrings": true
+      }
+    ],
+    "no-alert": "error",
+    "no-shadow": "off",
+    "no-unused-expressions": [
+      "error",
+      {
+        "allowTernary": true
+      }
+    ],
+    "object-curly-newline": [
+      "error",
+      {
+        "ExportDeclaration": {
+          "consistent": true
+        },
+        "ImportDeclaration": {
+          "consistent": true
+        }
+      }
+    ],
+    "prettier/prettier": "error",
+    "react/jsx-handler-names": [
+      "error",
+      {
+        "eventHandlerPrefix": "handle",
+        "eventHandlerPropPrefix": "on"
+      }
+    ],
+    "react/no-direct-mutation-state": "error",
+    "react/sort-prop-types": "error",
+    "sort-vars": "error",
+    "react/react-in-jsx-scope": "off",
+    "react/no-unescaped-entities": "warn",
+    "prefer-const": "warn"
+  },
+  "env": {
+    "es6": true,
+    "browser": true,
+    "node": true,
+    "jasmine": true,
+    "jest": true,
+    "webextensions": true
+  }
+}

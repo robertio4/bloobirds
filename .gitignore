@@ -1,0 +1,44 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+.npmrc
+
+# Editor-specific metadata folders
+.vs
+.turbo
+.DS_Store
+.idea
+dist
+build
+sourcemaps
+_ts3.4
+*.tsbuildinfo
+.watchmanconfig
+.rollup.cache
+*.iml
+*~
+.git/
+.eslintcache
+report/
+.jscpd/
+.vscode/
+
+# dotenv environment variables file
+.env
+.envrc
+
+# Coverage directory
+coverage
+/test-results/
+/playwright-report/
+/playwright/.cache/
