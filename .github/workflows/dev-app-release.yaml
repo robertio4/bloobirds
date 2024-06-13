@@ -1,0 +1,48 @@
+name: Frontend app develop CD
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'The environment to deploy to'
+        required: false
+        type: string
+jobs:
+  publish:
+    name: Publish the frontend app - DEV
+    runs-on: ubuntu-latest
+    if: "! contains(toJSON(github.event.commits.*.message), '[skip-ci]')"
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_INFRA_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_INFRA_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: build
+          path: packages/apps/bloobirds-platform-frontend/build
+      - name: Compress sources
+        run: find $GITHUB_WORKSPACE/packages/apps/bloobirds-platform-frontend/build -type f ! -name '*.mp3' -exec gzip -9 {} \; -exec mv {}.gz {} \;
+      - name: Cleanup S3
+        run: aws s3 rm s3://bloobirds-frontend-dev/ --recursive
+      - name: Upload S3 mp3 files
+        run: aws s3 cp $GITHUB_WORKSPACE/packages/apps/bloobirds-platform-frontend/build/ s3://bloobirds-frontend-dev/ --recursive --cache-control max-age=86400 --exclude="*" --include="*.mp3"
+      - name: Upload S3 caching files
+        run: aws s3 cp $GITHUB_WORKSPACE/packages/apps/bloobirds-platform-frontend/build/ s3://bloobirds-frontend-dev/ --recursive --content-encoding gzip --cache-control max-age=86400 --include="*" --exclude="*.html" --exclude="*.mp3"
+      - name: Upload S3 non caching files
+        run: aws s3 cp $GITHUB_WORKSPACE/packages/apps/bloobirds-platform-frontend/build/ s3://bloobirds-frontend-dev/ --recursive --content-encoding gzip --cache-control max-age=0 --exclude="*" --include="*.html"
+      - name: Invalidate Cloudfront entrypoint
+        run: aws cloudfront create-invalidation --distribution-id E2E4N84GCORVKV --paths /index.html /
+      - name: Register new version
+        run: |
+          curl --request POST \
+            --url https://web-api.dev-bloobirds.com/service/version/new \
+            --header 'authorization: Bearer ${{ secrets.BB_JWT }}' \
+            --header 'content-type: application/json' \
+            --data '{
+              "appName": "WEBAPP",
+              "deploymentTimestamp": '"$(date +%s)"'
+          }' -v

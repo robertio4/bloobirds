@@ -1,0 +1,57 @@
+name: Develop CI
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  linting:
+    name: Linters
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+      - name: Grant private repo access
+        run: echo "${{ secrets.NPMRC_GITHUB }}" > .npmrc
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm install
+      - name: build
+        run: npm run build
+        env:
+          NODE_OPTIONS: --max_old_space_size=4096
+      - uses: marceloprado/has-changed-path@v1
+        name: Check if the frontend app has changed
+        id: changed-front
+        with:
+          paths: packages/apps/bloobirds-platform-frontend
+      - name: Build the frontend app for dev
+        if: steps.changed-front.outputs.changed == 'true'
+        run: |
+          cd packages/apps/bloobirds-platform-frontend
+          npm run build:dev
+      - name: Publish
+        id: publish
+        uses: cloudflare/pages-action@1
+        if: steps.changed-front.outputs.changed == 'true'
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: bloobirds-platform-frontend # e.g. 'my-project'
+          directory: packages/apps/bloobirds-platform-frontend/build # e.g. 'dist'
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Comment the PR with the URL
+        uses: peter-evans/create-or-update-comment@v1
+        if: steps.changed-front.outputs.changed == 'true'
+        with:
+          issue-number: ${{ github.event.number }}
+          body: |
+            The frontend app has been deployed to ${{ steps.publish.outputs.url }}
+          reactions: rocket

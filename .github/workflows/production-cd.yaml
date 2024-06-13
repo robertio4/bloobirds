@@ -1,0 +1,104 @@
+name: Production Deploy
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  build:
+    name: Build project sources
+    runs-on: ubuntu-latest
+    if: "! contains(toJSON(github.event.commits.*.message), '[skip-ci]')"
+    outputs:
+      changed-front: ${{ steps.changed-front.outputs.changed }}
+      app-version: ${{ steps.frontend-app-version.outputs.current-version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+      - name: Grant private repo access
+        run: echo "${{ secrets.NPMRC_GITHUB }}" > .npmrc
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - name: Install dependencies
+        run: npm install
+      - name: Build sources
+        env:
+          NODE_OPTIONS: --max_old_space_size=4096
+        run: npm run build
+      #      - name: Update the versions
+      #        env:
+      #          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #        run: |
+      #          git config user.name "${{ github.actor }}"
+      #          git config user.email "${{ github.actor}}@users.noreply.github.com"
+      #          npx lerna version --conventional-commits --conventional-graduate --yes
+      #      - uses: EndBug/add-and-commit@v9
+      #        name: Commit version changes
+      #        with:
+      #          message: Version bump [skip-ci]
+      #          committer_name: GitHub Actions
+      #          committer_email: 41898282+github-actions[bot]@users.noreply.github.com
+      #      - name: Merge production -> dev
+      #        uses: devmasx/merge-branch@v1.3.1
+      #        continue-on-error: true
+      #        with:
+      #          type: now
+      #          from_branch: production
+      #          target_branch: develop
+      #          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: marceloprado/has-changed-path@v1
+        name: Check if the frontend app has changed
+        id: changed-front
+        with:
+          paths: packages/apps/bloobirds-platform-frontend
+      - uses: marceloprado/has-changed-path@v1
+        name: Check if the extension has changed
+        id: changed-extension
+        with:
+          paths: packages/apps/bloobirds-chrome-extension
+      - name: Get frontend package version
+        if: steps.changed-front.outputs.changed == 'true'
+        id: frontend-app-version
+        with:
+          path: packages/apps/bloobirds-platform-frontend
+        uses: martinbeentjes/npm-get-version-action@master
+      - name: Build production frontend app
+        if: steps.changed-front.outputs.changed == 'true'
+        env:
+          NODE_OPTIONS: --max_old_space_size=4096
+        run: |
+          cd packages/apps/bloobirds-platform-frontend
+          npm run build:production
+      - name: Archive frontend build artifact
+        uses: actions/upload-artifact@v2
+        if: steps.changed-front.outputs.changed == 'true'
+        with:
+          name: build
+          path: packages/apps/bloobirds-platform-frontend/build
+  upload-translations:
+    name: Upload translations
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+      - name: Upload json files
+        run: |
+          cd packages/locales
+          npm i @localazy/cli
+          npm run translations:upload
+  release-frontend:
+    name: Release frontend app
+    needs: build
+    if: needs.build.outputs.changed-front == 'true'
+    uses: ./.github/workflows/production-app-release.yaml
+    secrets: inherit
+    with:
+      version: ${{ needs.build.outputs.app-version }}
