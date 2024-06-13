@@ -1,0 +1,98 @@
+._container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.buttonRoot {
+  color: var(--bloobirds);
+  background-color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 264px;
+}
+
+.buttonOutlined {
+  border: 1px solid var(--bloobirds);
+}
+
+.arrowIcon {
+  position: absolute;
+  left: 16px;
+}
+
+.text {
+  font-size: 14px;
+  font-weight: normal;
+  height: 23px;
+}
+
+.log {
+  width: 500px;
+  border-radius: 4px;
+  padding: 16px 24px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.logError {
+  padding: 16px 24px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  width: 500px;
+  background-color: var(--verySoftTomato);
+  border: solid 1px var(--tomato);
+  height: auto;
+}
+
+.logWarning {
+  padding: 16px 24px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  width: 500px;
+  background-color: var(--verySoftBanana);
+  border: solid 1px var(--banana);
+  height: auto;
+}
+
+.logSuccess {
+  padding: 16px 24px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  width: 500px;
+  background-color: var(--verySoftMelon);
+  border: solid 1px var(--melon);
+  height: auto;
+}
+
+.logText {
+  color: var(--peanut);
+  margin: 8px 0;
+}
+
+.title {
+  font-size: 20px;
+  text-align: center;
+  color: var(--peanut);
+}
+
+.subTitle {
+  font-size: 14px;
+  text-align: center;
+  color: var(--softPeanut);
+  margin: 0;
+  margin-bottom: 20px;
+}
+
+.uploadLink {
+  color: var(--bloobirds);
+}
+
+.divScrollable {
+  height: 470px;
+  margin-left: 5%;
+  padding: 1%;
+  overflow: scroll;
+}

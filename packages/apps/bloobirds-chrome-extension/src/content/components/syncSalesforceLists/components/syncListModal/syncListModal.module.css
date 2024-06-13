@@ -1,0 +1,57 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.callout > div {
+  gap: 12px;
+  font-size: 14px;
+  width: 100%;
+}
+
+.callout {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.callout svg {
+  padding: 0;
+}
+
+.checkbox > div {
+  width: 100%;
+  gap: 8px;
+  font-size: 12px;
+  padding-left: 16px;
+}
+
+.relatedObjectsSetting {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* add 16 px margin bottom to the last element with .relatedObjectsSetting */
+.relatedObjectsSetting:last-child {
+  margin-bottom: 16px;
+}
+
+.recently_viewed_content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  width: 100%;
+  align-items: start;
+}
+
+.buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  align-items: center;
+}
+
+

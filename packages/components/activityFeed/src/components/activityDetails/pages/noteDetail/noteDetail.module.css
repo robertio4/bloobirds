@@ -1,0 +1,68 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.detail_content_container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.body_wrapper {
+  flex-grow: 1;
+}
+
+.body_wrapper > div > div ul {
+  padding-left: 24px !important;
+}
+
+.body_wrapper > div > div ol {
+  padding-left: 24px !important;
+}
+
+.bottom_bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+}
+
+.text {
+  margin-left: 4px;
+}
+
+.record_related {
+  display: flex;
+  align-items: center;
+}
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.divider {
+  width: 90%;
+  text-align: center;
+  border-top: 1px solid var(--verySoftPeanut);
+  align-self: center;
+}
+
+.bobject_selector {
+  margin-left: 8px;
+}
+
+.toolbar {
+  border-top: 1px solid var(--verySoftPeanut);
+  border-bottom: 1px solid var(--verySoftPeanut);
+}
+
+.mainNote {
+  margin-right: 4px;
+}

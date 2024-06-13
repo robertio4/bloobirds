@@ -1,0 +1,188 @@
+.backButton {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.filterDetailContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px 26px;
+  height: 100%;
+}
+
+.modalContentWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0;
+}
+
+.modalFilterWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0 8px;
+}
+
+.filterElementsContainer {
+  display: flex;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  width: 396px;
+  padding-right: 20px;
+  height: 100%;
+}
+
+.resyncButtonContainer {
+  display: flex;
+  align-content: center;
+  justify-content: flex-end;
+  padding: 8px;
+}
+
+.resyncButton {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px 2px 4px;
+  gap: 4px;
+
+  width: 80px;
+  height: 24px;
+
+  background: #cde2f6;
+  border-radius: 4px;
+
+  cursor: pointer;
+}
+
+.templateSelectorDropdown {
+  display: flex;
+  flex-direction: column;
+}
+
+.templateSelectorWrapper {
+  height: 620px;
+}
+
+.templateSelectorWrapper div[class*="_cards_container"] {
+  padding: 4px 16px;
+}
+
+.templateSelectorContainer {
+  background-color: var(--veryLightBloobirds);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+  padding-left: 1px;
+  height: 24px;
+  width: 35px;
+  cursor: pointer;
+}
+
+.templateSelectorContainer > div:first-child {
+  margin-left: -2px;
+  margin-right: -8px;
+}
+
+.noResultFound {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 8px 16px 20px 16px;
+}
+
+.noResultFound > * {
+  margin-right: 4px;
+}
+
+.whatsAppContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+
+  width: 40px;
+  height: 40px;
+
+  cursor: pointer;
+}
+
+.wsRunAnimation > div {
+  position: relative;
+  animation: jiggle 30s ease-in-out infinite;
+}
+
+.crossContainer {
+  display: flex;
+  justify-content: flex-end;
+  background-color: var(--verySoftPurple);
+  padding: 8px 8px 0 8px;
+  border-radius: 4px 4px 0 0;
+}
+
+/* Definición de la animación */
+@keyframes jiggle {
+  0% {
+    transform: rotate(-15deg);
+  }
+  1% {
+    transform: rotate(15deg);
+  }
+  2% {
+    transform: rotate(-15deg);
+  }
+  3% {
+    transform: rotate(15deg);
+  }
+  4% {
+    transform: rotate(-15deg);
+  }
+  5% {
+    transform: rotate(15deg);
+  }
+  6% {
+    transform: rotate(-15deg);
+  }
+  7% {
+    transform: rotate(15deg);
+  }
+  8% {
+    transform: rotate(-15deg);
+  }
+  9% {
+    transform: rotate(15deg);
+  }
+  10% {
+    transform: rotate(0);
+  }
+}
+
+.whatsAppContainerDisabled {
+  opacity: 0.5;
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 14px;
+  height: 14px;
+
+  background: #ff0000;
+  border-radius: 50%;
+  color: white;
+  font-size: 9px;
+  font-weight: bold;
+
+  position: absolute;
+  top: -4px;
+  right: -4px;
+}
+

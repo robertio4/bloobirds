@@ -1,0 +1,7 @@
+._home_filters_button{
+  border-color: white;
+}
+
+._home_filters_button > svg > path{
+  fill: var(--purple);
+}

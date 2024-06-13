@@ -1,0 +1,15 @@
+
+.nodeValue {
+    padding: 4px;
+    border-radius: 4px;
+}
+.tooltipChangeDescription {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    margin-bottom: 2px;
+}
+
+.tooltipIcon {
+    margin-right: 4px;
+}

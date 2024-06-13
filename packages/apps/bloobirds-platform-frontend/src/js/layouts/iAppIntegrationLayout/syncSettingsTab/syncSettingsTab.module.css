@@ -1,0 +1,26 @@
+._container {
+  margin-top: 28px;
+}
+._container > div > div > div > p {
+  color: var(--peanut);
+}
+._tabTitle {
+  display: flex;
+}
+._radio_group_container {
+  margin-top: 24px;
+  width: 617px;
+}
+.loader {
+  margin-top: 35vh;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
+  margin-top: 24px;
+}

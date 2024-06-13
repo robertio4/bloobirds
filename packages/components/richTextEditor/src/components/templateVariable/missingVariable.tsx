@@ -1,0 +1,27 @@
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+
+import classNames from 'clsx';
+import { useSelected } from 'slate-react';
+
+import styles from './templateVariable.module.css';
+
+const MissingVariable = ({ attributes, children, element }) => {
+  const selected = useSelected();
+  const { t } = useTranslation('translation', { keyPrefix: 'richTextEditor' });
+
+  const classes = classNames(styles.missingContainer, {
+    [styles.missingFocused]: selected,
+  });
+
+  return (
+    <span {...attributes}>
+      <span title={t('variableNotFound')} className={classes}>
+        {element.group} {element.name}
+      </span>
+      {children}
+    </span>
+  );
+};
+
+export default MissingVariable;

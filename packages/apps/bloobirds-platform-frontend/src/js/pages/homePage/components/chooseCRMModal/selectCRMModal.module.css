@@ -1,0 +1,68 @@
+._title__container {
+    display: flex;
+    align-items: center;
+}
+
+._title__container > svg {
+    margin-right: 4px;
+}
+
+._box__container {
+    width: 220px;
+    height: 152px;
+    margin: 0 10px;
+    padding: 20px 0 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: var(--white);
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid var(--verySoftPurple);
+}
+
+._bobject_selector_wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 40px 0;
+}
+
+._box__container__checked {
+    border: 1px solid var(--lightPurple);
+    background-color: var(--verySoftPurple);
+}
+
+._checkbox__container {
+    margin-left: 5px;
+    margin-right: auto;
+}
+
+._checkbox__container > div {
+    padding: 0;
+}
+
+._checkbox__container > div:hover {
+    background-color: transparent;
+}
+
+._checkbox__container > div > span {
+    margin-right: 0;
+}
+
+._logo {
+    width: 35px;
+    height: 35px;
+}
+
+._name__container {
+    padding: 8px 18px;
+}
+
+._text__container {
+    padding: 8px 18px;
+    text-align: center;
+}
+
+.settingsBox > div:not(:last-child) {
+    margin-bottom: 8px;
+}

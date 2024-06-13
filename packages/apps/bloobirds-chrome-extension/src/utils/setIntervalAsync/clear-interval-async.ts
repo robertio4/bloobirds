@@ -1,0 +1,15 @@
+import { SetIntervalAsyncTimer } from './set-interval-async-timer.js';
+
+/**
+ * Stops an execution cycle started by setIntervalAsync.
+ * Any ongoing function executions will run until completion,
+ * but all future ones will be cancelled.
+ */
+export async function clearIntervalAsync<HandlerArgs extends unknown[]>(
+  timer: SetIntervalAsyncTimer<HandlerArgs>,
+): Promise<void> {
+  if (!(timer instanceof SetIntervalAsyncTimer)) {
+    throw new TypeError('First argument is not an instance of SetIntervalAsyncTimer');
+  }
+  await SetIntervalAsyncTimer.stopTimer(timer);
+}

@@ -1,0 +1,9 @@
+
+> @bloobirds-it/misc@0.0.0 build:dev
+> cross-env NODE_ENV=development rollup -c=../../../rollup.config.js
+
+[36m
+[1m/Users/robertorf/Workspace/frontend-monorepo/packages/components/misc/src/index.tsx[22m → [1mdist/index.js[22m...[39m
+[1m[33m(!) Unused external imports[39m[22m
+default imported from external module "react" but never used in "src/attachmentList/useAttachedFiles.ts", "src/infoWarningSync/infoWarning.tsx", "src/infoWarningSync/infoWarningSync.tsx", "src/notificationsDisplay/notificationsDisplay.tsx", "src/attachmentList/attachmentList.tsx" and "src/attachmentList/attachmentItem/attachmentItem.tsx"
+[32mcreated [1mdist/index.js[22m in [1m4.2s[22m[39m

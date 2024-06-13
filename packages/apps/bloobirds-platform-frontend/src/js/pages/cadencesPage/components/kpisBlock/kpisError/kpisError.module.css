@@ -1,0 +1,9 @@
+.root {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.text {
+    margin-left: 30px;
+}

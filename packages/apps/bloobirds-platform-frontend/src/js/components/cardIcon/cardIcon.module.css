@@ -1,0 +1,9 @@
+._icon {
+  position: relative;
+}
+
+._icon_direction {
+  position: absolute;
+  top: -40%;
+  right: -40%;
+}

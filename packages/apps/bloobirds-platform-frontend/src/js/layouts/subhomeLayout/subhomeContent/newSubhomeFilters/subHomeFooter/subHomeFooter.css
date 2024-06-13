@@ -1,0 +1,22 @@
+._footer_wrapper {
+  margin-top: 36px;
+}
+
+._text_wrapper {
+  margin-bottom: 5px;
+}
+
+._text_align_center {
+  text-align: center;
+}
+
+._link {
+  color: var(--bloobirds);
+  font-size: 14px;
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+._link:hover {
+  cursor: pointer;
+}

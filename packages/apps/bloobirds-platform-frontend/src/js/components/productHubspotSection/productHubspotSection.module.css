@@ -1,0 +1,22 @@
+._grid > section > div {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 0 20px;
+}
+
+.select {
+  width: 100%;
+}
+
+.select2 {
+  width: calc(50% - 8px);
+}
+
+.select2 > div {
+  width: 100%;
+}
+
+.select2 > div > div {
+  width: 100%;
+}

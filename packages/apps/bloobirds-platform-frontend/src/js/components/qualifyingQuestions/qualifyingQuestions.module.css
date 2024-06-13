@@ -1,0 +1,30 @@
+.qualifyingQuestionList {
+  width: 80%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding-bottom: 156px;
+}
+
+.emptyContainer {
+  margin: 64px auto;
+  padding-bottom: 156px;
+}
+
+.footbar {
+  width: calc(100% - 96px);
+  background: var(--verySoftPurple);
+  position: absolute;
+  bottom: 0;
+  left: 96px;
+  padding: 10px 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.footbar button {
+  margin-right: 24px;
+}
+
+.footbar_displaced button:last-child {
+  margin-right: 100px;
+}

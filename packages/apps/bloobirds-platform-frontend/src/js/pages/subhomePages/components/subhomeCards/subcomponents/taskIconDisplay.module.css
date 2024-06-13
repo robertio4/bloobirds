@@ -1,0 +1,9 @@
+._icons {
+  display: flex;
+  flex-shrink: 0;
+  margin-right: 9px;
+}
+
+._icons > svg {
+  margin-right: 2px;
+}

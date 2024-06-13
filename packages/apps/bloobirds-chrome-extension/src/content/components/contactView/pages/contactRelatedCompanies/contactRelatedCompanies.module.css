@@ -1,0 +1,158 @@
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: overlay;
+  overscroll-behavior-y: contain;
+  padding: 8px 0;
+  gap: 16px;
+}
+
+.sectionTitle{
+  margin: 8px;
+}
+
+.noRelated {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  transform: translateY(-50%);
+  top: 50%;
+}
+
+.infoHeader{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+}
+
+.infoHeader > button{
+  height: 24px;
+}
+
+.infoHeader > button > p{
+  margin-top: 2px;
+}
+
+.relativeEntitiesWrapper{
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 8px;
+}
+
+.relatedEntityBlock{
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  padding: 0 8px;
+}
+
+.entitiesList{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.siblingsWrapper{
+  padding-left: 16px;
+}
+
+.siblingsTitle{
+  display: flex;
+  flex-direction: row;
+  gap:8px;
+  margin-bottom: 8px;
+}
+
+._modal_container {
+  width: 472px;
+}
+._modal_content {
+  padding: 24px 48px;
+}
+
+._display_child_companies {
+  margin-top: 16px;
+  max-height: 228px;
+  overflow-y: auto;
+}
+._display_child_companies::-webkit-scrollbar {
+  display: none;
+}
+
+._modal_content > div > p {
+  margin-bottom: 16px;
+}
+._modal_header {
+  box-sizing: border-box;
+  padding: 16px;
+}
+._modal_content_text {
+  display: flex;
+  flex-direction: column;
+}
+._modal_content_text > p:first-child {
+  margin-bottom: 48px;
+  line-height: 20px;
+}
+
+._modal_content_text > p:last-child {
+  font-size: 13px
+}
+._modal_footer {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 0 32px 24px 32px;
+}
+
+._confirm_modal_content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 24px 22px;
+}
+
+._drop_down_container {
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 368px;
+}
+
+._add_related_company_content {
+  box-sizing: border-box;
+  padding: 24px 84px 22px 84px;
+}
+._add_related_company_footer_content {
+  box-sizing: border-box;
+  padding: 0 45px 24px 45px;
+}
+._add_related_company_button {
+  width: 185px;
+  height: 48px;
+}
+._search_input_text {
+  margin-left: 12px;
+  margin-top: 4px;
+}
+.buttonContainer{
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+}
+
+._companies_display{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}

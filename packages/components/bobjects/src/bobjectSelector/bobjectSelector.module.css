@@ -1,0 +1,33 @@
+.content {
+  display: flex;
+  flex-direction: column;
+}
+
+.link_button {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.link_button > * {
+  margin-right: 4px;
+}
+
+.link_button > p {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.input {
+  padding: 12px;
+  box-shadow: none;
+  box-sizing: border-box;
+}
+
+.results {
+  height: 300px;
+  overflow-y: auto;
+}

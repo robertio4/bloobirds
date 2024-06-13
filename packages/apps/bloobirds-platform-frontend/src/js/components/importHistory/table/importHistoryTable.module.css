@@ -1,0 +1,121 @@
+._cellDownloadContainer {
+  display: flex;
+  min-width: 100px;
+  height: 16px;
+  align-items: center;
+}
+
+._icon_button {
+  margin-left: 12px;
+}
+
+._cellTextBlue {
+  color: var(--bloobirds);
+  max-width: 210px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+._cellTextBlack {
+  display: flex;
+  justify-content: flex-end;
+  color: var(--peanut);
+  margin: 0;
+}
+
+._progressBar {
+  background-color: var(--softTangerine);
+  width: 114px;
+  height: 24px;
+  border-radius: 4px;
+  position: relative;
+}
+
+._progressBar > p {
+  position: absolute;
+  margin: 0;
+  top: 50%;
+  left: 50%;
+  color: white;
+  transform: translate(-50%, -50%);
+}
+
+._progressBar > div {
+  box-sizing: border-box;
+  background-color: var(--tangerine);
+  border-radius: 4px;
+  height: 24px;
+  color: white;
+  padding: 4px 0;
+}
+
+._label {
+  display: flex;
+  align-items: center;
+}
+
+._label > div {
+  width: 80px;
+  text-align: center;
+}
+
+._statusContainer {
+  display: flex;
+}
+
+._statusContainer > button {
+  padding: 0;
+  margin-left: 4px;
+}
+
+._datetime_cell {
+  min-width: initial;
+}
+
+._name_cell {
+  display: flex;
+  min-width: 175px;
+  height: 16px;
+  align-items: center;
+}
+
+._action_type_cell {
+  min-width: 85px;
+}
+
+._import_type_cell {
+  min-width: 85px;
+}
+
+._object_type_cell {
+  min-width: 85px;
+}
+
+._status_cell {
+  min-width: 140px;
+}
+
+._status_cell > div {
+  display: flex;
+}
+
+._success_cell {
+  min-width: 100px;
+}
+
+._error_cell {
+  min-width: 100px;
+}
+
+._imported_by_cell {
+  min-width: 120px;
+}
+
+._hidden {
+  visibility: hidden;
+}
+
+.tableContainer {
+  margin-top: 8px;
+}

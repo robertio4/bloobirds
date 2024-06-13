@@ -1,0 +1,160 @@
+/* Card */
+
+/* Card Left */
+._icons {
+  flex-shrink: 0;
+  margin-right: 9px;
+}
+
+._icons > svg {
+  margin-right: 2px;
+}
+
+._title {
+  flex-shrink: 0;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+}
+
+._bobject_name {
+  flex-shrink: 1;
+  font-size: 14px;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+}
+
+._separator {
+  margin-right: 8px;
+  width: 1px;
+  height: 8px;
+  background-color: var(--softPeanut);
+}
+
+._country {
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+/* Card Right */
+._status,
+._date,
+._overdue {
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+._date {
+  margin-left: 20px;
+}
+/* END - Card */
+
+/* Content */
+._inactive_page_wrapper {
+  height: auto;
+  padding-bottom: 30px;
+}
+
+._amount_wrapper {
+  margin-right: 8px;
+}
+
+._amount_wrapper > p {
+  max-width: 70px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+._status_wrapper {
+  margin-left: 8px;
+  margin-right: 24px;
+  min-width: 64px;
+  text-align: left;
+}
+
+._url_wrapper {
+  white-space: nowrap;
+  display: contents;
+}
+
+._filters__title {
+  margin-right: 12px;
+}
+
+._clear_wrapper {
+  width: 85px;
+}
+
+._clear_wrapper button {
+  padding: 0;
+}
+
+._more_filter_input {
+  background: var(--lightestBloobirds);
+  color: var(--peanut);
+  box-sizing: border-box;
+  border-radius: 4px;
+  max-width: 180px;
+  padding: 4px 6px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  margin-top: 2px;
+}
+
+._more_filter_input > svg {
+  margin-left: 8px;
+}
+
+.filter_relative_date div[role='listbox'] {
+  background-color: var(--softPeanut);
+  max-width: 210px;
+  width: auto;
+  padding: 4px 6px;
+  max-height: none;
+  border: 0;
+  box-sizing: border-box;
+  height: 24px;
+}
+
+.filter_relative_date div[role='listbox'] > button {
+  background-color: var(--softPeanut);
+  color: white;
+}
+
+.filter_relative_date div[role='listbox'] svg > path {
+  fill: var(--white);
+}
+
+.filter_relative_date div[role='listbox'] > div:first-child > svg {
+  margin-bottom: 3px;
+}
+
+._select_all_wrapper {
+  padding-left: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+@media (max-width: 1150px) {
+  ._s_hidden {
+    display: none;
+  }
+}
+
+@media (max-width: 1550px) {
+  ._m_hidden {
+    display: none;
+  }
+}
+
+@media (max-width: 1700px) {
+  ._l_hidden {
+    display: none;
+  }
+}

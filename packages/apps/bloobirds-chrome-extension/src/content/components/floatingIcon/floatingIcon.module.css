@@ -1,0 +1,61 @@
+.container {
+  pointer-events: auto;
+  display: flex;
+  justify-content: flex-end;
+  width: 56px;
+  opacity: 0;
+  height: 0;
+  transition: opacity 200ms ease-in;
+}
+
+.visible {
+  opacity: 1;
+  height: 40px;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+  display: none;
+  background: #1991ff;
+  box-shadow: -2px 0px 4px rgba(0, 119, 181, 0.4);
+  border-radius: 8px 0px 0px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.dragging {
+  margin-left: -4px;
+}
+
+.hoverSide {
+  background: #9acfff;
+  border-radius: 0px;
+  width: 0px;
+  opacity: 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 200ms ease-in, opacity 200ms ease-in;
+  cursor: grab;
+}
+
+.container:hover .hoverSide {
+  width: 16px;
+  opacity: 1;
+}
+
+.visibleHoverSide {
+  cursor: grabbing;
+  width: 16px;
+  opacity: 1;
+}
+
+.movableArea {
+  position: absolute;
+  width: 4px;
+  background-color: #1991ff;
+}

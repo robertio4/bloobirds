@@ -1,0 +1,27 @@
+._auto_assign_dropdown {
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  padding: 16px;
+}
+
+._auto_assign_text {
+  padding-bottom: 8px;
+}
+
+._radio_group {
+  padding-bottom: 16px;
+}
+
+._button_wrapper {
+  margin: 0 4px;
+}
+
+._button_wrapper > div > div {
+  width: 100%;
+}
+
+._radio_group > div > div {
+  font-size: 12px;
+  gap: 4px;
+}

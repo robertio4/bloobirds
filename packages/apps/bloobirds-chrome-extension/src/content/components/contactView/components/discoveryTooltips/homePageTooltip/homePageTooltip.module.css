@@ -1,0 +1,13 @@
+.discovery_tooltip {
+  position: absolute;
+  z-index: 100;
+  left: -10px;
+}
+
+.image {
+  margin-bottom: -88px;
+}
+
+.image > img {
+  max-width: 154px;
+}

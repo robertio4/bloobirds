@@ -1,0 +1,33 @@
+.container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 102;
+  pointer-events: none;
+}
+
+.dragging {
+  pointer-events: unset;
+}
+
+.content {
+  display: inline-block;
+  position: relative;
+  pointer-events: all;
+}
+
+.container *,
+.container :after,
+.container :before {
+  box-sizing: inherit;
+}
+
+.container legend {
+  display: block;
+}
+
+:root {
+  --fontFamily: 'Inter', sans-serif !important;
+}

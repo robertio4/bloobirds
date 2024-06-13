@@ -1,0 +1,13 @@
+.button {
+  padding: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  transition: all 100ms ease-in-out;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.button:hover {
+  background-color: var(--lightestBloobirds);
+}

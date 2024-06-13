@@ -1,0 +1,86 @@
+._content__wraper {
+  padding: 32px 60px 0;
+  position: relative;
+  background-color: var(--white);
+}
+
+._info__wrapper {
+  margin-top: 16px;
+  margin-bottom: 24px;
+}
+
+._info__wrapper > div > svg {
+  padding: 0 10px 0 0;
+}
+
+._autocomplete__wrapper {
+  margin-bottom: 30px;
+  width: 100%;
+}
+
+._autocomplete__wrapper input,
+._autocomplete__wrapper input:focus,
+._autocomplete__wrapper input:hover {
+  box-shadow: none !important;
+  border: none !important;
+  color: var(--peanut) !important;
+  outline: none;
+}
+
+._confirm__button > button {
+  margin-left: 15px;
+}
+
+._circularBadge {
+  margin-right: 8px;
+}
+
+._content__assign {
+  padding: 16px 16px 0;
+  position: relative;
+  background-color: var(--white);
+}
+
+._checkbox {
+  padding-top: 12px;
+}
+
+._assign_button_wrapper {
+  padding: 32px 28px 16px 28px;
+  background-color: var(--white);
+}
+
+._assign_button_wrapper > button {
+  display: flex;
+  justify-content: center;
+}
+
+._dropdown_content__wraper {
+  padding: 8px 19px;
+}
+
+._title_content__wraper {
+  font-weight: bold;
+  padding-bottom: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+._dropdown_button_wrapper {
+  padding: 0px 28px 16px 28px;
+  background-color: var(--white);
+  display: flex;
+  justify-content: space-between;
+}
+
+._dropdown_button_wrapper > button {
+  display: flex;
+  justify-content: space-between;
+}
+
+._dropdown_autocomplete__wrapper {
+  margin-bottom: 15px;
+  width: 100%;
+}

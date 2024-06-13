@@ -1,0 +1,40 @@
+.banner {
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.warning {
+  background-color: var(--verySoftBanana);
+}
+
+.softWarning {
+  background-color: #fef5df;
+}
+
+.warningOrange {
+  background-color: #fdede1;
+}
+
+.success {
+  background-color: #d9f0c080;
+  opacity: 0.8;
+}
+
+.error {
+  background-color: var(--verySoftTomato);
+}
+
+.info {
+  background-color: var(--lightestBloobirds);
+  border: 1px solid var(--lightBloobirds);
+  border-radius: 0 0 4px 4px;
+}
+
+.close {
+  cursor: pointer;
+  margin-bottom: 2px;
+}

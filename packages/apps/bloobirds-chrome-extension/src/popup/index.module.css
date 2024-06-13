@@ -1,0 +1,76 @@
+body {
+  margin: 0;
+}
+
+._container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 300px;
+  padding: 40px 0 0;
+  border-radius: 0 0 8px 8px;
+  gap: 16px;
+}
+
+._content {
+  padding: 0 30px;
+}
+
+._content a {
+  color: #1991ff;
+  text-decoration: none;
+}
+
+._content {
+  color: #94a5b4;
+  text-align: justify;
+}
+
+._content p {
+  text-align: center;
+}
+
+._content button {
+  margin-top: 10px;
+}
+
+._version p {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+._header {
+  display: flex;
+  margin: 0 auto;
+  width: 190px;
+}
+
+._text {
+  display: flex;
+  align-self: center;
+  padding: 6px;
+}
+
+._text p {
+  text-align: center;
+}
+._version_outdated {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  background-color: var(--peanut);
+  color: #fff;
+  padding: 8px;
+}
+
+.updateAvailabelBanner {
+  display: flex;
+  padding: 10px;
+  gap: 8px;
+}
+
+.updateButton {
+  cursor: pointer;
+  display: flex;
+}

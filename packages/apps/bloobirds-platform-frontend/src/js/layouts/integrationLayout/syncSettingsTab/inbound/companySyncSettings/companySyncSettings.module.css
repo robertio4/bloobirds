@@ -1,0 +1,84 @@
+._container {
+  box-sizing: border-box;
+  padding: 32px 32px;
+  width: 100%;
+}
+
+._radio_group_container > * {
+  box-sizing: border-box;
+  padding-bottom: 24px;
+}
+
+._children_multiselect {
+  box-sizing: border-box;
+  padding-top: 12px;
+  padding-bottom: 44px;
+  display: flex;
+  align-items: center;
+  width: fit-content;
+}
+._children_multiselect > * {
+  margin-right: 20px;
+}
+._radioButton > div {
+  width: 640px;
+  font-size: 14px;
+  text-transform: none;
+}
+
+._children_radio_select {
+  box-sizing: border-box;
+  display: inline;
+  align-items: center;
+  align-self: flex-end;
+}
+
+._children_radio_select > * {
+  margin-right: 20px;
+  text-transform: none;
+}
+
+._radioGroup > div {
+  text-transform: none;
+  display: flex;
+}
+._callOut {
+  max-width: 720px;
+  margin-bottom: 64px;
+}
+._checkBox {
+  box-sizing: border-box;
+  max-width: 720px;
+}
+
+._info {
+  margin-left: 5px;
+}
+._radio_group {
+  max-width: 972px;
+  margin-top: 24px;
+  display: flex;
+}
+._radio_group > div:first-child {
+  width: 525px;
+}
+._radio_group > div > div {
+  width: 100%;
+  text-transform: none;
+}
+._text_select {
+  box-sizing: border-box;
+}
+._collapsible {
+  margin-left: 16px;
+  margin-top: 16px;
+}
+
+._collapsible > div > div {
+  padding-top: 0;
+  margin-bottom: 12px;
+}
+
+._collapsible > div > svg {
+  margin-top: 4px;
+}

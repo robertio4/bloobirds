@@ -1,0 +1,197 @@
+.content {
+  padding: 0 24px 20px 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.contentSidePeek {
+  padding: 24px 32px 20px 32px;
+}
+
+.title {
+  margin-top: 4px;
+  display: flex;
+  min-width: 0;
+}
+
+.title_text {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.invisibleTitle {
+  visibility: hidden;
+}
+
+.containerButtons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 64px;
+  padding-bottom: 64px;
+}
+
+.buttons,
+.buttonsBubble {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media only screen and (max-width: 1270px) {
+  .buttons {
+    width: 230px;
+  }
+}
+
+.searchBar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.searchBar > div {
+  max-width: 500px;
+  width: 100%;
+}
+
+.searchBar > div > div {
+  margin: 16px 0 0 0;
+}
+
+.searchBar input,
+.searchBar input:focus {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  width: 100%;
+  color: var(--peanut) !important;
+  background-color: transparent;
+}
+
+.searchBar input::placeholder {
+  color: transparent;
+}
+
+.currentTask {
+  flex-grow: 1;
+}
+
+.currentTaskSidePeek *,
+.lastVisitedItemSidePeek * {
+  font-size: 13px !important;
+}
+
+.lastVisited {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.lastVisited > div,
+.lastVisited > p {
+  max-width: 500px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.lastVisitedItem > div {
+  padding: 6px 4px;
+  border-radius: 4px;
+  margin: 2px 0;
+}
+
+.lastVisitedItem > div > div > div:first-child {
+  display: flex;
+  height: 100%;
+}
+
+.lastVisitedItem > div > div > div:first-child > p {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 15px;
+}
+
+.lastVisitedItem > div > div > div:last-child > p {
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.lastVisitedItem > div > div > div:last-child > div > p {
+  font-size: 10px;
+  line-height: 16px;
+}
+
+.extraMile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  align-items: center;
+}
+
+._info_banner{
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  padding: 16px;
+  background-color: var(--verySoftPurple);
+  border-radius: 4px;
+  border: var(--lightPurple) 1px solid;
+  gap: 16px;
+  margin: 0 16px 10px;
+}
+
+._info_banner * {
+  margin: 0 !important;
+}
+
+._info_banner > p {
+  font-weight: 300;
+}
+
+._info_banner_title{
+  display: flex;
+  gap: 6px;
+}
+
+._info_action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+._info_banner_footer{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+._info_banner_footer button {
+  height: 24px;
+  border: var(--lightPurple) 1px solid !important;
+  background-color: var(--verySoftPurple) !important;
+}
+
+._info_banner_footer button:hover{
+  background-color: #bac0fa !important;
+}
+
+._info_banner_footer > div {
+  gap: 8px;
+}
+
+.bannerCommandContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+  background-color: var(--white);
+  padding: 4px;
+  min-width: 72px;
+}

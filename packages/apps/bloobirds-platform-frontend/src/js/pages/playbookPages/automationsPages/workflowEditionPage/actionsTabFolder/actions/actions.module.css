@@ -1,0 +1,64 @@
+._action_page__container {
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  justify-content: center;
+  align-self: center;
+}
+
+._workflows_actions_icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1px;
+}
+
+._workflows_actions_icon_wrapper {
+  position: absolute;
+  right: -11px;
+  top: 0;
+}
+
+._workflows_actions_text {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+._action_page__select {
+  display: flex;
+  align-self: center;
+  margin-bottom: 16px;
+}
+
+._actions_connector {
+  margin-left: 300px;
+  display: flex;
+  height: 24px;
+  width: 0;
+  border: var(--verySoftPeanut) 1px dashed;
+}
+
+._actions_button {
+  display: flex;
+  justify-content: center;
+  align-self: center;
+  margin-bottom: 20px;
+}
+
+._actions_button > button {
+  padding: 3px 8px;
+}
+
+._actions_connector_wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-top: -20px;
+}
+
+._button_container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin-top: 17px;
+}

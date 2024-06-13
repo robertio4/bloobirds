@@ -1,0 +1,15 @@
+.taskWorkspace {
+  min-height: calc(100vh - 48px);
+  background-color: #f0f4f6;
+  height: calc(100vh - 48px);
+  flex-grow: 1;
+  overflow-y: scroll;
+}
+
+.taskWorkspaceAssign {
+  overflow-y: unset;
+}
+
+.taskWorkspaceMargins {
+  padding: 40px 25px;
+}

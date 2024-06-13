@@ -1,0 +1,46 @@
+.container {
+  background-color: var(--bloobirds);
+  width: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-grow: 0;
+  flex-shrink: 0;
+  padding-top: 8px;
+}
+
+.taskContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  background-color: var(--verySoftBloobirds);
+  margin: 4px 0;
+  cursor: pointer;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.taskCounter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  height: 16px;
+  width: 16px;
+  background-color: var(--veryLightBloobirds);
+  border-radius: 50%;
+  color: var(--peanut);
+  font-size: 8px;
+  top: -5px;
+  right: -5px;
+}
+
+.taskLabel {
+  font-size: 7px;
+  user-select: none;
+}

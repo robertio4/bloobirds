@@ -1,0 +1,168 @@
+.footer_button_wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  margin: 50% auto;
+  cursor: pointer;
+  flex-grow: 0;
+  flex-shrink: 0;
+  width: 100%;
+  height: 28px;
+}
+
+.footer_button_wrapper > div {
+  display: flex;
+  justify-content: center;
+  width: 40px;
+  justify-content: center;
+}
+
+.footer_button {
+  padding: 1px;
+}
+
+.footer_button:hover {
+  background-color: var(--veryLightBloobirds) !important;
+}
+
+.dropdown_divider {
+  width: 100%;
+  border-bottom: 1px solid var(--verySoftPeanut);
+  margin: 0;
+}
+
+.item_wrapper > div {
+  width: 100%;
+}
+
+.small_dropdown_item {
+  display: flex;
+  justify-content: flex-start;
+  gap: 4px;
+}
+
+.small_dropdown_item > div {
+  padding: 4px 16px 4px 8px;
+}
+
+.medium_dropdown_item {
+  display: flex;
+  justify-content: flex-start;
+  gap: 4px;
+}
+
+.medium_dropdown_item > div {
+  padding: 4px 22px 4px 8px;
+}
+
+.medium_dropdown_item svg {
+  width: 20px;
+  height: 20px;
+}
+
+.dropdown_header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dropdown_wrapper {
+  display: flex;
+}
+
+.dropdown_block_container {
+  padding: 8px 0;
+  width: 100%;
+  min-width: fit-content;
+}
+
+.dropdown_block_container > div {
+  width: 100%;
+}
+
+.left_border {
+  border-left: 1px solid var(--verySoftPeanut);
+}
+
+.tour_button {
+  cursor: pointer;
+  margin-bottom: -8px;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.tour_button_center {
+  justify-content: center;
+}
+
+.small_dropdown_header {
+  padding: 2px 10px 8px;
+}
+
+.medium_dropdown_header {
+  padding: 8px 12px 16px;
+}
+
+.item_wrapper:hover > div > p {
+  color: var(--bloobirds) !important;
+}
+
+.item_wrapper:hover svg > path {
+  fill: var(--bloobirds);
+}
+
+.username_container {
+  display: flex;
+  align-items: center;
+}
+
+.username_container > * {
+  margin: 0 4px;
+}
+
+._switch_wrapper {
+  max-width: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  align-self: center;
+}
+
+._switch_wrapper > label {
+  margin: 8px 4px;
+}
+
+._switch_text {
+  display: flex;
+  margin-right: 4px;
+  gap: 4px;
+  align-items: center;
+}
+
+._language_dropdown {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 198px;
+}
+
+._language_group {
+  display: flex;
+  flex-direction: column;
+}
+
+._language_select {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 8px;
+  width: 132px;
+}
+
+._language_select div[class*='Radio-module_radio'] {
+  font-size: 10px;
+}

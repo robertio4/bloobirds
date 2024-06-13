@@ -1,0 +1,23 @@
+{
+  "name": "@bloobirds-it/assets",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "npm run build:prod",
+    "build:dev": "cross-env NODE_ENV=development rollup -c=../../rollup.config.js",
+    "build:prod": "cross-env NODE_ENV=production rollup -c=../../rollup.config.js",
+    "build:release": "npm run clean && cross-env NODE_ENV=production rollup -c=../../rollup.config.js",
+    "start": "cross-env NODE_ENV=production rollup -c=../../rollup.config.js",
+    "test": "jest"
+  },
+  "peerDependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  },
+  "devDependencies": {}
+}

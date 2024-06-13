@@ -1,0 +1,29 @@
+._invitation_form_wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+}
+._invitation_form_wrapper > div {
+    height: 35px;
+}
+
+._inputs_wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+._submit_button {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    height: 35px;
+}
+
+._submit_button > div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

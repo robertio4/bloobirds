@@ -1,0 +1,12 @@
+._title__container {
+  display: flex;
+  align-items: center;
+}
+
+._icon {
+  margin-right: 4px;
+}
+
+.content {
+  margin: 8px 0 16px 0;
+}

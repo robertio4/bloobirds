@@ -1,0 +1,97 @@
+.button {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+
+  border: 1px solid;
+  border-radius: 12px;
+
+  font-family: var(--fontFamily);
+  font-weight: var(--fontHeavy);
+  font-size: 8px;
+  line-height: 16px;
+  cursor: pointer;
+  width: 100%;
+
+  padding: 4px 6px;
+}
+
+.button :nth-child(2) {
+  flex: 1;
+  text-align: center;
+}
+
+.button:visited {
+  outline: 0;
+  outline: none;
+}
+
+.button:hover,
+.button:active,
+.button:focus {
+  outline: 0;
+  outline: none;
+}
+
+.button::-moz-focus-inner {
+  border: 0;
+}
+
+.conversation {
+  min-width: 152px;
+  font-size: 13px;
+}
+
+.enabled {
+  color: var(--bloobirds);
+  background-color: var(--softGray);
+  border-color: var(--softGray);
+}
+
+.enabled:hover {
+  background-color: var(--lightestGray);
+}
+
+.success {
+  color: var(--white);
+  background-color: var(--softMelon);
+  border-color: var(--softMelon);
+  cursor: default;
+}
+
+.success:hover {
+  background-color: var(--verySoftMelon);
+}
+
+.disabled {
+  color: var(--softPeanut);
+  background-color: var(--softGray);
+  border-color: var(--softGray);
+  cursor: default;
+}
+
+.disabled:hover {
+  background-color: var(--lighterGray);
+}
+
+.error {
+  color: var(--tomato);
+  background-color: var(--verySoftTomato);
+  border-color: var(--verySoftTomato);
+}
+
+.error:hover {
+  background-color: var(--lightTomato);
+}
+
+.loading {
+  color: var(--bloobirds);
+  background-color: var(--veryLightBloobirds);
+  border-color: var(--veryLightBloobirds);
+  cursor: default;
+  pointer-events: none;
+}
+
+.loading:hover {
+  background-color: var(--lightestBloobirds);
+}

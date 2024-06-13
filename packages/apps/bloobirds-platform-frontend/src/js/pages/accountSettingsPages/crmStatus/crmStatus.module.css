@@ -1,0 +1,53 @@
+._container {
+  padding: 48px 40px;
+}
+
+._title {
+  display: flex;
+  align-items: baseline;
+}
+
+._title > * {
+  margin-right: 10px;
+}
+
+._subtitle {
+  margin: 10px 0 20px 0;
+}
+
+._subtitleText {
+  line-height: 24px !important;
+}
+
+._infoBlock {
+  background-color: var(--verySoftPurple);
+  padding: 10px 10px;
+  border-radius: 5px;
+  width: 100%;
+  max-width: 455px;
+  border: 1px solid var(--lightPurple);
+  display: flex;
+  align-items: start;
+}
+
+._header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0px;
+}
+
+._leftContent {
+  display: flex;
+  flex-direction: column;
+  padding-right: 15px;
+}
+
+._lightbulbIcon {
+  font-size: 35px;
+  padding-left: 5px;
+}
+
+._circularBadge {
+  background: var(--verySoftBanana) !important;
+}

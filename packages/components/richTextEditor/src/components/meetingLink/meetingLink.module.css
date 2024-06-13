@@ -1,0 +1,11 @@
+.container {
+  color: var(--softTomato);
+  background-color: #ffdbe2;
+  border-radius: 4px;
+  padding: 2px 4px;
+  text-transform: capitalize;
+  white-space: normal;
+}
+.focused {
+  box-shadow: 0 0 0 2px var(--verySoftTomato);
+}

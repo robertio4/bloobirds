@@ -1,0 +1,24 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin: 24px auto;
+}
+
+.container_sidePeek {
+  margin-top: 80px;
+}
+
+.container > p:first-child {
+  max-width: 235px;
+}
+
+.container > p:last-child {
+  max-width: 280px;
+}
+
+.container > button {
+  text-transform: none;
+  font-weight: 300;
+}

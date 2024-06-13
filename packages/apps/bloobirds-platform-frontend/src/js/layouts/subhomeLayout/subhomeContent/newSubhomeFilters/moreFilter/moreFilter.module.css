@@ -1,0 +1,22 @@
+.moreFilterInput {
+  background: var(--lightestBloobirds);
+  color: var(--peanut);
+  box-sizing: border-box;
+  border-radius: 4px;
+  max-width: 180px;
+  padding: 4px 6px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.moreFilterInput > svg {
+  margin-left: 8px;
+}
+
+.moreFiltersInputSelected {
+  background: var(--softPeanut);
+  color: var(--white);
+}

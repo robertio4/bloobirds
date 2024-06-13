@@ -1,0 +1,44 @@
+.customControlBar {
+  display: flex;
+  align-items: center;
+  padding: 18px 0;
+}
+
+.leftButtons,
+.centerButtons,
+.rightButtons {
+  width: 33.33vw;
+  display: flex;
+  gap: 4px;
+  height: 36px;
+  align-items: center;
+}
+
+.leftButtons {
+  justify-content: flex-start;
+}
+
+.centerButtons {
+  justify-content: center;
+}
+
+.centerButtons button {
+  width: 36px;
+  height: 36px;
+}
+
+.centerButtons button:hover {
+  background: var(--verySoftPurple);
+  border-radius: 36px;
+}
+
+.rightButtons {
+  justify-content: flex-end;
+}
+
+.switchContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+}

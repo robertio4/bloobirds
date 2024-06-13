@@ -1,0 +1,17 @@
+._container {
+  padding: 48px 40px;
+}
+
+._title {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+._title > * {
+  margin-right: 10px;
+}
+
+._subtitle {
+  margin: 10px 0 20px 0;
+}

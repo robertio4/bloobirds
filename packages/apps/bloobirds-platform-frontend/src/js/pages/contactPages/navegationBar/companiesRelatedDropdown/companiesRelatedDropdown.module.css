@@ -1,0 +1,116 @@
+._dropdown__container {
+  width: 600px;
+  display: flex;
+  flex-direction: column;
+  margin: -8px 0 -4px;
+  overflow-y: auto;
+}
+
+._header__container {
+  display: flex;
+  margin-bottom: 16px;
+  justify-content: space-between;
+  height: 32px;
+  box-sizing: border-box;
+  padding: 8px 16px;
+  width: 100%;
+  background-color: var(--lightestBloobirds);
+  border-radius: 3px 3px 0 0;
+}
+
+._preview__button__wrapper {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+._show_all_button_wrapper {
+  display: flex;
+  box-sizing: border-box;
+  padding-top: 12px;
+  justify-content: center;
+}
+
+._card__container {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  box-sizing: border-box;
+  padding: 8px 20px;
+  cursor: pointer;
+}
+
+._card__container:hover {
+  background-color: var(--lighterGray);
+}
+
+._card__column {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+}
+
+._cards_container {
+  margin: 14px 0 0 66px;
+}
+._cards_container > p {
+  margin-bottom: 19px;
+  margin-left: 16px;
+}
+._cards_container > button {
+  margin-top: 12px;
+}
+._cards_list {
+  overflow-y: hidden;
+  max-height: 236px;
+  margin-bottom: 12px;
+}
+._cards_list_long {
+  overflow-y: auto;
+  height: calc(53vh - 236px);
+  margin-bottom: 12px;
+}
+._cards_list_long::-webkit-scrollbar {
+  display: none;
+}
+
+._no_companies_container {
+  box-sizing: border-box;
+  padding: 14px 22px 30px 12px;
+  display: flex;
+  justify-content: space-between;
+}
+
+._name__container {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  max-width: 255px;
+  margin-left: 8px;
+}
+
+._card__status {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+._child_companies_container {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+._icon__container {
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+}
+._action_button {
+  margin: -4px 0 4px 8px;
+  background-color: var(--lightestGray);
+}
+
+._parent_company_container {
+  margin-bottom: 24px;
+}

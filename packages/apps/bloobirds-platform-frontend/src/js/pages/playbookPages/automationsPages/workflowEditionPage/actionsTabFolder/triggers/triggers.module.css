@@ -1,0 +1,18 @@
+._action_page__container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+._workflows_actions_icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1px;
+}
+
+._workflows_actions_text {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}

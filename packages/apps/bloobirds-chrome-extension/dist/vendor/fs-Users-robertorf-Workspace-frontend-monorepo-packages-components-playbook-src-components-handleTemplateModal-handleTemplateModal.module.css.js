@@ -1,0 +1,66 @@
+import { createHotContext as __vite__createHotContext } from "/vendor/vite-client.js";import.meta.hot = __vite__createHotContext("/vendor/fs-Users-robertorf-Workspace-frontend-monorepo-packages-components-playbook-src-components-handleTemplateModal-handleTemplateModal.module.css.js");import { updateStyle as __vite__updateStyle, removeStyle as __vite__removeStyle } from "/vendor/vite-client.js"
+const __vite__id = "/Users/robertorf/Workspace/frontend-monorepo/packages/components/playbook/src/components/handleTemplateModal/handleTemplateModal.module.css"
+const __vite__css = "::-webkit-scrollbar-thumb {\n  outline: 1px solid var(--verySoftPeanut);\n  border-radius: 3px;\n  background-color: var(--verySoftPeanut);\n}\n\n::-webkit-scrollbar {\n  width: 6px;\n  height: 6px;\n  cursor: pointer !important;\n}\n\n.__container_1oulu_13 {\n  background-color: white;\n  overflow-y: auto;\n  padding: 24px 64px;\n}\n\n.__modal_body_container_1oulu_19 {\n  display: flex;\n  flex: 1;\n  background-color: white;\n  max-height: calc(64vh + 90px);\n  min-height: calc(64vh + 90px);\n}\n\n.__form_container_1oulu_27 {\n  display: flex;\n  flex-direction: column;\n  flex: 1;\n}\n\n.__editor__container_1oulu_33 {\n  background-color: white;\n  border-radius: 4px;\n}\n\n.__editor__container_1oulu_33 > div > section {\n  align-items: center;\n}\n\n.__editor__container_ast_1oulu_42 {\n  overflow-y: auto;\n  overflow-x: hidden;\n  height: 100%;\n}\n\n.__subject__container_1oulu_48 {\n  margin: 6px 0;\n}\n\n.__subject__container_ast_1oulu_52 {\n  display: flex;\n  margin: 16px 0 8px 0;\n  background: white;\n  border: 1px solid #94a5b4;\n  border-radius: 4px;\n}\n\n.__to__container_1oulu_60 {\n  display: flex;\n  align-items: center;\n  margin-bottom: 8px;\n}\n\n.__to__input__container_1oulu_66 {\n  width: 100%;\n  margin-left: 16px;\n}\n\n.__tag_1oulu_71 {\n  width: 44px;\n}\n\n.__actions__container_1oulu_75 {\n  width: calc(100% - 24px);\n  border-top: 1px solid var(--lightestBloobirds);\n  height: 40px;\n  display: flex;\n  padding: 0 12px;\n}\n\n.__attachments__container_1oulu_83 {\n  display: flex;\n  margin: 2px 16px 0;\n  padding: 8px 0;\n  border-top: 1px solid var(--lightestBloobirds);\n}\n\n.__errors_container_1oulu_90 {\n  width: 100%;\n  margin: 8px 20px;\n}\n\n.__header__container_1oulu_95 {\n  width: 100%;\n  height: 56px;\n  display: flex;\n  align-items: center;\n  padding: 0 24px;\n  box-sizing: border-box;\n  /*background-color: var(--veryLightBloobirds);*/\n  background-color: var(--verySoftPurple);\n}\n\n.__header__info_1oulu_106 {\n  display: flex;\n  align-items: center;\n  flex-grow: 1;\n}\n\n.__header__info_1oulu_106 button {\n  margin-right: 8px;\n}\n\n.__header_companyName_1oulu_116 {\n  cursor: pointer;\n  display: flex;\n  align-items: center;\n  padding-right: 12px;\n  margin-right: 12px;\n  height: 24px;\n  /*border-right: 1px solid var(--verySoftBloobirds);*/\n}\n\n.__footer_1oulu_126 {\n  background-color: var(--white);\n}\n\n._footerActions_1oulu_130 {\n  background-color: var(--white);\n  align-items: center;\n  display: flex;\n  justify-content: space-between;\n  padding: 0 16px;\n  height: 90px;\n}\n\n._footerButtons_1oulu_139 {\n  display: flex;\n  gap: 16px;\n}\n\n._inputControls_1oulu_144 {\n  margin-left: auto;\n}\n\n._emailSelector_1oulu_148 {\n  max-width: 85%;\n}\n\n._emailSelector_1oulu_148 input {\n  box-shadow: none;\n  border: none;\n}\n\n._disabledOverlay_1oulu_157 {\n  position: absolute;\n  background-color: white;\n  opacity: 0.35;\n  width: 100%;\n  height: 100%;\n  z-index: 1;\n}\n\n._modal_email_container_1oulu_166 {\n  display: flex;\n  width: 100%;\n  --artdeco-reset-forms-input-padding: initial;\n  --artdeco-reset-form-position-relative: initial;\n  --artdeco-reset-form-vertical-align-middle: initial;\n  --artdeco-reset-form-display-block: initial;\n  --artdeco-reset-form-black-90: initial;\n  --artdeco-reset-form-label-margin: initial;\n  --artdeco-reset-form-label-opacity: initial;\n  --artdeco-reset-form-webkit-appearance-textfield: initial;\n  --artdeco-reset-form-webkit-appearance-none: initial;\n  --artdeco-reset-form-height-auto: initial;\n  --artdeco-reset-form-padding-top-point-seven-rem: initial;\n  --artdeco-reset-form-rc-pointer-events: initial;\n  --artdeco-reset-form-rc-opacity: initial;\n  --artdeco-reset-form-rc-margin: initial;\n  --artdeco-reset-form-rc-position: initial;\n  --artdeco-reset-form-rc-before-after-content: initial;\n  --artdeco-reset-checkbox-rc-after-content: initial;\n  --artdeco-reset-form-rc-label-display-block: initial;\n  --artdeco-reset-form-rc-label-line-height-2-rem: initial;\n  --artdeco-reset-form-rc-label-margin-bottom-zero: initial;\n  --artdeco-reset-form-rc-label-padding-zero: initial;\n  --artdeco-reset-form-rc-label-position-relative: initial;\n  --artdeco-reset-form-rc-label-padding-left-2point8-rem: initial;\n  --artdeco-reset-forms-input-transition-duration: initial;\n  --artdeco-reset-forms-input-transition-property: initial;\n  --artdeco-reset-forms-input-box-shadow: initial;\n  --artdeco-reset-forms-input-border-radius: 4px;\n  --artdeco-reset-forms-input-border: initial;\n  --artdeco-reset-forms-input-width: initial;\n  --artdeco-reset-forms-input-height: initial;\n  --artdeco-reset-forms-input-box-sizing: border-box;\n  --artdeco-reset-forms-input-background-color: initial;\n  --artdeco-reset-forms-input-color: initial;\n  --artdeco-reset-forms-input-placeholder-color: var(--softPeanut);\n  --artdeco-reset-forms-input-blue: initial;\n  --artdeco-reset-forms-input-focus-box-shadow: initial;\n  --artdeco-reset-forms-input-disabled-hover-border-color: initial;\n  --artdeco-reset-forms-input-disabled-opacity: initial;\n  --artdeco-reset-forms-input-error: initial;\n  --artdeco-reset-forms-font-weight: initial;\n  --artdeco-reset-forms-font-size: initial;\n  --artdeco-reset-forms-line-height: initial;\n  --artdeco-reset-forms-select-appearance-none: initial;\n  --artdeco-reset-forms-select-box-shadow-none: initial;\n  --artdeco-reset-forms-select-outline-zero: initial;\n  --artdeco-reset-forms-select-height-3point2-rem: initial;\n  --artdeco-reset-forms-select-background-transparent: initial;\n  --artdeco-reset-forms-select-position-relative: initial;\n  --artdeco-reset-forms-select-zindex-two: initial;\n  --artdeco-reset-forms-select-background-image: initial;\n  --artdeco-reset-forms-select-border-box: initial;\n  --artdeco-reset-forms-select-border-zero: initial;\n  --artdeco-reset-forms-select-width-100-percent: initial;\n  --artdeco-reset-forms-select-border-radius-point2rem: initial;\n  --artdeco-reset-forms-select-border: initial;\n  --artdeco-reset-forms-select-padding: initial;\n  --artdeco-reset-forms-select-transition: initial;\n  --artdeco-reset-forms-select-disabled-opacity: initial;\n  --artdeco-reset-forms-select-hover-border-color: initial;\n  --artdeco-reset-forms-select-focus-border-color: initial;\n  --artdeco-reset-forms-select-focus-box-shadow: initial;\n  --artdeco-reset-base-margin-zero: initial;\n  --artdeco-reset-base-padding-zero: initial;\n  --artdeco-reset-base-border-zero: initial;\n  --artdeco-reset-base-font-size-hundred-percent: initial;\n  --artdeco-reset-base-font-weight-bold: initial;\n  --artdeco-reset-base-font-style-italic: initial;\n  --artdeco-reset-base-outline-zero: initial;\n  --artdeco-reset-base-outline-none: initial;\n  --artdeco-reset-base-line-height-one: initial;\n  --artdeco-reset-base-display-block: initial;\n  --artdeco-reset-base-list-style-none: initial;\n  --artdeco-reset-base-quotes-none: initial;\n  --artdeco-reset-base-vertical-align-baseline: initial;\n  --artdeco-reset-base-vertical-align-middle: initial;\n  --artdeco-reset-base-background-transparent: initial;\n  --artdeco-reset-base-opacity-zero: initial;\n  --artdeco-reset-base-top-zero: initial;\n  --artdeco-reset-base-position-absolute: initial;\n  --artdeco-reset-base-text-decoration-none: initial;\n  --artdeco-reset-base-text-decoration-line-through: initial;\n  --artdeco-reset-base-border-collapse-collapse: initial;\n  --artdeco-reset-base-get-color-black: initial;\n  --artdeco-reset-base-background-color-ff9: initial;\n  --artdeco-reset-base-border-spacing-zero: initial;\n  --artdeco-reset-base-cursor-help: initial;\n  --artdeco-reset-base-content-none: initial;\n  --artdeco-reset-base-left-minus-hundred-px: initial;\n  --artdeco-reset-base-border-thickness-1-px: initial;\n  --artdeco-reset-base-border-style-dotted: initial;\n}\n\n._modal_email_container_1oulu_166 * {\n  box-sizing: border-box;\n}\n\n/* Linkedin overrides */\n._modal_email_container_1oulu_166 input {\n  margin: 0 !important;\n  box-shadow: none !important;\n  border: none !important;\n  width: 100%;\n}\n\n._modal_email_container_1oulu_166 input::placeholder {\n  color: transparent !important;\n}\n\n._modal_email_container_1oulu_166 input:focus {\n  outline: none !important;\n  background-color: transparent;\n}\n\n._modal_email_container_1oulu_166 label {\n  margin: 0 !important;\n}\n\n._show_preview_wrapper_1oulu_286 {\n  width: 100%;\n  height: inherit;\n  display: flex;\n  justify-content: flex-end;\n  align-items: center;\n  padding-right: 24px;\n}\n\n.__header_icons_1oulu_295 {\n  display: flex;\n  justify-content: flex-end;\n}\n\n.__header_callout_preview_1oulu_300 {\n  height: 40px;\n}\n\n._container_email_1oulu_304 {\n  width: 100%;\n  display: flex;\n  flex-direction: column;\n}\n\n._formRow_1oulu_310 {\n  display: flex;\n  position: relative;\n  align-items: center;\n  padding: 10px 21px;\n  min-height: 44px;\n  box-sizing: border-box;\n  border-bottom: 1px solid var(--lightestBloobirds);\n}\n\n._formRow_1oulu_310 > *:first-child {\n  width: 56px;\n  margin-right: 12px;\n}\n\n.__annex_wrapper_1oulu_325 {\n  box-sizing: border-box;\n  background-color: white;\n  border-left: 1px solid var(--lightestBloobirds);\n  width: 424px;\n  display: flex;\n  flex-direction: column;\n  padding: 24px;\n  overflow-y: auto;\n  overflow-x: hidden;\n}\n"
+__vite__updateStyle(__vite__id, __vite__css)
+export const _container = "__container_1oulu_13";
+export const _modal_body_container = "__modal_body_container_1oulu_19";
+export const _form_container = "__form_container_1oulu_27";
+export const _editor__container = "__editor__container_1oulu_33";
+export const _editor__container_ast = "__editor__container_ast_1oulu_42";
+export const _subject__container = "__subject__container_1oulu_48";
+export const _subject__container_ast = "__subject__container_ast_1oulu_52";
+export const _to__container = "__to__container_1oulu_60";
+export const _to__input__container = "__to__input__container_1oulu_66";
+export const _tag = "__tag_1oulu_71";
+export const _actions__container = "__actions__container_1oulu_75";
+export const _attachments__container = "__attachments__container_1oulu_83";
+export const _errors_container = "__errors_container_1oulu_90";
+export const _header__container = "__header__container_1oulu_95";
+export const _header__info = "__header__info_1oulu_106";
+export const _header_companyName = "__header_companyName_1oulu_116";
+export const _footer = "__footer_1oulu_126";
+export const footerActions = "_footerActions_1oulu_130";
+export const footerButtons = "_footerButtons_1oulu_139";
+export const inputControls = "_inputControls_1oulu_144";
+export const emailSelector = "_emailSelector_1oulu_148";
+export const disabledOverlay = "_disabledOverlay_1oulu_157";
+export const modal_email_container = "_modal_email_container_1oulu_166";
+export const show_preview_wrapper = "_show_preview_wrapper_1oulu_286";
+export const _header_icons = "__header_icons_1oulu_295";
+export const _header_callout_preview = "__header_callout_preview_1oulu_300";
+export const container_email = "_container_email_1oulu_304";
+export const formRow = "_formRow_1oulu_310";
+export const _annex_wrapper = "__annex_wrapper_1oulu_325";
+export default {
+	_container: _container,
+	_modal_body_container: _modal_body_container,
+	_form_container: _form_container,
+	_editor__container: _editor__container,
+	_editor__container_ast: _editor__container_ast,
+	_subject__container: _subject__container,
+	_subject__container_ast: _subject__container_ast,
+	_to__container: _to__container,
+	_to__input__container: _to__input__container,
+	_tag: _tag,
+	_actions__container: _actions__container,
+	_attachments__container: _attachments__container,
+	_errors_container: _errors_container,
+	_header__container: _header__container,
+	_header__info: _header__info,
+	_header_companyName: _header_companyName,
+	_footer: _footer,
+	footerActions: footerActions,
+	footerButtons: footerButtons,
+	inputControls: inputControls,
+	emailSelector: emailSelector,
+	disabledOverlay: disabledOverlay,
+	modal_email_container: modal_email_container,
+	show_preview_wrapper: show_preview_wrapper,
+	_header_icons: _header_icons,
+	_header_callout_preview: _header_callout_preview,
+	container_email: container_email,
+	formRow: formRow,
+	_annex_wrapper: _annex_wrapper
+};
+
+import.meta.hot.prune(() => __vite__removeStyle(__vite__id))

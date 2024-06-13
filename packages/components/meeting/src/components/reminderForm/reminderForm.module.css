@@ -1,0 +1,28 @@
+._reminder_container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+._title {
+  display: flex;
+  align-items: center;
+}
+
+._title > * {
+  margin-right: 4px;
+}
+
+._reminder_form_container {
+  display: flex;
+  align-items: flex-start;
+}
+
+._reminder_form_container > * {
+  margin-right: 6px;
+}
+
+._reminder_form_container > *:last-child {
+  margin-right: 0;
+}

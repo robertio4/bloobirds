@@ -1,0 +1,33 @@
+.column {
+  width: 400px;
+  padding: 8px 20px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 20% 78%;
+  align-items: start;
+  justify-content: space-between;
+}
+
+.label {
+  font-family: var(--fontPrimary);
+  margin: 0;
+  grid-auto-flow: column;
+  align-items: center;
+  display: flex;
+  justify-content: flex-end;
+  grid-column-gap: 4px;
+}
+
+.value {
+  font-family: var(--fontPrimary);
+  margin: 0;
+  grid-auto-flow: column;
+  align-items: center;
+  justify-content: flex-start;
+  grid-column-gap: 4px;
+}

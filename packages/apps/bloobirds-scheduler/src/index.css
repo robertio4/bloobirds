@@ -1,0 +1,69 @@
+@font-face {
+  font-family: 'Proxima Nova Soft';
+  src: 'url(https://fonts.bloobirds.com.bloobirds.com/ProximaNovaSoft-Bold.eot) format(embedded-opentype);' +
+    'url(https://fonts.bloobirds.com/ProximaNovaSoft-Bold.woff2) format(woff2);' +
+    'url(https://fonts.bloobirds.com/ProximaNovaSoft-Bold.woff) format(woff);' +
+    'url(https://fonts.bloobirds.com/ProximaNovaSoft-Bold.ttf)  format(truetype)';
+  font-weight: bold;
+}
+
+@font-face {
+  font-family: 'Proxima Nova Soft';
+  src: 'url(https://fonts.bloobirds.com.bloobirds.com/ProximaNovaSoft-Medium.eot) format(embedded-opentype);' +
+    'url(https://fonts.bloobirds.com/ProximaNovaSoft-Medium.woff2) format(woff2);' +
+    'url(https://fonts.bloobirds.com/ProximaNovaSoft-Medium.woff) format(woff);' +
+    'url(https://fonts.bloobirds.com/ProximaNovaSoft-Medium.ttf)  format(truetype)';
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: 'Proxima Nova Soft';
+  src: 'url(https://fonts.bloobirds.com.bloobirds.com/ProximaNovaSoft-Regular.eot) format(embedded-opentype);' +
+    'url(https://fonts.bloobirds.com/ProximaNovaSoft-Regular.woff2) format(woff2);' +
+    'url(https://fonts.bloobirds.com/ProximaNovaSoft-Regular.woff) format(woff);' +
+    'url(https://fonts.bloobirds.com/ProximaNovaSoft-Regular.ttf)  format(truetype)';
+  font-weight: regular;
+}
+
+@font-face {
+  font-family: 'Proxima Nova Soft';
+  src: 'url(https://fonts.bloobirds.com.bloobirds.com/ProximaNovaSoft-Semibold.eot) format(embedded-opentype);' +
+    'url(https://fonts.bloobirds.com/ProximaNovaSoft-Semibold.woff2) format(woff2);' +
+    'url(https://fonts.bloobirds.com/ProximaNovaSoft-Semibold.woff) format(woff);' +
+    'url(https://fonts.bloobirds.com/ProximaNovaSoft-Semibold.ttf)  format(truetype)';
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: 'Menlo';
+  src: 'url(https://fonts.bloobirds.com/Menlo-Regular.woff) format(woff);';
+}
+
+html {
+  background: #fff;
+  background-size: 224px;
+}
+
+body {
+  font-family: 'Proxima Nova Soft' !important;
+  --fontFamily: 'Proxima Nova Soft' !important;
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+::-webkit-scrollbar-thumb {
+  outline: 1px solid var(--verySoftPeanut);
+  border-radius: 3px;
+  background-color: var(--verySoftPeanut);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+  cursor: pointer !important;
+}

@@ -1,0 +1,16 @@
+
+> @bloobirds-it/assets@0.0.1 lint
+> npm run lint:eslint && npm run lint:types
+
+
+> @bloobirds-it/assets@0.0.1 lint:eslint
+> eslint "{src,test}/**/*.ts"
+
+
+Oops! Something went wrong! :(
+
+ESLint: 8.22.0
+
+No files matching the pattern "{src,test}/**/*.ts" were found.
+Please check for typing mistakes in the pattern.
+

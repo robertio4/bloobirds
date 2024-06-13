@@ -1,0 +1,28 @@
+._modal__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-left: 7px;
+  margin-top: 4px;
+}
+
+._title__container {
+  display: flex;
+}
+
+._title__text {
+  margin-right: 5px;
+}
+
+._value__tag__container {
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+._value__tag > * > * {
+  margin: 4px;
+}
+
+._value__tag > * {
+  display: inline;
+}

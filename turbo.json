@@ -1,0 +1,77 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "pipeline": {
+    "start": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["@bloobirds-it/vite-plugin#build"]
+    },
+    "build": {
+      "cache": false,
+      "outputs": ["dist/**"],
+      "dependsOn": ["^build"]
+    },
+    "build:release": {
+      "cache": false,
+      "outputs": ["dist/**"],
+      "dependsOn": ["^build:release"]
+    },
+    "build:dev": {
+      "outputs": ["dist/**"],
+      "dependsOn": ["^build:dev"]
+    },
+    "build:prod": {
+      "cache": false,
+      "outputs": ["dist/**"],
+      "dependsOn": ["^build:prod"]
+    },
+    "start:prod": {
+      "cache": false,
+      "persistent": true
+    },
+    "start:dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "start:local": {
+      "cache": false,
+      "persistent": true
+    },
+    "localhost": {
+      "cache": false,
+      "persistent": true
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "dev:local": {
+      "cache": false,
+      "persistent": true
+    },
+    "prod": {
+      "cache": false,
+      "persistent": true
+    },
+    "prod:local": {
+      "cache": false,
+      "persistent": true
+    },
+    "clean": {
+      "cache": false,
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": [],
+      "outputs": []
+    },
+    "test:watch": {
+      "dependsOn": [],
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    }
+  }
+}

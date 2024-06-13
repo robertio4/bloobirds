@@ -1,0 +1,26 @@
+.title {
+  display: flex;
+  align-items: center;
+}
+
+.title > svg {
+  margin-right: 8px;
+}
+
+.content {
+  margin-bottom: 16px;
+  margin-top: 8px;
+}
+
+.content > p {
+  margin-bottom: 16px;
+  line-height: 21px;
+}
+
+.buttons {
+  margin-left: auto;
+}
+
+.buttons > button:first-child {
+  margin-right: 16px;
+}

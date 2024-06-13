@@ -1,0 +1,8 @@
+._status_value {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+._color__picker > div > div {
+  margin: 0;
+}

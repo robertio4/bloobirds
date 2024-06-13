@@ -1,0 +1,12 @@
+.actionCard{
+  display: flex;
+  min-height: 60px;
+  border-radius: 4px;
+  padding: 8px 12px; position: relative;
+  cursor: pointer;
+}
+
+.actionCard:hover{
+  scale: 1.05;
+  transition: all ease-in-out 0.2s;
+}

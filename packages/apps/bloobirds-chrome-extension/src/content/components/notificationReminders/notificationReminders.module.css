@@ -1,0 +1,40 @@
+.remindersContainer {
+    position: fixed;
+    /* centered at the middle of the x axis screen */
+    left: 50%;
+    transform: translateX(-50%);
+    top: 80px;
+    z-index: 99999;
+    width: 320px;
+}
+
+._callCard_body__wrap {
+    align-content: center;
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: 2px;
+    gap: 2px;
+}
+
+.content {
+    display: flex;
+    margin-top: 8px;
+}
+
+.buttons {
+    display: flex;
+    align-items: center;
+    margin-top: 16px;
+}
+
+.closeCard {
+    position: absolute;
+    right: 4px;
+    top: 4px;
+}
+
+.reminderButton {
+    font-size: 11px;
+    white-space: nowrap;
+    justify-content: center;
+}

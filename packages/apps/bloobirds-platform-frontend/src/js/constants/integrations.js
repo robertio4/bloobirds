@@ -1,0 +1,95 @@
+export const SALESFORCE = Object.freeze({
+  LEAD_ID_FIELD: 'SALESFORCE_LEAD_ID',
+  CONTACT_ID_FIELD: 'SALESFORCE_CONTACT_ID',
+  ACCOUNT_ID_FIELD: 'SALESFORCE_ACCOUNT_ID',
+  OPPORTUNITY_ID_FIELD: 'SALESFORCE_OPPORTUNITY_ID',
+});
+
+export const METADATA_URL = Object.freeze({
+  HUBSPOT: '/utils/hubspot/metadata/',
+  SALESFORCE: '/utils/service/salesforce/metadata/',
+});
+
+export const LOG_STATUS = Object.freeze({
+  NO_LOGS: 'NO LOGS',
+  SYNC_ERROR: 'SYNC ERROR',
+  SYNCED: 'SYNCED',
+  NOT_SYNCED: 'NOT SYNCED',
+});
+
+export const HUBSPOT = Object.freeze({
+  LEAD_ID_FIELD: 'HUBSPOT__CONTACT_ID',
+  COMPANY_ID_FIELD: 'HUBSPOT__COMPANY_ID',
+  OPPORTUNITY_ID_FIELD: 'HUBSPOT__DEAL_ID',
+});
+
+export const HUBSPOT_OBJECT_TYPES_MAPPINGS = Object.freeze({
+  LEAD: 'Contact',
+  COMPANY: 'Company',
+  OPPORTUNITY: 'Deal',
+});
+
+export const SALESFORCE_OBJECT_TYPES = Object.freeze({
+  LEAD: 'Lead',
+  CONTACT: 'Contact',
+  ACCOUNT: 'Account',
+  OPPORTUNITY: 'Opportunity',
+});
+export const CRM = Object.freeze({
+  HUBSPOT: 'HUBSPOT',
+  SALESFORCE: 'SALESFORCE',
+  DYNAMICS: 'DYNAMICS',
+  VTIGER: 'VTIGER',
+});
+
+export const GENERIC_INTEGRATIONS = ['DYNAMICS', 'VTIGER'];
+
+export const CRM_DISPLAY_NAME = Object.freeze({
+  HUBSPOT: 'Hubspot',
+  SALESFORCE: 'Salesforce',
+  DYNAMICS: 'Dynamics',
+  VTIGER: 'Vtiger',
+});
+export const ACTIONS = Object.freeze({
+  CREATE: 'CREATE',
+  UPDATE: 'UPDATE',
+  DELETE: 'DELETE',
+});
+
+export const TRIGGER_MAPPING_NAMES = Object.freeze({
+  ACTIVITY__SALESFORCE: 'ACTIVITY__SALESFORCE',
+  LEAD__SALESFORCE: 'LEAD__SALESFORCE',
+  LEAD_COMPANY__SALESFORCE: 'LEAD_COMPANY__SALESFORCE',
+  CONTACT__SALESFORCE: 'CONTACT__SALESFORCE',
+  COMPANY__SALESFORCE: 'COMPANY__SALESFORCE',
+  MEETING__SALESFORCE: 'MEETING__SALESFORCE',
+  OPPORTUNITY__SALESFORCE: 'OPPORTUNITY__SALESFORCE',
+  CAMPAIGN_MEMBERS__SALESFORCE: 'CAMPAIGN_MEMBERS__SALESFORCE',
+  LEAD__HUBSPOT: 'LEAD__HUBSPOT',
+  COMPANY__HUBSPOT: 'COMPANY__HUBSPOT',
+  MEETING__HUBSPOT: 'MEETING__HUBSPOT',
+  HUBSPOT_FORM_SUBMISSIONS: 'HUBSPOT_FORM_SUBMISSIONS',
+  OPPORTUNITY__HUBSPOT: 'OPPORTUNITY__HUBSPOT',
+  PRODUCT__HUBSPOT: 'PRODUCT__HUBSPOT',
+  PRODUCT__SALESFORCE: 'PRODUCT__SALESFORCE',
+  INBOUND__SALESFORCE: 'INBOUND__SALESFORCE',
+  INBOUND__HUBSPOT: 'INBOUND__HUBSPOT',
+});
+
+export const SYNC_RULE = Object.freeze({
+  BLOOBIRDS: 'BLOOBIRDS',
+  CRM: 'CRM',
+  BOTH: 'BOTH',
+  NO_SYNC: 'NO_SYNC',
+});
+
+export const DYANAMICS = Object.freeze({
+  FIELD_TYPES: ['Date', 'DateTime', 'Money', 'Decimal', 'Number', 'String', 'Owner', 'Picklist'],
+});
+
+export const HUBSPOT_OBJECTS = ['COMPANY', 'LEAD', 'DEAL'];
+
+export const ORIGIN = Object.freeze({
+  BLOOBIRDS: 'BLOOBIRDS',
+  CRM: 'CRM',
+});

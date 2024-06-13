@@ -1,0 +1,85 @@
+.fieldLinkContainer {
+  display: flex;
+  flex-flow: column;
+}
+
+.fieldLinkTitle {
+  color: var(--softPeanut);
+  margin-bottom: 3px;
+}
+
+.emailText {
+  text-transform: lowercase;
+}
+
+.hexagon {
+  width: 100px;
+  height: 57.74px;
+  margin: 28.87px 0;
+  display: flex;
+  position: relative;
+  align-items: center;
+  border-radius: 4px;
+  justify-content: center;
+  background-color: #64c7cc;
+}
+
+.hexagon span {
+  font-size: 26px;
+  font-weight: bold;
+}
+
+.labelValue {
+  color: var(--softPeanut);
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.fieldText {
+  margin-left: 0;
+}
+
+.fieldsValue {
+  color: var(--peanut);
+  margin: 0 44px 16px 0;
+  display: block;
+  font-size: 14px;
+}
+
+.fieldRatingValue {
+  color: var(--peanut);
+  width: 100px;
+  margin: 0 0 16px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.groupContainer {
+  width: 100%;
+  padding: 8px 24px 14px;
+  border-bottom: 1px solid var(--verySoftPeanut);
+}
+
+.collapsableHead > div:first-of-type {
+  align-items: center;
+}
+
+.fieldGroupCard {
+  width: 443px;
+  display: flex;
+  flex-direction: column;
+}
+
+.bodyWrapper {
+  flex-grow: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.bodyContainer {
+  display: flex;
+  flex-flow: wrap;
+  overflow-x: hidden;
+  overflow-y: auto;
+  flex-direction: row;
+}

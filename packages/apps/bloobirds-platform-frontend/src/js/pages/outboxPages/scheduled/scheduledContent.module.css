@@ -1,0 +1,54 @@
+._number_of_elements {
+  padding-left: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+._header {
+  margin-bottom: 12px;
+}
+
+._header_icon {
+  padding-left: 20px;
+  margin-right: 5px;
+}
+
+._header:nth-child(2) {
+  margin-top: 0;
+}
+
+._header :nth-child(2) {
+  margin-right: 8px;
+}
+
+._button_wrapper {
+  margin-left: 16px;
+  display: inline;
+}
+
+._message {
+  background-color: #ebf0f7;
+  padding: 8px;
+  text-align: center;
+  border-radius: 4px;
+  border: 1px solid var(--verySoftPeanut);
+}
+
+._link:hover {
+  cursor: pointer;
+}
+
+._list_wrapper {
+  animation: fade-in 250ms ease-in-out forwards;
+  animation-delay: 200ms;
+}
+
+._list_container {
+  margin-top: 30px;
+}
+
+._hidden {
+  visibility: hidden;
+  height: 0;
+}

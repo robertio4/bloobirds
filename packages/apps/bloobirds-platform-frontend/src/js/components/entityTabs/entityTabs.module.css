@@ -1,0 +1,142 @@
+._targetMarketsList__container {
+  width: calc(100% - 52px);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+._targetMarkets__container {
+  display: flex;
+  justify-content: space-between;
+  flex-grow: 1;
+  margin-right: 12px;
+}
+
+.targetMarkets__base {
+  flex-shrink: 0;
+  box-sizing: border-box;
+  color: var(--white);
+  width: 40px;
+  height: 40px;
+  border-radius: 100%;
+  border: 2px solid var(--white);
+  margin: 0 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.targetMarkets__entity__button {
+  composes: targetMarkets__base;
+  width: 48px;
+  height: 48px;
+  margin-right: 18px;
+}
+
+.targetMarkets__button {
+  composes: targetMarkets__base;
+  cursor: pointer;
+  opacity: 0.4;
+}
+
+.targetMarkets__button:hover,
+.targetMarkets__button_selected {
+  opacity: 1;
+}
+
+.targetMarkets__placeholder {
+  composes: targetMarkets__base;
+  background-color: var(--lightestBloobirds);
+}
+
+.createQC__container {
+  flex-basis: 280px;
+  flex-shrink: 0;
+}
+
+.targetMarketsRow__container {
+  display: flex;
+}
+
+._targetMarkets__title {
+  margin: 16px 0;
+}
+
+._targetMarkets__entity__container {
+  margin-top: 20px;
+  background-color: var(--lightBloobirds);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(25, 145, 255, 0.084324);
+}
+
+._targetMarkets__entity__header {
+  display: flex;
+  align-items: center;
+  padding: 12px 24px;
+}
+
+.loaderWrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.tmContainer {
+  font-family: 'Proxima Nova Soft';
+}
+
+.tmTitleLinkContainer {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.cardLinkedinContainer {
+  margin: auto 10px auto 50px;
+  display: flex;
+}
+
+.tmDetailsArticle {
+  padding: 24px 23px 1px;
+  background-color: var(--white);
+}
+
+.tmDetailsArticleFieldValues {
+  background-color: var(--white);
+  display: flex;
+  flex-flow: wrap;
+  padding: 0 23px 0 23px;
+}
+
+.tmDetailsCompanyInfoText {
+  font-size: 15px;
+  color: var(--softPeanut);
+  margin: 0 0 8px 0;
+}
+
+.tmDetailsCompanyInfoDescription {
+  font-size: 17px;
+  color: var(--peanut);
+  margin: 0;
+  margin-bottom: 24px;
+}
+
+.tmDetailsFieldContainer {
+  margin: 0 40px 0 0;
+}
+
+.tmDetailsFieldWrap {
+  display: flex;
+  flex-flow: wrap;
+  margin-bottom: 16px;
+}
+
+.tmDetailsFieldValuesValue {
+  font-size: 15px;
+  text-transform: uppercase;
+  color: var(--peanut);
+  margin: 0 10px 10px 0;
+  border: 1px solid #c2c3c4;
+  border-radius: 20px;
+  padding: 2px 10px;
+}

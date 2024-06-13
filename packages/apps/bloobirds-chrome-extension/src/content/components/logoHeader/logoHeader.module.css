@@ -1,0 +1,16 @@
+._container {
+  display: flex;
+  margin: 0 auto;
+  width: 190px;
+  z-index: 100;
+}
+
+._container_sidePeek {
+  width: 215px;
+}
+
+._text {
+  display: flex;
+  align-items: center;
+  padding: 6px;
+}

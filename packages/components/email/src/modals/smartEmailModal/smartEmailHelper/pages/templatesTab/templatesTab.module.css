@@ -1,0 +1,37 @@
+.backButton{
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.filterDetailContainer{
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px 26px;
+  height: 100%;
+}
+
+.modalContentWrapper{
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0;
+}
+
+.modalFilterWrapper{
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0 8px;
+}
+
+.filterElementsContainer{
+  display: flex;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  width: 396px;
+  padding-right: 20px;
+  height: 100%;
+}

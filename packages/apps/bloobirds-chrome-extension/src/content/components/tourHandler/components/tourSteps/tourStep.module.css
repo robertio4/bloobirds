@@ -1,0 +1,17 @@
+.tourStepWrapper{
+  padding: 12px;
+  height: 164px;
+  width: 200px;
+}
+
+.tourStepHeader{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tourStepContent{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}

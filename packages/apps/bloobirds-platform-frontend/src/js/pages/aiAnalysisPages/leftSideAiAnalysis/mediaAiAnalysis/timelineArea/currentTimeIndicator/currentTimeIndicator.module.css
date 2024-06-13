@@ -1,0 +1,19 @@
+.indicator {
+  position: absolute;
+  width: 2px;
+  height: 100%;
+  background: #94a5ba;
+  pointer-events: none;
+  top: 0;
+}
+
+.indicatorDot {
+  position: absolute;
+  top: -5px;
+  left: -4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #94a5ba;
+  pointer-events: none;
+}

@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "strictNullChecks": false,
+    "target": "ES2020",
+    "paths": {
+      "@bloobirds-it/*": ["../../components/*/src/index.tsx"],
+      "@bloobirds-it/assets": ["../../assets/src/index.tsx"],
+      "@bloobirds-it/hooks": ["../../hooks/src/index.tsx"],
+      "@bloobirds-it/types": ["../../types/src/index.ts"],
+      "@bloobirds-it/internationalization": ["../../internationalization/src/index.tsx"]
+    }
+  },
+  "include": ["src"]
+}

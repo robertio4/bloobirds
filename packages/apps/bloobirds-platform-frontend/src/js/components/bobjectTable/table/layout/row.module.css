@@ -1,0 +1,61 @@
+.row {
+  color: var(--black);
+  background-color: var(--white);
+  text-decoration: none;
+  white-space: nowrap;
+  max-width: 250px;
+}
+
+.row:hover {
+  cursor: pointer;
+}
+
+.row_no_click:hover {
+  cursor: default;
+}
+
+.row:hover * {
+  visibility: visible !important;
+}
+
+.row:last-child > td:last-child {
+  border-bottom: 1px solid var(--softGray);
+}
+
+.row > td:first-child {
+  border-top: 1px solid var(--softGray);
+  border-left: 1px solid var(--softGray);
+  border-bottom: 1px solid var(--softGray);
+}
+
+.row > td:last-child {
+  border-top: 1px solid var(--softGray);
+  border-right: 1px solid var(--softGray);
+  border-bottom: 1px solid var(--softGray);
+}
+
+.row > td:not(td:first-child),
+.row > td:not(td:last-child) {
+  margin-top: -1px;
+  border-top: 1px solid var(--softGray);
+  border-bottom: 1px solid var(--softGray);
+}
+
+.nameField {
+  color: var(--bloobirds) !important;
+  text-decoration: none;
+  display: inline-block;
+  max-width: 250px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+.standardField {
+  text-decoration: none;
+  display: inline-block;
+  max-width: 250px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  vertical-align: middle;
+}

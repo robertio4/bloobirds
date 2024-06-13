@@ -1,0 +1,31 @@
+._choose_bobject_wrapper {
+    z-index: 1;
+    position: relative;
+    left: -10rem;
+    top: 1rem;
+}
+
+._create_field_wrapper {
+    z-index: 1;
+    position: relative;
+    right: -20rem;
+    top: 2rem;
+}
+
+._preview_wrapper {
+    z-index: 1;
+    position: absolute;
+    left: 29.5rem;
+    top: 6.2rem;
+}
+
+._image {
+    margin-top: 20px;
+}
+
+._primary_button {
+    border-color: var(--white);
+    margin-left: 215px;
+    margin-top: -12px;
+    margin-bottom: -6px;
+}

@@ -1,0 +1,7 @@
+._container {
+  padding: 48px 40px;
+}
+
+._container > *:first-child {
+  margin-bottom: 16px;
+}

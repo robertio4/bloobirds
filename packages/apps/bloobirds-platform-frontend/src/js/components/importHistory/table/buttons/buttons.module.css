@@ -1,0 +1,23 @@
+._btnDownload {
+  cursor: pointer;
+  margin-left: 12px;
+}
+
+._btnRevert {
+  color: var(--tomato);
+}
+
+._btnRevertTextContainer {
+  display: flex;
+}
+
+._container {
+  display: flex;
+  align-items: center;
+}
+
+._textRevert {
+  font-size: 13px;
+  line-height: 16px;
+  margin-left: 5px;
+}

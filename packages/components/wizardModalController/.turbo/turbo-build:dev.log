@@ -1,0 +1,12 @@
+
+> @bloobirds-it/wizard-modal-controller@0.0.0 build:dev
+> cross-env NODE_ENV=development rollup -c=../../../rollup.config.js
+
+[36m
+[1m/Users/robertorf/Workspace/frontend-monorepo/packages/components/wizardModalController/src/index.tsx[22m → [1mdist/index.js[22m...[39m
+[1m[33m(!) Plugin postcss: start value has mixed support, consider using flex-start instead[39m[22m
+[1msrc/components/steps/notesAndQQ/notesAndQQ.module.css[22m
+[1msrc/components/steps/taskManagement/components/list/taskTabsList.module.css[22m
+[1m[33m(!) Circular dependency[39m[22m
+src/components/steps/callResult/components/recallSection/recallSection.tsx -> src/components/steps/callResult/components/recallSection/components/recallDatePicker.tsx -> src/components/steps/callResult/components/recallSection/recallSection.tsx
+[32mcreated [1mdist/index.js[22m in [1m3.2s[22m[39m

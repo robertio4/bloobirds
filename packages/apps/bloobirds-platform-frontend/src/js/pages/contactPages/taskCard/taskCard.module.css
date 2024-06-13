@@ -1,0 +1,160 @@
+/* Card */
+._container {
+  position: relative;
+  margin: 8px 0;
+  cursor: pointer;
+}
+
+._container ._link_wrapper_ml {
+  margin-left: 0;
+}
+
+._dashed_line {
+  position: absolute;
+  width: 0;
+  height: 8px;
+  left: 28px;
+  border-left: 1px dashed #c5d1dd;
+}
+
+._container:last-child {
+  margin-bottom: 16px;
+}
+
+._datetime {
+  margin-right: 8px;
+}
+
+._time {
+  margin-left: 4px;
+}
+
+/* Card Body */
+
+._icon_wrapper {
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.card_description {
+  display: flex;
+  gap: 4px;
+  padding-top: 12px;
+}
+
+._title {
+  flex-shrink: 0;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+}
+
+._high_priority_icon {
+  margin-right: 12px;
+}
+
+._bobject_now_time {
+  flex-shrink: 1;
+  font-size: 14px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-right: 6px;
+}
+
+._bobject_now_time Text {
+  margin-left: 6px;
+}
+
+._bobject_name {
+  flex-shrink: 1;
+  font-size: 14px;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+}
+
+._bobject_name_too_long {
+  max-width: 180px;
+}
+
+._bobject_name_short {
+  max-width: 120px;
+}
+
+._bobject_timezone {
+  flex-shrink: 1;
+  font-size: 14px;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+}
+
+._cadence_name {
+  margin-right: 25px;
+}
+
+._source {
+  margin-left: 2px;
+  margin-right: 11px;
+  text-align: left;
+  flex-shrink: 0;
+}
+
+._country {
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+._time_zone {
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+._separator {
+  margin-right: 8px;
+  width: 1px;
+  height: 8px;
+  background-color: var(--softPeanut);
+}
+
+.label {
+  padding: 2px 8px;
+  background-color: #f9f8fb;
+  color: var(--softBloobirds);
+  font-size: 12px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* END - Card Body */
+
+/* Card Right */
+
+._assigned_circle {
+  margin-left: 6px;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+._date,
+._overdue {
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+/* END - Card Right */
+/* END - Card */
+
+@media (max-width: 940px) {
+  ._s_hidden {
+    display: none;
+  }
+}
+
+@media (max-width: 1090px) {
+  ._xs_hidden {
+    display: none;
+  }
+}

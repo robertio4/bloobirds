@@ -1,0 +1,66 @@
+.actionWrapper {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  left: 50%;
+}
+
+.dealsWrapper {
+  position: absolute;
+  transform: translate(-50%, 38%);
+  left: 50%;
+}
+
+.title {
+  margin: 14px 16px 10px;
+}
+
+.footer {
+  margin: 16px 0;
+}
+
+.buttonsWrapper {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.buttonsWrapper_email {
+  justify-content: space-between;
+}
+
+.footerButton {
+  font-size: 12px;
+  padding: 2px 8px;
+}
+
+.mainButton {
+  float: right;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.secondaryButton {
+  background-color: transparent;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image > img {
+  max-width: 188px;
+}
+
+.taskImage > img {
+  max-width: 160px;
+}
+
+.mainButton:hover {
+  background-color: white !important;
+  opacity: 0.9;
+}

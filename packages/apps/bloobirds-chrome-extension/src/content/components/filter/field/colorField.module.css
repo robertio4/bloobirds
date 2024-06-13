@@ -1,0 +1,23 @@
+.field {
+  height: 18px;
+  display: inline-flex;
+  margin-right: 4px;
+}
+
+.fieldContent {
+  display: inline-block;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 18px;
+  margin-left: 8px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.fieldCircle {
+  width: 12px;
+  height: 12px;
+  margin: auto;
+  border-radius: 100px;
+  background-color: var(--white);
+}

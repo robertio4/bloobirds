@@ -1,0 +1,25 @@
+.wrapper {
+  padding: 40px 120px;
+  margin-bottom: 40px;
+  width: 100%;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--lighterGray);
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  width: 100%;
+  height: calc(100% - 140px);
+  display: flex;
+  background-color: var(--white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  border: 1px solid var(--veryLightPeanut);
+  border-radius: 4px;
+}

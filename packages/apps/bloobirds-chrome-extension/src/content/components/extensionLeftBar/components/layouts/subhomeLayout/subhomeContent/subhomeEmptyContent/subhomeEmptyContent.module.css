@@ -1,0 +1,27 @@
+._container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20vh;
+}
+
+._text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+._text > p:nth-child(2) {
+  margin-top: 10px;
+}
+
+._icon {
+  height: 45px;
+  width: 45px;
+  margin-bottom: 30px;
+}
+
+._icon > g,
+._icon > path {
+  fill: var(--verySoftPeanut);
+}

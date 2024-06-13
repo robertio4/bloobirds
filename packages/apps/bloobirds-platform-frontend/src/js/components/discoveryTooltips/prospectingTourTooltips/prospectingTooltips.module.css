@@ -1,0 +1,30 @@
+._companies_leads_tooltip {
+  margin-left: -8px;
+}
+
+._start_to_finsih_tooltip {
+  top: 47px;
+  right: 13px;
+  position: relative;
+}
+
+._on_cadence_tooltip {
+  position: absolute;
+  top: 35px;
+}
+
+._start_finish_image {
+  margin: -62px 0 -80px;
+}
+
+._filters_tooltip {
+  align-self: baseline;
+}
+
+._on_cadence_filters_image {
+  margin-top: 16px;
+}
+
+._on_cadence_start_tasks_image {
+  margin-bottom: -73px;
+}

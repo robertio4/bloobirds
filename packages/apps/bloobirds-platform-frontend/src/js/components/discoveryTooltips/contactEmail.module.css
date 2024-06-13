@@ -1,0 +1,11 @@
+.emailImage {
+  margin-top: -13px;
+}
+
+._call_and_report_tooltip {
+  justify-content: flex-end;
+  width: 80px;
+  margin-left: -51px;
+  display: flex;
+  margin-right: 7px;
+}

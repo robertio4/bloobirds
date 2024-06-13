@@ -1,0 +1,9 @@
+
+> @bloobirds-it/contact-flow@0.0.0 build:dev
+> cross-env NODE_ENV=development rollup -c=../../../rollup.config.js
+
+[36m
+[1m/Users/robertorf/Workspace/frontend-monorepo/packages/components/contactFlow/src/index.tsx[22m → [1mdist/index.js[22m...[39m
+[1m[33m(!) Plugin postcss: start value has mixed support, consider using flex-start instead[39m[22m
+[1msrc/components/notesAndQQ/notesAndQQ.module.css[22m
+[32mcreated [1mdist/index.js[22m in [1m1.3s[22m[39m

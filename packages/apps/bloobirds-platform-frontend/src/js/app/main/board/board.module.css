@@ -1,0 +1,28 @@
+.contentTabs {
+  width: 100%;
+  height: calc(100vh - 48px);
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+}
+
+.contentTabsAllocateQC {
+  overflow-x: unset !important;
+}
+
+.tabs {
+  padding: 0;
+  margin: 0;
+}
+
+.container {
+  flex-grow: 1;
+  display: flex;
+  min-width: 0;
+}
+
+.feedWrapper {
+  display: flex;
+  max-height: calc(100vh - 48px);
+  min-height: calc(100vh - 48px);
+}

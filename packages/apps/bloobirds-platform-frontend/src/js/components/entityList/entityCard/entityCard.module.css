@@ -1,0 +1,81 @@
+._entity__row {
+  color: var(--black);
+  background-color: var(--white);
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(92, 92, 255, 0.1) !important;
+}
+
+._suggestion_row {
+  background: linear-gradient(
+      270deg,
+      rgba(220, 255, 241, 0.3) 0%,
+      rgba(223, 205, 193, 0.3) 20.31%,
+      rgba(85, 25, 255, 0.3) 65.49%
+    )
+    fixed;
+  box-shadow: 0px 2px 4px rgba(92, 92, 255, 0.0837296);
+}
+
+._entity__row:first-child {
+  box-shadow: 0 2px 4px rgba(92, 92, 255, 0.1), 0 -2px 4px rgba(92, 92, 255, 0.05) !important;
+}
+
+._card__cell_small:last-child {
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  background-color: var(--white);
+  box-shadow: -2px 0 4px rgba(92, 92, 255, 0.05);
+}
+
+._card__cell_small {
+  padding: 8px 8px 8px 16px;
+  white-space: nowrap;
+  width: 70px;
+  vertical-align: middle;
+}
+
+._card__cell_medium {
+  width: 20px;
+  padding: 8px 8px 8px 16px;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+._card__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -5px 4px -5px 0;
+}
+
+._card__item__wrap {
+  flex-wrap: wrap;
+}
+
+._card__item > * {
+  margin: 5px 4px 5px 0;
+}
+
+._card__cell_end {
+  justify-content: flex-end;
+}
+
+._card__cell_center {
+  justify-content: center;
+  margin: 5px 0;
+}
+
+._card__error {
+  flex-direction: column;
+  gap: 0;
+  align-items: flex-start;
+}
+
+._card__error > div > div {
+  border-color: red;
+}
+
+._card__error > * {
+  margin: 0px;
+}

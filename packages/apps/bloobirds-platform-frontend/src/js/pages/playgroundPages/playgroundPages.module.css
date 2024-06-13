@@ -1,0 +1,159 @@
+.playground_container {
+  display: flex;
+  min-width: 1246px;
+  min-height: 640px;
+  align-items: center;
+
+  height: 85vh;
+  align-self: center;
+
+  border-radius: 4px;
+  border: 1px solid var(--veryLightPeanut, #E5ECF5);
+  background: var(--white, #FFF);
+}
+
+.playground_background {
+  background: var(--superVeryLightBloobirds, #F6FAFD);
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  width: 100%;
+  height: calc(100vh - 48px);
+}
+
+.testSets_container {
+  display: flex;
+  width: 240px;
+  height: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+
+  border-right: 1px solid var(--veryLightPeanut, #E5ECF5);
+}
+
+.test_header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  align-self: stretch;
+  padding: 16px 8px 16px 16px;
+}
+
+.test_header > div {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.test_empty {
+  display: flex;
+  padding: var(--Spacing-06, 40px) var(--Spacing-02, 8px);
+  flex-direction: column;
+  align-items: center;
+  gap: var(--Spacing-03, 16px);
+  flex: 1 0 0;
+  align-self: stretch;
+}
+
+.testSets_testSet {
+  display: flex;
+  height: 40px;
+  padding: 0px 16px;
+  width: 100%;
+  box-sizing: border-box;
+  align-items: center;
+}
+
+.testSets_testSet:hover {
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--veryLightPeanut, #E5ECF5);
+}
+
+.testSets_testSet.active {
+  border-radius: 8px;
+  background: var(--lightestPurple, #ECEFFD);
+}
+
+.test_list {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0px var(--Spacing-02, 8px);
+  flex-direction: column;
+  align-items: center;
+  gap: var(--Spacing-01, 4px);
+  flex-shrink: 0;
+}
+
+/* Test runs */
+.testRuns_container {
+  display: flex;
+  width: 240px;
+  height: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+
+  border-right: 1px solid var(--veryLightPeanut, #E5ECF5);
+}
+
+.testRuns_testRun {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--Spacing-03, 16px);
+  flex-direction: column;
+  align-items: center;
+  gap: var(--Spacing-02, 8px);
+
+  border-radius: 8px;
+  border: 1px solid var(--verySoftPurple, #E2E5FF);
+}
+
+.testRuns_testRun:hover {
+  background: var(--veryLightPeanut, #E5ECF5);
+  cursor: pointer;
+}
+
+.testRuns_testRun.active {
+  background: var(--lightestPurple, #ECEFFD);
+}
+
+.testRun_container {
+  max-width: 800px;
+  height: 100%;
+}
+
+/* last child of the .testRun_container */
+.testRun_container > :last-child {
+  height: calc(100% - 96px);
+}
+
+.testRun_container > :last-child > :last-child {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.testRun_prompt {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-sizing: border-box;
+  padding: 24px;
+}
+
+.testRun_prompt_header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  align-self: stretch;
+}
+
+/* Select the first element child or descendant of .testRun_prompt that have a role of "tab" */
+.testRun_prompt [role="tab"]:first-child {
+  margin-left: 24px;
+}
+
+.testRun_activities {
+  overflow-y: auto;
+}

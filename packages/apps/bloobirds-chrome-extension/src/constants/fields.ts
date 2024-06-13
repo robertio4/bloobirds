@@ -1,0 +1,14 @@
+export enum LEAD_FIELDS_LOGIC_ROLE {
+  OPT_OUT = 'LEAD__OPT_OUT',
+  COMPANY = 'LEAD__COMPANY',
+}
+
+export enum LEAD_OPT_OUT_LOGIC_ROLE {
+  YES = 'LEAD__OPT_OUT__YES',
+  NO = 'LEAD__OPT_OUT__NO',
+}
+
+export const LEAD_STAGE_LOGIC_ROLE = Object.freeze({
+  PROSPECT: 'LEAD__STAGE__PROSPECTING',
+  SALES: 'LEAD__STAGE__SALES',
+});

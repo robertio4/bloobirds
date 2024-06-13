@@ -1,0 +1,79 @@
+.templateSelectorContainer {
+  background-color: var(--veryLightBloobirds);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+  padding-left: 1px;
+  height: 24px;
+  width: 35px;
+}
+
+.templateSelectorContainer > div:first-child {
+  margin-left: -2px;
+  margin-right: -8px;
+}
+
+.templateSelectorDropdown {
+  display: flex;
+}
+
+.templatesContainer {
+  margin: 8px 4px 8px 16px;
+}
+
+.radioGroup {
+  margin-left: 32px;
+  margin-top: 16px;
+}
+
+.titleSectionContainer {
+  display: flex;
+  align-items: center;
+}
+
+.titleSectionContainer:last-child {
+  margin-left: 4px;
+}
+
+.input {
+  margin: 8px 16px 20px 16px;
+  padding: 8px;
+}
+
+.noResultFound {
+  display: flex;
+  margin: 8px 16px 20px 16px;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+}
+
+.noResultFound > * {
+  margin-right: 4px;
+}
+
+.resyncButtonContainer {
+  display: flex;
+  align-content: center;
+  justify-content: flex-end;
+  padding: 8px;
+}
+
+.resyncButton {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px 2px 4px;
+  gap: 4px;
+
+  width: 80px;
+  height: 24px;
+
+  background: #cde2f6;
+  border-radius: 4px;
+
+  cursor: pointer;
+}

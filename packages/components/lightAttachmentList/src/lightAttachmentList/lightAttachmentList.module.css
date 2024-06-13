@@ -1,0 +1,63 @@
+.list {
+  display: flex;
+  padding: 7px 0 7px 0;
+  gap: 12px;
+  border-top: 1px solid var(--lightestBloobirds);
+  border-bottom: 1px solid var(--lightestBloobirds);
+  min-width: 0;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  overflow: auto;
+}
+
+.wrappedList {
+  flex-wrap: wrap;
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--lightestBloobirds);
+  border-radius: 4px;
+  padding: 8px 14px 8px 14px;
+  max-height: 36px;
+  min-width: 90px;
+  max-width: 200px;
+  flex-shrink: 1;
+}
+
+.content {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  white-space: nowrap;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.content > *:first-child {
+  flex-shrink: 0;
+}
+
+.content > div {
+  white-space: nowrap;
+  min-width: 0;
+  max-width: 85%;
+  position: relative;
+  flex-shrink: 1;
+}
+
+.content > div > p {
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.content button {
+  display: none;
+  height: 16px;
+}
+
+.item:hover .content button {
+  display: block;
+}

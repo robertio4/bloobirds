@@ -1,0 +1,31 @@
+._container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  bottom: 0;
+  padding: 24px;
+  background: linear-gradient(90deg, transparent 4px, var(--white) 0);
+  z-index: 4;
+}
+
+._container::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  bottom: 87px;
+  left: 4px;
+  right: 0;
+  height: 1px;
+  background-color: var(--veryLightBloobirds);
+  z-index: 1;
+}
+
+.justifyCenter {
+  justify-content: center !important;
+}
+
+.editBtn,
+.contactBtn {
+  width: 216px;
+  height: 40px;
+}

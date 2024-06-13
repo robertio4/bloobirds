@@ -1,0 +1,180 @@
+._container > div:first-child {
+  margin-top: 0;
+}
+
+._sync_settings_card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  padding: 36px 60px 28px;
+  background-color: white;
+  border: 1px solid #e6e6e6;
+  border-radius: 4px;
+  margin-top: 16px;
+  margin-bottom: 12px;
+}
+._sync_settings_card_title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 21px;
+}
+
+._sync_settings_card_text_container {
+  display: flex;
+  flex-direction: column;
+  margin-left: 12px;
+}
+
+._sync_settings_card_title > p {
+  margin-left: 12px;
+}
+._sync_settings_card_children {
+  border: 1px solid #d4e0f1;
+  box-sizing: border-box;
+  border-radius: 4px;
+}
+._sync_settings_card_button {
+  margin-top: 32px;
+  display: flex;
+  justify-content: space-between;
+}
+._children_lead_container {
+  box-sizing: border-box;
+  padding: 40px 245px 60px 32px;
+}
+._children_company_container {
+  box-sizing: border-box;
+  padding: 40px 245px 60px 32px;
+}
+._children_multiselect_container {
+  width: 100%;
+  border-top: 1px solid var(--lightBloobirds);
+}
+._children_multiselect {
+  box-sizing: border-box;
+  padding-top: 32px;
+  display: flex;
+  align-items: center;
+  width: fit-content;
+}
+._multiselect_object_type {
+  box-sizing: border-box;
+  padding-top: 8px;
+  display: flex;
+  align-items: center;
+  width: 710px;
+}
+._sobject_type_container {
+  margin: 12px 0;
+}
+._children_lead_checkbox {
+  box-sizing: border-box;
+  padding-top: 20px;
+  width: fit-content;
+}
+._children_text {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 20px;
+  margin-bottom: 48px;
+  align-items: center;
+}
+._children_text > p {
+  margin-left: 4px;
+}
+._deals_hubspot {
+  margin-left: 32px;
+}
+._children_multiselect > * {
+  margin-right: 20px;
+}
+._multiselect_object_type > * {
+  margin-right: 20px;
+}
+.children_activities_container {
+  box-sizing: border-box;
+  padding: 32px 32px 40px;
+}
+._children_small_checkbox {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 32px;
+  width: fit-content;
+}
+._children_small_checkbox > p {
+  margin-bottom: 20px;
+}
+._children_small_checkbox > div {
+  margin-bottom: 24px;
+}
+._children_small_checkbox > div:last-child {
+  margin-bottom: 0;
+}
+._children_medium_checkbox_container {
+  width: 100%;
+}
+._children_medium_checkbox {
+  display: flex;
+  flex-direction: column;
+  margin-top: 36px;
+  width: 626px;
+}
+._children_medium_checkbox > * {
+  margin-bottom: 16px;
+}
+._children_salesforce_account_container {
+  box-sizing: border-box;
+  width: 320px;
+  padding: 32px 0 52px 32px;
+}
+._children_salesforce_account_container > * {
+  margin-bottom: 20px;
+  height: 40px;
+}
+._children_salesforce_account_container > *:last-child {
+  margin-bottom: 0;
+}
+
+._textArea {
+  display: flex;
+}
+
+._clipboard {
+  box-sizing: border-box;
+  padding: 42px 0 36px 5px;
+}
+
+._checkBox {
+  margin-top: 24px;
+  max-width: 683px;
+}
+._checkBox_salesforce {
+  max-width: 683px;
+}
+._checkBox_hubspot {
+  max-width: 908px;
+}
+._checkBox:first-child {
+  margin-top: 0;
+}
+._checkBox > div:first-child {
+  margin-bottom: 10px;
+}
+
+._collapsible {
+  margin-top: 32px;
+}
+._collapsible > div > div {
+  padding-top: 0;
+  margin-bottom: 12px;
+}
+
+._collapsible > div > div > svg {
+  margin-top: 4px;
+}
+
+._info {
+  margin-left: 5px;
+}

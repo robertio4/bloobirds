@@ -1,0 +1,102 @@
+._card_summary {
+  border: solid 1px var(--bloobirdsSuperVeryLight);
+  background-color: var(--white);
+  margin-bottom: 40px;
+  box-sizing: border-box;
+  font-size: 16px;
+  border-radius: 4px;
+  position: relative;
+  max-width: 1280px;
+}
+
+._card_summary:last-child {
+  margin-bottom: 0;
+}
+
+._dashed_line {
+  position: absolute;
+  height: 40px;
+  width: 3px;
+  border-left: 1px dashed var(--verySoftPeanut);
+  bottom: -40px;
+  left: 40px;
+}
+
+._container {
+  background: var(--white);
+  border: 1px solid var(--veryLightBloobirds);
+  box-sizing: border-box;
+  box-shadow: 0 2px 4px rgba(25, 145, 255, 0.084324);
+  border-radius: 4px;
+  font-size: 16px;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+  padding: 24px;
+  text-decoration: none;
+  min-height: 72px;
+  width: 100%;
+}
+
+._container__pinned {
+  border: 1px solid var(--verySoftPeanut);
+}
+
+._main {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer:not(:empty) {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--lightPeanut);
+  display: flex;
+  align-items: center;
+}
+
+.attachments {
+  justify-self: end;
+  display: flex;
+  gap: 4px;
+  flex-shrink: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.attachmentLabel {
+  position: relative;
+  background-color: #f2f2f2;
+  border-radius: 4px;
+  padding: 6px 8px;
+  overflow-x: hidden;
+  white-space: nowrap;
+  display: flex;
+  flex-basis: 0;
+  flex-grow: 1;
+  gap: 4px;
+}
+
+.attachmentLabel button {
+  display: none;
+  height: 16px;
+  position: absolute;
+  background-color: #f2f2f2;
+  right: 8px;
+}
+
+.attachmentLabel:hover button {
+  display: block;
+}
+
+.attachmentLabel > div {
+  white-space: nowrap;
+  min-width: 0;
+  max-width: 85%;
+  position: relative;
+  flex-shrink: 1;
+}
+
+.attachmentLabel > div > p {
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+}

@@ -1,0 +1,12 @@
+
+> @bloobirds-it/add-to-calendar@0.0.0 build:dev
+> tsc && cross-env NODE_ENV=development rollup -c=../../../rollup.config.js
+
+[36m
+[1m/Users/robertorf/Workspace/frontend-monorepo/packages/components/addToCalendarModal/src/index.tsx[22m → [1mdist/index.js, dist/index.es.js[22m...[39m
+[1m[33m(!) Entry module "src/index.tsx" is implicitly using "default" export mode, which means for CommonJS output that its default export is assigned to "module.exports". For many tools, such CommonJS output will not be interchangeable with the original ES module. If this is intended, explicitly set "output.exports" to either "auto" or "default", otherwise you might want to consider changing the signature of "src/index.tsx" to use named exports only.[39m[22m
+[90mhttps://rollupjs.org/guide/en/#outputexports[39m
+[1msrc/index.tsx[22m
+[1m[33m(!) Unused external imports[39m[22m
+default imported from external module "react" but never used in "src/addToCalendarModal.view.tsx"
+[32mcreated [1mdist/index.js, dist/index.es.js[22m in [1m1.8s[22m[39m

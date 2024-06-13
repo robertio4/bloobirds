@@ -1,0 +1,18 @@
+._update_icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+._update_icon_icon {
+  margin: 4px;
+}
+._update_icon_title {
+  margin: 4px;
+}
+
+._add_property {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

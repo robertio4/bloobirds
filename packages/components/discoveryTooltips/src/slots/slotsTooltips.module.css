@@ -1,0 +1,84 @@
+.wrapper {
+  position: absolute;
+  transform: translate(-50%, 110%);
+  right: 18%;
+}
+
+.title {
+  margin: 14px 8px 10px;
+}
+
+
+.footer {
+  margin: 16px 0;
+}
+
+.buttonsWrapper {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.footerButton {
+  font-size: 12px;
+  padding: 2px 8px;
+}
+
+.mainButton {
+  float: right;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.secondaryButton {
+  background-color: transparent;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image > img {
+  max-width: 208px
+}
+
+.mainButton:hover {
+  background-color: white !important;
+  opacity: 0.9;
+}
+
+.anchor_container {
+  animation: stretch 1.5s ease-out 0s alternate infinite none running;
+  align-items: center;
+  background: #eeeeee;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  z-index: 100;
+}
+
+.dot {
+  border-radius: 100%;
+  width: 8px;
+  height: 8px;
+}
+
+@keyframes stretch {
+  0% {
+    opacity: 100%;
+  }
+  50% {
+    opacity: 50%;
+  }
+  100% {
+    opacity: 100%;
+  }
+}

@@ -1,0 +1,47 @@
+.groupContainer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.groupContainer:not(:last-child) {
+  padding-right: 6px;
+}
+
+.groupContainer:last-child {
+  margin-bottom: 24px;
+}
+
+.groupContainer:not(:first-child) {
+  padding-left: 6px;
+}
+
+.groupContainer > div:not(:last-child) {
+  margin-right: 8px;
+}
+
+.groupContainer > div,
+.groupContainer > p {
+  margin-bottom: 8px;
+}
+
+.groupContainer > p {
+  margin-right: 8px;
+}
+
+.groupContainer div[role='listbox'] {
+  margin-bottom: 0;
+}
+
+@media (max-width: 1279px) {
+  .groupContainer:not(:first-child) {
+    padding-left: 0;
+  }
+  .groupContainer:not(:last-child) {
+    margin-bottom: 0;
+  }
+  .groupContainer:last-child {
+    margin-top: 10px;
+  }
+}

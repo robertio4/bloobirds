@@ -1,0 +1,34 @@
+.leadConvertedContainer {
+  box-sizing: border-box;
+  padding-left: 32px;
+}
+
+.steps {
+  display: flex;
+  flex-direction: row;
+  padding: 0 30px;
+  margin-top: 16px;
+  justify-content: space-between;
+}
+.leadConvertedSteps {
+  display: flex;
+  flex-direction: row;
+  padding: 0 121px 0 89px;
+  margin-top: 16px;
+  justify-content: space-between;
+}
+
+.select {
+  margin-top: 40px;
+}
+
+.column {
+  width: 400px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.column > svg {
+  margin: 10px 0;
+}

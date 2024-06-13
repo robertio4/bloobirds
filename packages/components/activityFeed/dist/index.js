@@ -1,0 +1,5888 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, Fragment as Fragment$1 } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
+import { ActivityTimelineItem, ActivityTooltipBlock, NewActivityTimelineItem } from '@bloobirds-it/activity-timeline-item';
+import { useBuildCRMUpdates, CrmUpdatesModal, CopilotAnalysis } from '@bloobirds-it/copilot';
+import { useHover, Icon, Text, Button, Tooltip, Spinner, IconButton, Modal, ModalHeader, ModalTitle, ModalCloseIcon, ModalContent, ModalFooter, Timeline, CompoundIcon, Avatar, Label, Clipboard, useToasts, useVisible, Dropdown, createToast, Section, Item, Input, CheckItem, MultiSelect, TagGroup, Tag, Skeleton } from '@bloobirds-it/flamingo-ui';
+import { useUserSettings, useCopilotActivity, useAiAnalysisEnabled, useActiveAccountId, useNumintecEnabled, CopilotActivityContextProvider, useCopilotEnabled, useSyncBobjectStatus, useBaseSetEmailVariablesValues, useMinimizableModals, useIsB2CAccount, useCustomTasks, useQuickLogActivity, useActiveUserSettings, useWhatsappEnabled, useActiveUserId, useActiveMessagingNameFilter, useMessagingTemplates, useUserSearch, useIsNoStatusPlanAccount, useUserHelpers, useNewActivityFeed } from '@bloobirds-it/hooks';
+import { UserType, ACTIVITY_FIELDS_LOGIC_ROLE, MIXPANEL_EVENTS, ACTIVITY_TYPES_VALUES_LOGIC_ROLE, LEAD_FIELDS_LOGIC_ROLE, REPORTED_VALUES_LOGIC_ROLE, ACTIVITY_DIRECTION, BobjectTypes, MessagesEvents, DATA_SOURCES, COMPANY_FIELDS_LOGIC_ROLE, companyUrl, OPPORTUNITY_FIELDS_LOGIC_ROLE, BOBJECT_TYPES, ACTIVITY_MAIN_NOTE_VALUES_LOGIC_ROLE, UserPermission, TemplateStage, TEMPLATE_TYPES, magicFilterORs, ExtensionHelperKeys, ACTIVITY_TYPES } from '@bloobirds-it/types';
+import { getTextFromLogicRole, getFieldByLogicRole, baseUrls, isHtml, api, isUrl, getReferencedBobject, formatDate as formatDate$1, getExtensionBobjectByIdFields, injectReferencesSearchProcess, getValueFromLogicRole, parseEmailPixels, removeHtmlTags, EMAIL_MODE, getFieldById, keepPreviousResponse, getDateTimestampString, generateDatePrefix, isStringifiedJSON, linkify, getRelatedBobject, leadUrl, isToday, parseUTCDateTimeToLocal, getUserTimeZone, isAfterDate, getReferencedBobjectFromLogicRole, redirectToMessagingSettings, handleAddWhatsAppTemplate, forgeIdFieldsFromIdValue, removeScrollOfBox, recoverScrollOfBox, injectReferencesGetProcess } from '@bloobirds-it/utils';
+import { useWizardContext, WIZARD_MODALS } from '@bloobirds-it/wizard-modal-context';
+import clsx from 'clsx';
+import { AnimatePresence, motion } from 'framer-motion';
+import mixpanel from 'mixpanel-browser';
+import { jsxs, jsx, Fragment } from 'react/jsx-runtime';
+import AceEditor from 'react-ace';
+import useSWR from 'swr';
+import WaveSurfer from 'wavesurfer.js';
+import { OpenClickedStatistics, BobjectSelector } from '@bloobirds-it/bobjects';
+import { LightAttachmentList } from '@bloobirds-it/light-attachment-list';
+import { useRichTextEditorPlugins, serialize, deserialize, checkEmptyText, RichTextEditor, EditorToolbar, EditorToolbarControlsSection, EditorToolbarFontStylesSection, EditorToolbarTextMarksSection, EditorToolbarListsSection } from '@bloobirds-it/rich-text-editor';
+import { getI18nSpacetimeLng } from '@bloobirds-it/internationalization';
+import { isValid, parse, format, isSameDay } from 'date-fns';
+import InfiniteScroll from 'react-infinite-scroll-component';
+import { InfoWarningSync, useAttachedFiles, AttachmentList } from '@bloobirds-it/misc';
+import { MeetingTypeField, MeetingResultField } from '@bloobirds-it/meeting';
+import { useForm, useController } from 'react-hook-form';
+import { useEventSubscription } from '@bloobirds-it/plover';
+import debounce from 'lodash/debounce';
+import spacetime from 'spacetime';
+import { useDebounce } from 'use-debounce';
+import { useActivityFeed as useActivityFeed$1, ActivityDetails as ActivityDetails$1, ActivityFeed as ActivityFeed$1, NewActivityFeed as NewActivityFeed$1 } from '@bloobirds-it/activity-feed';
+import { atom, useRecoilState, useResetRecoilState } from 'recoil';
+import { CSSTransition } from 'react-transition-group';
+import range from 'lodash/range';
+import isEqual from 'lodash/isEqual';
+import { VirtualInfiniteScroll as VirtualInfiniteScroll$1 } from '@bloobirds-it/virtual-infinite-scroll';
+import { useVirtualizer } from '@tanstack/react-virtual';
+
+function styleInject(css, ref) {
+  if (ref === void 0) ref = {};
+  var insertAt = ref.insertAt;
+  if (!css || typeof document === 'undefined') {
+    return;
+  }
+  var head = document.head || document.getElementsByTagName('head')[0];
+  var style = document.createElement('style');
+  style.type = 'text/css';
+  if (insertAt === 'top') {
+    if (head.firstChild) {
+      head.insertBefore(style, head.firstChild);
+    } else {
+      head.appendChild(style);
+    }
+  } else {
+    head.appendChild(style);
+  }
+  if (style.styleSheet) {
+    style.styleSheet.cssText = css;
+  } else {
+    style.appendChild(document.createTextNode(css));
+  }
+}
+
+var css_248z$k = ".copilotSuggestionsCallout-module_iaCallout__43v95 {\n  display: flex;\n  flex-direction: column;\n  border-radius: 4px;\n  background: linear-gradient(270deg, #dcfff1 0%, #e2e5ff 65.49%),\n    linear-gradient(0deg, #9aa4ff, #9aa4ff);\n  margin: 8px 0;\n  padding: 8px;\n  gap: 8px;\n  align-self: stretch;\n}\n\n.copilotSuggestionsCallout-module_suggestedEntitiesHeader__zbJVj {\n  justify-content: space-between;\n  align-items: center;\n  display: flex;\n}\n\n.copilotSuggestionsCallout-module_suggestedEntitiesHeaderTitle__JSCv1 {\n  align-items: center;\n  display: flex;\n  gap: 8px;\n}\n\n.copilotSuggestionsCallout-module_suggestedEntitiesHeader__zbJVj > button {\n  height: 24px;\n  gap: 4px;\n  padding: 5px 10px;\n  border-radius: 4px;\n  border-color: white;\n}\n\n.copilotSuggestionsCallout-module_buttons__rH5uA {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  gap: 8px;\n  width: 100%;\n}\n\n.copilotSuggestionsCallout-module_calloutButton__iV-XI {\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  border-radius: 8px;\n  border: 1px solid var(--extra-purple-light, #9aa4ff);\n  box-shadow: 0 0 4px 0 rgba(17, 38, 234, 0.25);\n  height: 52px;\n  cursor: pointer;\n  min-width: 109px;\n  flex: 1;\n  background: rgba(255, 255, 255, 0.8);\n}\n\n.copilotSuggestionsCallout-module_calloutButton__iV-XI > div {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n}\n\n.copilotSuggestionsCallout-module_disabled__-oneN {\n  border: 1px solid var(--extra-purple-very-soft, #e2e5ff);\n  background: rgba(255, 255, 255, 0.8);\n}\n\n.copilotSuggestionsCallout-module_error__5VudC {\n  border-radius: 8px;\n  border: 1px solid var(--extra-meeting-very-soft, #ffb2c2);\n}\n\n.copilotSuggestionsCallout-module_smallButton__19-3n {\n  min-width: 88px;\n}\n\n.copilotSuggestionsCallout-module_calloutButtonRefresh__n2BrD {\n  position: absolute;\n  top: 4px;\n  right: 4px;\n}\n\n.copilotSuggestionsCallout-module_errorBlock__FSUND {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n}\n\n.copilotSuggestionsCallout-module_counter__XzoFG {\n  display: flex;\n  min-width: 12px;\n  min-height: 12px;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  border-radius: 40px;\n  background: var(--extra-Purple-very-soft, #e2e5ff);\n  position: absolute;\n  top: 4px;\n  right: 4px;\n}\n\n.copilotSuggestionsCallout-module_suggestedEntitiesHeaderButton__hecTP {\n  border-color: var(--lightPurple);\n  height: 24px;\n  width: 34px;\n  transition: width 0.5s ease;\n}\n\n.copilotSuggestionsCallout-module_suggestedEntitiesHeaderButtonHover__Enohj {\n  width: 130px;\n}\n\n.copilotSuggestionsCallout-module_suggestedEntitiesHeaderButtonHoverText__a7wde {\n  width: 100%;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  white-space: pre;\n}\n";
+var styles$j = {"iaCallout":"copilotSuggestionsCallout-module_iaCallout__43v95","suggestedEntitiesHeader":"copilotSuggestionsCallout-module_suggestedEntitiesHeader__zbJVj","suggestedEntitiesHeaderTitle":"copilotSuggestionsCallout-module_suggestedEntitiesHeaderTitle__JSCv1","buttons":"copilotSuggestionsCallout-module_buttons__rH5uA","calloutButton":"copilotSuggestionsCallout-module_calloutButton__iV-XI","disabled":"copilotSuggestionsCallout-module_disabled__-oneN","error":"copilotSuggestionsCallout-module_error__5VudC","smallButton":"copilotSuggestionsCallout-module_smallButton__19-3n","calloutButtonRefresh":"copilotSuggestionsCallout-module_calloutButtonRefresh__n2BrD","errorBlock":"copilotSuggestionsCallout-module_errorBlock__FSUND","counter":"copilotSuggestionsCallout-module_counter__XzoFG","suggestedEntitiesHeaderButton":"copilotSuggestionsCallout-module_suggestedEntitiesHeaderButton__hecTP","suggestedEntitiesHeaderButtonHover":"copilotSuggestionsCallout-module_suggestedEntitiesHeaderButtonHover__Enohj","suggestedEntitiesHeaderButtonHoverText":"copilotSuggestionsCallout-module_suggestedEntitiesHeaderButtonHoverText__a7wde"};
+styleInject(css_248z$k);
+
+function _typeof$m(obj) { "@babel/helpers - typeof"; return _typeof$m = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$m(obj); }
+function _defineProperty$l(obj, key, value) { key = _toPropertyKey$l(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$l(arg) { var key = _toPrimitive$l(arg, "string"); return _typeof$m(key) === "symbol" ? key : String(key); }
+function _toPrimitive$l(input, hint) { if (_typeof$m(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$m(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$j(arr, i) { return _arrayWithHoles$j(arr) || _iterableToArrayLimit$j(arr, i) || _unsupportedIterableToArray$j(arr, i) || _nonIterableRest$j(); }
+function _nonIterableRest$j() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$j(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$j(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$j(o, minLen); }
+function _arrayLikeToArray$j(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$j(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$j(arr) { if (Array.isArray(arr)) return arr; }
+var CRMUpdatesButton = function CRMUpdatesButton(_ref) {
+  var isBubble = _ref.isBubble;
+  var settings = useUserSettings();
+  var canRegenerate = (settings === null || settings === void 0 ? void 0 : settings.user.type) === UserType.SUPPORT_USER;
+  var _useState = useState(false),
+    _useState2 = _slicedToArray$j(_useState, 2),
+    modalOpen = _useState2[0],
+    setModalOpen = _useState2[1];
+  var _useCopilotActivity = useCopilotActivity(),
+    crmUpdates = _useCopilotActivity.crmUpdates,
+    regenerateUpdates = _useCopilotActivity.regenerateUpdates,
+    activity = _useCopilotActivity.activity;
+  var error = (crmUpdates === null || crmUpdates === void 0 ? void 0 : crmUpdates.status) === 'ERROR';
+  var generating = (crmUpdates === null || crmUpdates === void 0 ? void 0 : crmUpdates.status) === 'GENERATING';
+  var noUpdates = (crmUpdates === null || crmUpdates === void 0 ? void 0 : crmUpdates.status) === 'GENERATED' && 0;
+  var hasUpdates = (crmUpdates === null || crmUpdates === void 0 ? void 0 : crmUpdates.status) === 'GENERATED' && 0;
+  var handleRefresh = function handleRefresh(e) {
+    e === null || e === void 0 ? void 0 : e.stopPropagation();
+    if (canRegenerate) {
+      regenerateUpdates();
+    }
+    mixpanel.track(MIXPANEL_EVENTS.CLICK_ON_REGENERATE_CRM_UPDATES);
+  };
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  var getTooltipText = function getTooltipText() {
+    if (generating) {
+      return "".concat(t('activityTimelineItem.item.copilotCallout.buttons.generating'), " \u2728");
+    } else if (hasUpdates) {
+      return t('activityTimelineItem.item.copilotCallout.buttons.suggestions');
+    } else if (noUpdates) {
+      return t('activityTimelineItem.item.copilotCallout.buttons.noResults');
+    } else if (error) {
+      return t('activityTimelineItem.item.copilotCallout.buttons.failed');
+    }
+  };
+  var _useBuildCRMUpdates = useBuildCRMUpdates(activity),
+    totalUpdates = _useBuildCRMUpdates.totalUpdates;
+  var handleClick = function handleClick() {
+    if (error) {
+      handleRefresh();
+    } else {
+      if (totalUpdates) {
+        setModalOpen(true);
+      }
+    }
+    mixpanel.track(MIXPANEL_EVENTS.CLICK_ON_OPEN_CRM_UPDATES);
+  };
+  var disabled = noUpdates || generating;
+  return /*#__PURE__*/jsx("div", {
+    style: {
+      cursor: !generating ? 'pointer' : 'not-allowed'
+    },
+    className: clsx(styles$j.calloutButton, _defineProperty$l(_defineProperty$l(_defineProperty$l({}, styles$j.disabled, disabled), styles$j.error, error), styles$j.smallButton, isBubble)),
+    onClick: handleClick,
+    children: /*#__PURE__*/jsxs(Tooltip, {
+      title: getTooltipText(),
+      position: "top",
+      children: [!generating && !error && /*#__PURE__*/jsx("span", {
+        className: styles$j.counter,
+        onClick: handleRefresh,
+        style: noUpdates ? {
+          backgroundColor: '#D4E0F1'
+        } : undefined,
+        children: /*#__PURE__*/jsx(Text, {
+          size: "xxxs",
+          color: noUpdates ? 'softPeanut' : 'purple',
+          weight: "bold",
+          children: totalUpdates
+        })
+      }), !error && generating && /*#__PURE__*/jsx(Spinner, {
+        name: "loadingCircle",
+        color: "purple",
+        size: 24
+      }), !error && !generating && /*#__PURE__*/jsx(IconButton, {
+        name: "salesforce",
+        size: 24,
+        color: noUpdates ? 'verySoftPeanut' : 'purple'
+      }), error && /*#__PURE__*/jsxs("div", {
+        className: styles$j.errorBlock,
+        children: [/*#__PURE__*/jsx(Icon, {
+          name: "cross",
+          size: 14,
+          color: "verySoftTomato"
+        }), /*#__PURE__*/jsx(Text, {
+          size: "xxs",
+          color: "extraMeeting",
+          children: t('common.failed')
+        })]
+      }), /*#__PURE__*/jsx(Text, {
+        className: styles$j.calloutButtonText,
+        size: isBubble ? 'xxs' : 'xs',
+        color: noUpdates ? 'verySoftPeanut' : generating ? 'lightPurple' : 'purple',
+        weight: "medium",
+        children: t('activityTimelineItem.item.copilotCallout.crmUpdates')
+      }), /*#__PURE__*/jsx(CrmUpdatesModal, {
+        activity: activity,
+        open: modalOpen,
+        onClose: function onClose() {
+          return setModalOpen(false);
+        }
+      })]
+    })
+  });
+};
+var CalloutButton = function CalloutButton(_ref2) {
+  var text = _ref2.text,
+    icon = _ref2.icon,
+    _onClick = _ref2.onClick,
+    disabled = _ref2.disabled,
+    generating = _ref2.generating,
+    error = _ref2.error,
+    onRefresh = _ref2.onRefresh,
+    isBubble = _ref2.isBubble;
+  var settings = useUserSettings();
+  var canRegenerate = (settings === null || settings === void 0 ? void 0 : settings.user.type) === UserType.SUPPORT_USER;
+  var handleRefresh = function handleRefresh(e) {
+    e.stopPropagation();
+    onRefresh();
+    mixpanel.track(MIXPANEL_EVENTS.CLICK_ON_REGENERATE_INSIGHTS);
+  };
+  var _useTranslation2 = useTranslation(),
+    t = _useTranslation2.t;
+  return /*#__PURE__*/jsxs("div", {
+    style: {
+      cursor: !error && !generating ? 'pointer' : 'not-allowed'
+    },
+    className: clsx(styles$j.calloutButton, _defineProperty$l(_defineProperty$l(_defineProperty$l({}, styles$j.disabled, disabled), styles$j.error, error), styles$j.smallButton, isBubble)),
+    onClick: function onClick() {
+      return !disabled && !generating && !error && _onClick();
+    },
+    children: [(canRegenerate || error) && !disabled && !generating && /*#__PURE__*/jsx(Tooltip, {
+      title: "Regenerate",
+      position: "right-end",
+      children: /*#__PURE__*/jsx(IconButton, {
+        name: "refresh",
+        size: 16,
+        color: "purple",
+        className: styles$j.calloutButtonRefresh,
+        onClick: handleRefresh
+      })
+    }), !error && generating && /*#__PURE__*/jsx(Spinner, {
+      name: "loadingCircle",
+      color: "purple",
+      size: 24
+    }), !error && !generating && /*#__PURE__*/jsx(IconButton, {
+      name: icon,
+      size: 24,
+      color: disabled ? 'verySoftPeanut' : 'purple'
+    }), error && /*#__PURE__*/jsxs("div", {
+      className: styles$j.errorBlock,
+      children: [/*#__PURE__*/jsx(Icon, {
+        name: "cross",
+        size: 14,
+        color: "verySoftTomato"
+      }), /*#__PURE__*/jsx(Text, {
+        size: "xxs",
+        color: "extraMeeting",
+        children: t('common.failed')
+      })]
+    }), /*#__PURE__*/jsx(Text, {
+      className: styles$j.calloutButtonText,
+      size: isBubble ? 'xxs' : 'xs',
+      color: disabled ? 'verySoftPeanut' : 'purple',
+      weight: "medium",
+      children: text
+    })]
+  });
+};
+var CopilotSuggestionsCallout = function CopilotSuggestionsCallout(_ref3) {
+  var _settings$account;
+  var isBubble = _ref3.isBubble;
+  var settings = useUserSettings();
+  var _useCopilotActivity2 = useCopilotActivity(),
+    setOverlay = _useCopilotActivity2.setOverlay,
+    insights = _useCopilotActivity2.insights,
+    regenerateAnalysis = _useCopilotActivity2.regenerateAnalysis,
+    activity = _useCopilotActivity2.activity;
+  var _useTranslation3 = useTranslation(),
+    t = _useTranslation3.t;
+  var canSeeCRMUpdates = (settings === null || settings === void 0 ? void 0 : settings.user.type) === UserType.SUPPORT_USER;
+  var _useHover = useHover(),
+    _useHover2 = _slicedToArray$j(_useHover, 2),
+    ref = _useHover2[0],
+    isHovering = _useHover2[1];
+  var accountId = settings === null || settings === void 0 ? void 0 : (_settings$account = settings.account) === null || _settings$account === void 0 ? void 0 : _settings$account.id;
+  var aiAnalysisEnabled = useAiAnalysisEnabled(accountId);
+  var navigateToAiAnalysisPage = function navigateToAiAnalysisPage() {
+    var _getFieldByLogicRole;
+    var activityId = activity.id.objectId;
+    var activityTypeLogicRole = (_getFieldByLogicRole = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.TYPE)) === null || _getFieldByLogicRole === void 0 ? void 0 : _getFieldByLogicRole.valueLogicRole;
+    var activityType = '';
+    if (activityTypeLogicRole === ACTIVITY_TYPES_VALUES_LOGIC_ROLE.MEETING) {
+      activityType = 'meeting';
+    } else if (activityTypeLogicRole === ACTIVITY_TYPES_VALUES_LOGIC_ROLE.CALL) {
+      activityType = 'call';
+    }
+    var url = "/app/ai-analysis/".concat(activityType, "/").concat(activityId);
+    window.open(baseUrls["development"] + url, '_blank');
+  };
+  var copilotAnalysis = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.COPILOT_ANALYSIS);
+  var canShowAnalysis = copilotAnalysis && aiAnalysisEnabled;
+  var classes = clsx(styles$j.suggestedEntitiesHeaderButton, _defineProperty$l({}, styles$j.suggestedEntitiesHeaderButtonHover, isHovering));
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$j.iaCallout,
+    children: [/*#__PURE__*/jsxs("div", {
+      className: styles$j.suggestedEntitiesHeader,
+      children: [/*#__PURE__*/jsxs("div", {
+        className: styles$j.suggestedEntitiesHeaderTitle,
+        children: [/*#__PURE__*/jsx(Icon, {
+          name: "stars",
+          color: "lightPurple",
+          size: 16
+        }), /*#__PURE__*/jsx(Text, {
+          color: "purple",
+          size: "l",
+          weight: "bold",
+          children: t('activityTimelineItem.item.copilotCallout.aiAnalysis')
+        })]
+      }), canShowAnalysis && /*#__PURE__*/jsx("div", {
+        ref: ref,
+        children: /*#__PURE__*/jsx(AnimatePresence, {
+          children: /*#__PURE__*/jsx(Button, {
+            className: classes,
+            iconLeft: "externalLink",
+            variant: "IAGradient",
+            size: "small",
+            color: "purple",
+            onClick: function onClick(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              navigateToAiAnalysisPage();
+            },
+            uppercase: false,
+            children: isHovering && /*#__PURE__*/jsx(motion.div, {
+              initial: {
+                opacity: 0
+              },
+              animate: {
+                opacity: 1
+              },
+              exit: {
+                opacity: 0
+              },
+              transition: {
+                duration: 1.2
+              },
+              className: styles$j.suggestedEntitiesHeaderButtonHoverText,
+              children: t('common.openInNewTab')
+            })
+          })
+        })
+      })]
+    }), /*#__PURE__*/jsxs("div", {
+      className: styles$j.buttons,
+      children: [/*#__PURE__*/jsx(CalloutButton, {
+        icon: "search",
+        text: t('activityTimelineItem.item.copilotCallout.insights'),
+        onClick: function onClick() {
+          if (insights.status === 'GENERATED') {
+            setOverlay('analysis');
+          }
+          mixpanel.track(MIXPANEL_EVENTS.CLICK_ON_OPEN_INSIGHTS);
+        },
+        generating: !insights || (insights === null || insights === void 0 ? void 0 : insights.status) === 'GENERATING',
+        error: (insights === null || insights === void 0 ? void 0 : insights.status) === 'ERROR',
+        onRefresh: regenerateAnalysis,
+        isBubble: isBubble
+      }), canSeeCRMUpdates && /*#__PURE__*/jsx(CRMUpdatesButton, {
+        isBubble: isBubble
+      }), /*#__PURE__*/jsx(CalloutButton, {
+        icon: "taskAction",
+        text: t('activityTimelineItem.item.copilotCallout.nextSteps'),
+        disabled: true,
+        isBubble: isBubble
+      })]
+    })]
+  });
+};
+
+var css_248z$j = ".detailsFooter-module_footerContainer__wpcGK {\n  position: sticky;\n  width: 100%;\n  min-height: 24px;\n  bottom: 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  gap: 12px;\n  background: rgb(2, 0, 36);\n  background: linear-gradient(90deg, var(--bloobirds) 0%, var(--gradientBloobirds) 100%);\n  border-bottom-left-radius: 8px;\n}\n\n.detailsFooter-module_withPadding__QqiRY {\n  min-height: 72px;\n  padding: 0 24px;\n}\n\n.detailsFooter-module_footerContainer__wpcGK > button {\n  flex: 1;\n  border: none;\n}\n\n.detailsFooter-module_footerContainer__wpcGK > button:hover {\n  background-color: var(--lighterGray) !important;\n}\n\n.detailsFooter-module_footerContainer__wpcGK > button > svg {\n  margin-right: 6px;\n}\n\n.detailsFooter-module_multipleButtons__eFy9Y {\n  justify-content: space-between;\n}\n";
+var styles$i = {"footerContainer":"detailsFooter-module_footerContainer__wpcGK","withPadding":"detailsFooter-module_withPadding__QqiRY","multipleButtons":"detailsFooter-module_multipleButtons__eFy9Y"};
+styleInject(css_248z$j);
+
+function _typeof$l(obj) { "@babel/helpers - typeof"; return _typeof$l = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$l(obj); }
+function _defineProperty$k(obj, key, value) { key = _toPropertyKey$k(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$k(arg) { var key = _toPrimitive$k(arg, "string"); return _typeof$l(key) === "symbol" ? key : String(key); }
+function _toPrimitive$k(input, hint) { if (_typeof$l(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$l(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var DetailsFooter = function DetailsFooter(_ref) {
+  var children = _ref.children,
+    color = _ref.color,
+    _ref$withPadding = _ref.withPadding,
+    withPadding = _ref$withPadding === void 0 ? true : _ref$withPadding;
+  var multipleButtons = React.Children.count(children) > 1;
+  var forcedBackgroundColor = color ? "var(--".concat(color, ")") : '';
+  return /*#__PURE__*/jsx("div", {
+    className: clsx(styles$i.footerContainer, _defineProperty$k(_defineProperty$k({}, styles$i.multipleButtons, multipleButtons), styles$i.withPadding, withPadding)),
+    style: {
+      background: forcedBackgroundColor
+    },
+    children: children
+  });
+};
+
+var css_248z$i = ".expandedBoxSection-module_multibox__EsTkD {\n  margin: 0 4px;\n  display: flex;\n  flex-wrap: wrap;\n  justify-content: space-between;\n}\n\n.expandedBoxSection-module_simple__yCNe3 {\n  margin: 0 8px;\n}\n\n\n.expandedBoxSection-module_separator__II8CF {\n  margin: 8px 0 12px;\n  display: flex;\n  align-self: center;\n  width: 100%;\n  height: 1px;\n  background-color: var(--verySoftPeanut);\n}\n";
+var styles$h = {"multibox":"expandedBoxSection-module_multibox__EsTkD","simple":"expandedBoxSection-module_simple__yCNe3","separator":"expandedBoxSection-module_separator__II8CF"};
+styleInject(css_248z$i);
+
+function _typeof$k(obj) { "@babel/helpers - typeof"; return _typeof$k = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$k(obj); }
+function ownKeys$a(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$a(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$a(Object(source), !0).forEach(function (key) { _defineProperty$j(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$a(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$j(obj, key, value) { key = _toPropertyKey$j(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$j(arg) { var key = _toPrimitive$j(arg, "string"); return _typeof$k(key) === "symbol" ? key : String(key); }
+function _toPrimitive$j(input, hint) { if (_typeof$k(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$k(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var ExpandedBoxSection = function ExpandedBoxSection(_ref) {
+  var children = _ref.children,
+    grid = _ref.grid;
+  var className = grid ? styles$h.multibox : styles$h.simple;
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsx("div", {
+      className: styles$h.separator
+    }), /*#__PURE__*/jsx("div", {
+      className: className,
+      children: React.Children.map(children, function (child) {
+        if (!child) return null;
+        if (grid) {
+          return _objectSpread$a(_objectSpread$a({}, child), {}, {
+            props: _objectSpread$a(_objectSpread$a({}, child.props), {}, {
+              isSmallBlock: true
+            })
+          });
+        } else {
+          return child;
+        }
+      })
+    })]
+  });
+};
+
+var css_248z$h = ".textBox-module_infoSectionHeader__2FL7F {\n  display: flex;\n  align-items: center;\n  margin-bottom: 4px;\n}\n\n.textBox-module_infoSectionText__Kdpp- {\n  overflow-wrap: break-word;\n}\n\n.textBox-module_html_message__cSlzx {\n  overflow-wrap: break-word;\n}\n\n.textBox-module_html_message__cSlzx > p {\n  min-height: 1em;\n  margin: 0 auto;\n}\n\n.textBox-module_html_message__cSlzx h1 {\n  display: block;\n  font-size: 2em;\n  margin-block-start: 0.67em;\n  margin-block-end: 0.67em;\n  margin-inline-start: 0px;\n  margin-inline-end: 0px;\n  font-weight: bold;\n}\n\n.textBox-module_html_message__cSlzx h2 {\n  display: block;\n  font-size: 1.5em;\n  margin-block-start: 0.83em;\n  margin-block-end: 0.83em;\n  margin-inline-start: 0px;\n  margin-inline-end: 0px;\n  font-weight: bold;\n}\n\n.textBox-module_html_message__cSlzx ol,\n.textBox-module_html_message__cSlzx ul {\n  display: block;\n  margin-block-start: 1em;\n  margin-block-end: 1em;\n  margin-inline-start: 0px;\n  margin-inline-end: 0px;\n  padding-inline-start: 2em;\n  margin-top: 0;\n  margin-bottom: 0;\n}\n\n.textBox-module_html_message__cSlzx ul {\n  list-style-type: disc;\n}\n\n.textBox-module_html_message__cSlzx ol {\n  list-style-type: decimal;\n}\n\n.textBox-module_html_message__cSlzx blockquote {\n  display: block;\n  margin-block-start: 1em;\n  margin-block-end: 1em;\n  margin-inline-start: 2em;\n  margin-inline-end: 2em;\n  margin-top: 0.5rem;\n  margin-bottom: 0.5rem;\n  margin-left: 0px;\n  margin-right: 0px;\n  border-left: 2px solid #ddd;\n  padding: 10px 20px 10px 16px;\n  color: #aaa;\n}\n\n.textBox-module_html_message__cSlzx p {\n  font-size: 12px;\n}\n\n.textBox-module_infoLine__3Thpj {\n  display: flex;\n  width: 100%;\n}\n\n.textBox-module_separator__UWFgm {\n  margin: 8px 0 12px;\n  display: flex;\n  align-self: center;\n  width: 100%;\n  height: 1px;\n  background-color: var(--verySoftPeanut);\n}\n\n.textBox-module_smallInfoSection__XEE7R {\n  width: 160px;\n  display: flex;\n  flex-direction: column;\n}\n\n.textBox-module_smallInfoSection__XEE7R > button {\n  height: 24px;\n  gap: 4px;\n  padding: 5px 10px;\n  border-radius: 4px;\n  background: var(\n    --gradient-ai-purple-green-light,\n    linear-gradient(270deg, #dcfff1 0%, #e2e5ff 65.49%)\n  );\n  border-color: white;\n}\n\n.textBox-module_smallInfoSection__XEE7R > button > * {\n  color: white;\n}\n\n.textBox-module_smallInfoSection__XEE7R:nth-child(-n + 4) {\n  margin-bottom: 12px;\n}\n\n.textBox-module_smallInfoSectionTitle__U-iU3 {\n  width: 100%;\n  display: flex;\n}\n\n.textBox-module_smallInfoSectionTitle__U-iU3 > p {\n  margin-left: 4px;\n  align-self: center;\n}\n\n.textBox-module_completableInformation__gYm90 {\n  display: flex;\n  background-color: white;\n  border: 1px solid var(--lightGray);\n  border-radius: 4px;\n  color: white;\n  transition: background-color 0.2s ease-in-out;\n}\n\n.textBox-module_completableInformation__gYm90 > svg {\n  align-self: center;\n}\n\n.textBox-module_completableInformation__gYm90:hover {\n  background-color: var(--veryLightPurple);\n  border: 1px solid var(--purple);\n  transition: background-color 0.2s ease-in-out, border 0.2s ease-in-out;\n}\n\n.textBox-module__showMore_button__aXJMR {\n  font-size: 10px;\n  padding-left: 0;\n}\n\n.textBox-module__showMore_button__aXJMR > svg {\n  width: 12px;\n  height: 12px;\n}\n";
+var headerStyles = {"infoSectionHeader":"textBox-module_infoSectionHeader__2FL7F","infoSectionText":"textBox-module_infoSectionText__Kdpp-","html_message":"textBox-module_html_message__cSlzx","infoLine":"textBox-module_infoLine__3Thpj","separator":"textBox-module_separator__UWFgm","smallInfoSection":"textBox-module_smallInfoSection__XEE7R","smallInfoSectionTitle":"textBox-module_smallInfoSectionTitle__U-iU3","completableInformation":"textBox-module_completableInformation__gYm90","_showMore_button":"textBox-module__showMore_button__aXJMR"};
+styleInject(css_248z$h);
+
+function _typeof$j(obj) { "@babel/helpers - typeof"; return _typeof$j = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$j(obj); }
+var _excluded$1 = ["isSmallBlock"];
+function ownKeys$9(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$9(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$9(Object(source), !0).forEach(function (key) { _defineProperty$i(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$9(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$i(obj, key, value) { key = _toPropertyKey$i(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$i(arg) { var key = _toPrimitive$i(arg, "string"); return _typeof$j(key) === "symbol" ? key : String(key); }
+function _toPrimitive$i(input, hint) { if (_typeof$j(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$j(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _objectWithoutProperties$1(source, excluded) { if (source == null) return {}; var target = _objectWithoutPropertiesLoose$1(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
+function _objectWithoutPropertiesLoose$1(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
+var TextInfoDisplay = function TextInfoDisplay(_ref) {
+  var info = _ref.info;
+  return isHtml(info) ? /*#__PURE__*/jsx("div", {
+    className: headerStyles.html_message,
+    dangerouslySetInnerHTML: {
+      __html: info
+    }
+  }) : /*#__PURE__*/jsx(Text, {
+    className: headerStyles.infoSectionText,
+    size: "xs",
+    children: info ? info : 'None'
+  });
+};
+var InfoSection = function InfoSection(_ref2) {
+  var icon = _ref2.icon,
+    title = _ref2.title,
+    info = _ref2.info;
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsxs("div", {
+      className: headerStyles.infoSectionHeader,
+      children: [/*#__PURE__*/jsx(Icon, {
+        name: icon,
+        color: "bloobirds"
+      }), /*#__PURE__*/jsx(Text, {
+        size: "xs",
+        weight: "heavy",
+        children: title
+      })]
+    }), typeof info === 'string' || !info ? /*#__PURE__*/jsx(TextInfoDisplay, {
+      info: info
+    }) : info]
+  });
+};
+var SmallInfoSection = function SmallInfoSection(_ref3) {
+  var icon = _ref3.icon,
+    title = _ref3.title,
+    info = _ref3.info;
+  return /*#__PURE__*/jsxs("div", {
+    className: headerStyles.smallInfoSection,
+    children: [/*#__PURE__*/jsxs("div", {
+      className: headerStyles.smallInfoSectionTitle,
+      children: [/*#__PURE__*/jsx(Icon, {
+        name: icon,
+        color: "bloobirds"
+      }), /*#__PURE__*/jsx(Text, {
+        size: "xs",
+        weight: "heavy",
+        children: title
+      })]
+    }), /*#__PURE__*/jsx(Text, {
+      size: "xs",
+      children: info ? info : 'None'
+    })]
+  });
+};
+var InfoBox = function InfoBox(_ref4) {
+  var _ref4$isSmallBlock = _ref4.isSmallBlock,
+    isSmallBlock = _ref4$isSmallBlock === void 0 ? false : _ref4$isSmallBlock,
+    props = _objectWithoutProperties$1(_ref4, _excluded$1);
+  switch (isSmallBlock) {
+    case true:
+      return /*#__PURE__*/jsx(SmallInfoSection, _objectSpread$9({}, props));
+    default:
+      return /*#__PURE__*/jsx(InfoSection, _objectSpread$9({}, props));
+  }
+};
+
+var css_248z$g = ".transcript-module_backButton__7QWpq {\n  display: flex;\n  align-items: center;\n  gap: 4px;\n  cursor: pointer;\n}\n\n.transcript-module_header__iGGCY {\n  display: flex;\n  align-items: center;\n  gap: 4px;\n  margin-bottom: 12px;\n  margin-top: 16px;\n}\n\n.transcript-module_blocks__n7-5H {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n}\n\n.transcript-module_fragmentHeader__bDnBt {\n  display: flex;\n  gap: 4px;\n}\n.transcript-module_editorBlock__eKe-B{\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n}\n\n.transcript-module_button__-MYi6 {\n  display: flex;\n  gap: 4px;\n  align-items: center;\n  justify-content: center;\n}\n\n.transcript-module_downloadButton__9-RSI {\n  margin-left: auto\n}\n";
+var styles$g = {"backButton":"transcript-module_backButton__7QWpq","header":"transcript-module_header__iGGCY","blocks":"transcript-module_blocks__n7-5H","fragmentHeader":"transcript-module_fragmentHeader__bDnBt","editorBlock":"transcript-module_editorBlock__eKe-B","button":"transcript-module_button__-MYi6","downloadButton":"transcript-module_downloadButton__9-RSI"};
+styleInject(css_248z$g);
+
+function _slicedToArray$i(arr, i) { return _arrayWithHoles$i(arr) || _iterableToArrayLimit$i(arr, i) || _unsupportedIterableToArray$i(arr, i) || _nonIterableRest$i(); }
+function _nonIterableRest$i() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$i(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$i(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$i(o, minLen); }
+function _arrayLikeToArray$i(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$i(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$i(arr) { if (Array.isArray(arr)) return arr; }
+var ConversationBlock = function ConversationBlock(_ref) {
+  var fragment = _ref.fragment;
+  return /*#__PURE__*/jsxs("div", {
+    children: [/*#__PURE__*/jsx("div", {
+      className: styles$g.fragmentHeader,
+      children: /*#__PURE__*/jsxs(Text, {
+        color: "purple",
+        size: "xs",
+        weight: "bold",
+        children: [/*#__PURE__*/jsx(Icon, {
+          name: fragment.isLead ? 'person' : 'user',
+          color: "purple",
+          size: 16
+        }), fragment.speaker, " (", fragment.isLead ? 'lead' : 'user', ")"]
+      })
+    }), /*#__PURE__*/jsxs(Text, {
+      size: "xxs",
+      children: [fragment.text, /*#__PURE__*/jsx("br", {})]
+    })]
+  });
+};
+var EditTranscriptModal = function EditTranscriptModal(_ref2) {
+  var activity = _ref2.activity,
+    open = _ref2.open,
+    onClose = _ref2.onClose;
+  var _useCopilotActivity = useCopilotActivity(),
+    transcript = _useCopilotActivity.transcript,
+    reloadTranscript = _useCopilotActivity.reloadTranscript;
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  var _useState = useState(transcript !== null && transcript !== void 0 && transcript.transcript ? JSON.stringify(transcript === null || transcript === void 0 ? void 0 : transcript.transcript, null, 4) : ''),
+    _useState2 = _slicedToArray$i(_useState, 2),
+    transcriptValue = _useState2[0],
+    setTranscriptValue = _useState2[1];
+  var updateTranscript = function updateTranscript() {
+    api.patch("/copilot/transcript/".concat(activity === null || activity === void 0 ? void 0 : activity.id.objectId), {
+      transcript: JSON.parse(transcriptValue)
+    }).then(function () {
+      return reloadTranscript().then(onClose);
+    });
+  };
+  useEffect(function () {
+    if (open && transcript !== null && transcript !== void 0 && transcript.transcript) {
+      setTranscriptValue(JSON.stringify(transcript === null || transcript === void 0 ? void 0 : transcript.transcript, null, 4));
+    }
+  }, [open]);
+  return /*#__PURE__*/jsxs(Modal, {
+    open: open,
+    onClose: onClose,
+    width: 800,
+    children: [/*#__PURE__*/jsxs(ModalHeader, {
+      size: "small",
+      color: "verySoftPurple",
+      children: [/*#__PURE__*/jsx(ModalTitle, {
+        variant: "primary",
+        size: "small",
+        icon: "snippet",
+        children: "Edit transcription"
+      }), /*#__PURE__*/jsx(ModalCloseIcon, {
+        onClick: onClose,
+        color: "purple",
+        size: "small"
+      })]
+    }), /*#__PURE__*/jsx(ModalContent, {
+      className: styles$g.content,
+      children: /*#__PURE__*/jsx(AceEditor, {
+        mode: "json",
+        width: "680px",
+        wrapEnabled: true,
+        value: transcriptValue,
+        onChange: function onChange(value) {
+          return setTranscriptValue(value);
+        }
+      })
+    }), /*#__PURE__*/jsxs(ModalFooter, {
+      className: styles$g.footer,
+      children: [/*#__PURE__*/jsx(Button, {
+        variant: "clear",
+        onClick: onClose,
+        color: "extraMeeting",
+        uppercase: false,
+        size: "small",
+        children: t('crmUpdatesModal.cancel')
+      }), /*#__PURE__*/jsx(Button, {
+        className: styles$g.accpetButton,
+        onClick: updateTranscript,
+        uppercase: false,
+        variant: "primary",
+        size: "small",
+        children: t('crmUpdatesModal.accept')
+      })]
+    })]
+  });
+};
+var TranscriptView = function TranscriptView(_ref3) {
+  var _getFieldByLogicRole, _transcript$transcrip;
+  var activity = _ref3.activity;
+  var _useCopilotActivity2 = useCopilotActivity(),
+    setOverlay = _useCopilotActivity2.setOverlay,
+    transcript = _useCopilotActivity2.transcript;
+  var type = (_getFieldByLogicRole = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.TYPE)) === null || _getFieldByLogicRole === void 0 ? void 0 : _getFieldByLogicRole.valueLogicRole;
+  var isCall = type === ACTIVITY_TYPES_VALUES_LOGIC_ROLE.CALL;
+  var backTo = isCall ? 'call' : 'meeting';
+  var _useTranslation2 = useTranslation(),
+    t = _useTranslation2.t;
+  var settings = useUserSettings();
+  var canEdit = (settings === null || settings === void 0 ? void 0 : settings.user.type) === UserType.SUPPORT_USER;
+  var _useState3 = useState(false),
+    _useState4 = _slicedToArray$i(_useState3, 2),
+    modalOpen = _useState4[0],
+    setModalOpen = _useState4[1];
+  return /*#__PURE__*/jsxs("div", {
+    children: [/*#__PURE__*/jsxs("div", {
+      className: styles$g.backButton,
+      onClick: function onClick() {
+        return setOverlay(undefined);
+      },
+      children: [/*#__PURE__*/jsx(Icon, {
+        name: "arrowLeft"
+      }), /*#__PURE__*/jsx(Text, {
+        size: "xs",
+        color: "bloobirds",
+        children: t('activityTimelineItem.item.transcript.backTo', {
+          type: backTo
+        })
+      })]
+    }), /*#__PURE__*/jsxs("div", {
+      className: styles$g.header,
+      children: [/*#__PURE__*/jsx(Icon, {
+        name: "snippet"
+      }), /*#__PURE__*/jsxs(Text, {
+        size: "s",
+        weight: "bold",
+        className: styles$g.transcriptHeader,
+        children: [t('activityTimelineItem.item.transcript.transcription'), ' ']
+      }), canEdit && /*#__PURE__*/jsx(IconButton, {
+        name: "edit",
+        size: 20,
+        onClick: function onClick() {
+          setModalOpen(true);
+          mixpanel.track(MIXPANEL_EVENTS.CLICK_ON_EDIT_TRANSCRIPT);
+        }
+      })]
+    }), /*#__PURE__*/jsx("div", {
+      className: styles$g.blocks,
+      children: transcript === null || transcript === void 0 ? void 0 : (_transcript$transcrip = transcript.transcript) === null || _transcript$transcrip === void 0 ? void 0 : _transcript$transcrip.map(function (fragment, index) {
+        return /*#__PURE__*/jsx(ConversationBlock, {
+          fragment: fragment
+        }, index);
+      })
+    }), /*#__PURE__*/jsx(EditTranscriptModal, {
+      activity: activity,
+      open: modalOpen,
+      onClose: function onClose() {
+        return setModalOpen(false);
+      }
+    })]
+  });
+};
+var ShowTranscriptButton = function ShowTranscriptButton(_ref4) {
+  var _getFieldByLogicRole2;
+  var activity = _ref4.activity;
+  var _useCopilotActivity3 = useCopilotActivity(),
+    setOverlay = _useCopilotActivity3.setOverlay,
+    transcript = _useCopilotActivity3.transcript;
+  var _useTranslation3 = useTranslation(),
+    t = _useTranslation3.t;
+  var dateTimeString = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.DATETIME);
+  var meetingDate = dateTimeString ? new Date(dateTimeString) : undefined;
+  var type = (_getFieldByLogicRole2 = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.TYPE)) === null || _getFieldByLogicRole2 === void 0 ? void 0 : _getFieldByLogicRole2.valueLogicRole;
+  var isCall = type === ACTIVITY_TYPES_VALUES_LOGIC_ROLE.CALL;
+  var cantGenerateTooltip = isCall ? t('activityTimelineItem.item.transcript.cantGenerateCall') : t('activityTimelineItem.item.transcript.cantGenerateMeeting');
+  var botId = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.BOT_ID);
+  var _useSWR = useSWR("/messaging/recall/recording/".concat(botId), function (key) {
+      return api.get(key).then(function (res) {
+        return res.data;
+      });
+    }),
+    temporalDownloadUrl = _useSWR.data;
+  var settings = useUserSettings();
+  var canDownload = (settings === null || settings === void 0 ? void 0 : settings.user.type) === UserType.SUPPORT_USER;
+  if (!transcript || !meetingDate || meetingDate >= new Date()) {
+    return /*#__PURE__*/jsx(Fragment, {});
+  }
+  return /*#__PURE__*/jsxs("div", {
+    className: headerStyles.smallInfoSection,
+    children: [/*#__PURE__*/jsxs("div", {
+      className: headerStyles.smallInfoSectionTitle,
+      children: [/*#__PURE__*/jsx(Icon, {
+        name: "snippet",
+        color: "bloobirds"
+      }), /*#__PURE__*/jsx(Text, {
+        size: "xs",
+        weight: "heavy",
+        children: t('common.transcript')
+      }), (temporalDownloadUrl === null || temporalDownloadUrl === void 0 ? void 0 : temporalDownloadUrl.url) && canDownload && /*#__PURE__*/jsx(IconButton, {
+        name: "download",
+        className: styles$g.downloadButton,
+        onClick: function onClick() {
+          return window.open(temporalDownloadUrl.url, '_blank');
+        }
+      })]
+    }), (transcript === null || transcript === void 0 ? void 0 : transcript.status) === 'GENERATED' && /*#__PURE__*/jsxs(Button, {
+      onClick: function onClick() {
+        setOverlay('transcript');
+        mixpanel.track(MIXPANEL_EVENTS.CLICK_ON_OPEN_TRANSCRIPT);
+      },
+      size: "small",
+      uppercase: false,
+      children: [/*#__PURE__*/jsx(Icon, {
+        name: "stars",
+        color: "purple",
+        size: 12
+      }), /*#__PURE__*/jsx(Text, {
+        size: "xs",
+        color: "purple",
+        uppercase: false,
+        children: t('activityTimelineItem.item.transcript.show')
+      })]
+    }), (transcript === null || transcript === void 0 ? void 0 : transcript.status) === 'NOT_GENERATED' && /*#__PURE__*/jsxs(Button, {
+      size: "small",
+      uppercase: false,
+      variant: "IAGradient",
+      children: [/*#__PURE__*/jsx(Icon, {
+        name: "stars",
+        color: "purple",
+        size: 12
+      }), /*#__PURE__*/jsx(Text, {
+        size: "xxs",
+        color: "purple",
+        uppercase: false,
+        children: t('activityTimelineItem.item.transcript.generate')
+      })]
+    }), transcript.status === 'GENERATING' && /*#__PURE__*/jsx(Tooltip, {
+      title: t('activityTimelineItem.item.transcript.generating'),
+      position: "top",
+      children: /*#__PURE__*/jsx(Button, {
+        size: "small",
+        uppercase: false,
+        variant: "IAGradient",
+        disabled: true,
+        children: /*#__PURE__*/jsxs("div", {
+          className: styles$g.button,
+          children: [/*#__PURE__*/jsx(Spinner, {
+            name: "loadingCircle",
+            color: "purple",
+            size: 12
+          }), /*#__PURE__*/jsxs(Text, {
+            size: "xs",
+            color: "purple",
+            uppercase: false,
+            children: [t('common.generating'), "..."]
+          })]
+        })
+      })
+    }), (transcript === null || transcript === void 0 ? void 0 : transcript.status) === 'CANT_GENERATE' && /*#__PURE__*/jsx(Tooltip, {
+      title: cantGenerateTooltip,
+      position: "top",
+      children: /*#__PURE__*/jsxs(Button, {
+        disabled: true,
+        size: "small",
+        uppercase: false,
+        children: [/*#__PURE__*/jsx(Icon, {
+          name: "stars",
+          color: "softCondition",
+          size: 12
+        }), /*#__PURE__*/jsx(Text, {
+          size: "xxs",
+          color: "softCondition",
+          uppercase: false,
+          children: t('activityTimelineItem.item.transcript.generate')
+        })]
+      })
+    }), (transcript === null || transcript === void 0 ? void 0 : transcript.status) === 'NOT_FINISHED' && /*#__PURE__*/jsx(Tooltip, {
+      title: t('activityTimelineItem.item.transcript.meetingProcessed'),
+      position: "top",
+      children: /*#__PURE__*/jsx(Button, {
+        size: "small",
+        uppercase: false,
+        variant: "IAGradient",
+        disabled: true,
+        children: /*#__PURE__*/jsxs("div", {
+          className: styles$g.button,
+          children: [/*#__PURE__*/jsx(Spinner, {
+            name: "loadingCircle",
+            color: "purple",
+            size: 12
+          }), /*#__PURE__*/jsxs(Text, {
+            size: "xs",
+            color: "purple",
+            uppercase: false,
+            children: [t('common.generating'), "..."]
+          })]
+        })
+      })
+    })]
+  });
+};
+
+var css_248z$f = ".callDetail-module_container__WCHaU {\n  padding-top: 4px;\n  height: 100%;\n  justify-content: space-between;\n  display: flex;\n  flex-direction: column;\n}\n\n.callDetail-module_htmlBody__Ctm2- {\n  flex: 1;\n  overflow-y: auto;\n}\n\n.callDetail-module_htmlBody__Ctm2- > * {\n  font-size: 10px;\n}\n\n.callDetail-module_callInfoWrapper__UET4s {\n  padding: 6px 12px 45px 14px;\n}\n\n.callDetail-module_loading__vTvci {\n  margin: auto;\n  width: 90%;\n  height: 80%;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n}\n\n.callDetail-module_noRecordingText__QJ3oB {\n  font-size: 16px !important;\n  margin: 8px 0;\n}\n\n.callDetail-module_header__coFJE {\n  display: flex;\n  align-items: center;\n  margin-bottom: 8px;\n  justify-content: space-between;\n}\n\n.callDetail-module_badge__ai1nN {\n  width: 30px;\n  height: 30px;\n  border-radius: 30px;\n  box-sizing: border-box;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  margin-right: 8px;\n}\n\n.callDetail-module_headerLeft__6V-U- {\n  display: flex;\n  align-items: center;\n  max-width: 240px;\n  overflow: hidden;\n}\n\n.callDetail-module_headerLeft__6V-U- > p {\n  margin-right: 0.3em;\n  display: flex;\n}\n\n.callDetail-module_headerText__wBp9y {\n  display: flex;\n  flex-direction: column;\n}\n\n.callDetail-module_headerText__wBp9y > p:first-child {\n  margin-right: 0.3em;\n}\n\n.callDetail-module_reportResultButton__gIeuq {\n  display: block;\n  color: var(--melon);\n  white-space: nowrap;\n  max-width: 290px;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  border: none;\n}\n\n.callDetail-module_disabledButton__0vn3z {\n  color: var(--softCondition);\n}\n\n.callDetail-module_reportResultButton__gIeuq > svg {\n  margin-bottom: 1px;\n}\n\n.callDetail-module_separator__wJW4P {\n  margin: 8px 0 12px;\n  display: flex;\n  align-self: center;\n  width: 100%;\n  height: 1px;\n  background-color: var(--verySoftPeanut);\n}\n\n";
+var styles$f = {"container":"callDetail-module_container__WCHaU","htmlBody":"callDetail-module_htmlBody__Ctm2-","callInfoWrapper":"callDetail-module_callInfoWrapper__UET4s","loading":"callDetail-module_loading__vTvci","noRecordingText":"callDetail-module_noRecordingText__QJ3oB","header":"callDetail-module_header__coFJE","badge":"callDetail-module_badge__ai1nN","headerLeft":"callDetail-module_headerLeft__6V-U-","headerText":"callDetail-module_headerText__wBp9y","reportResultButton":"callDetail-module_reportResultButton__gIeuq","disabledButton":"callDetail-module_disabledButton__0vn3z","separator":"callDetail-module_separator__wJW4P"};
+styleInject(css_248z$f);
+
+var css_248z$e = ".callSoundWave-module_speedControls__pmgww{\n  display: flex;\n  align-items: center;\n  margin-left: 34px;\n  width: 75px;\n  justify-content: space-between;\n}\n\n.callSoundWave-module_speedControls__pmgww > *{\n  margin-right: 8px;\n}\n\n.callSoundWave-module_controls__nI8hu{\n  display: flex;\n  flex-direction: row;\n  justify-content: center;\n  align-items: center;\n  margin-bottom: 32px;\n}\n\n.callSoundWave-module_loader__HCab5{\n  position: relative;\n  left:130px;\n  bottom: 78px;\n  margin-bottom: -24px;\n}\n";
+var styles$e = {"speedControls":"callSoundWave-module_speedControls__pmgww","controls":"callSoundWave-module_controls__nI8hu","loader":"callSoundWave-module_loader__HCab5"};
+styleInject(css_248z$e);
+
+function _typeof$i(obj) { "@babel/helpers - typeof"; return _typeof$i = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$i(obj); }
+function ownKeys$8(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$8(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$8(Object(source), !0).forEach(function (key) { _defineProperty$h(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$8(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$h(obj, key, value) { key = _toPropertyKey$h(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$h(arg) { var key = _toPrimitive$h(arg, "string"); return _typeof$i(key) === "symbol" ? key : String(key); }
+function _toPrimitive$h(input, hint) { if (_typeof$i(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$i(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _regeneratorRuntime$5() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime$5 = function _regeneratorRuntime() { return exports; }; var exports = {}, Op = Object.prototype, hasOwn = Op.hasOwnProperty, defineProperty = Object.defineProperty || function (obj, key, desc) { obj[key] = desc.value; }, $Symbol = "function" == typeof Symbol ? Symbol : {}, iteratorSymbol = $Symbol.iterator || "@@iterator", asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator", toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag"; function define(obj, key, value) { return Object.defineProperty(obj, key, { value: value, enumerable: !0, configurable: !0, writable: !0 }), obj[key]; } try { define({}, ""); } catch (err) { define = function define(obj, key, value) { return obj[key] = value; }; } function wrap(innerFn, outerFn, self, tryLocsList) { var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator, generator = Object.create(protoGenerator.prototype), context = new Context(tryLocsList || []); return defineProperty(generator, "_invoke", { value: makeInvokeMethod(innerFn, self, context) }), generator; } function tryCatch(fn, obj, arg) { try { return { type: "normal", arg: fn.call(obj, arg) }; } catch (err) { return { type: "throw", arg: err }; } } exports.wrap = wrap; var ContinueSentinel = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var IteratorPrototype = {}; define(IteratorPrototype, iteratorSymbol, function () { return this; }); var getProto = Object.getPrototypeOf, NativeIteratorPrototype = getProto && getProto(getProto(values([]))); NativeIteratorPrototype && NativeIteratorPrototype !== Op && hasOwn.call(NativeIteratorPrototype, iteratorSymbol) && (IteratorPrototype = NativeIteratorPrototype); var Gp = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(IteratorPrototype); function defineIteratorMethods(prototype) { ["next", "throw", "return"].forEach(function (method) { define(prototype, method, function (arg) { return this._invoke(method, arg); }); }); } function AsyncIterator(generator, PromiseImpl) { function invoke(method, arg, resolve, reject) { var record = tryCatch(generator[method], generator, arg); if ("throw" !== record.type) { var result = record.arg, value = result.value; return value && "object" == _typeof$i(value) && hasOwn.call(value, "__await") ? PromiseImpl.resolve(value.__await).then(function (value) { invoke("next", value, resolve, reject); }, function (err) { invoke("throw", err, resolve, reject); }) : PromiseImpl.resolve(value).then(function (unwrapped) { result.value = unwrapped, resolve(result); }, function (error) { return invoke("throw", error, resolve, reject); }); } reject(record.arg); } var previousPromise; defineProperty(this, "_invoke", { value: function value(method, arg) { function callInvokeWithMethodAndArg() { return new PromiseImpl(function (resolve, reject) { invoke(method, arg, resolve, reject); }); } return previousPromise = previousPromise ? previousPromise.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(innerFn, self, context) { var state = "suspendedStart"; return function (method, arg) { if ("executing" === state) throw new Error("Generator is already running"); if ("completed" === state) { if ("throw" === method) throw arg; return doneResult(); } for (context.method = method, context.arg = arg;;) { var delegate = context.delegate; if (delegate) { var delegateResult = maybeInvokeDelegate(delegate, context); if (delegateResult) { if (delegateResult === ContinueSentinel) continue; return delegateResult; } } if ("next" === context.method) context.sent = context._sent = context.arg;else if ("throw" === context.method) { if ("suspendedStart" === state) throw state = "completed", context.arg; context.dispatchException(context.arg); } else "return" === context.method && context.abrupt("return", context.arg); state = "executing"; var record = tryCatch(innerFn, self, context); if ("normal" === record.type) { if (state = context.done ? "completed" : "suspendedYield", record.arg === ContinueSentinel) continue; return { value: record.arg, done: context.done }; } "throw" === record.type && (state = "completed", context.method = "throw", context.arg = record.arg); } }; } function maybeInvokeDelegate(delegate, context) { var methodName = context.method, method = delegate.iterator[methodName]; if (undefined === method) return context.delegate = null, "throw" === methodName && delegate.iterator["return"] && (context.method = "return", context.arg = undefined, maybeInvokeDelegate(delegate, context), "throw" === context.method) || "return" !== methodName && (context.method = "throw", context.arg = new TypeError("The iterator does not provide a '" + methodName + "' method")), ContinueSentinel; var record = tryCatch(method, delegate.iterator, context.arg); if ("throw" === record.type) return context.method = "throw", context.arg = record.arg, context.delegate = null, ContinueSentinel; var info = record.arg; return info ? info.done ? (context[delegate.resultName] = info.value, context.next = delegate.nextLoc, "return" !== context.method && (context.method = "next", context.arg = undefined), context.delegate = null, ContinueSentinel) : info : (context.method = "throw", context.arg = new TypeError("iterator result is not an object"), context.delegate = null, ContinueSentinel); } function pushTryEntry(locs) { var entry = { tryLoc: locs[0] }; 1 in locs && (entry.catchLoc = locs[1]), 2 in locs && (entry.finallyLoc = locs[2], entry.afterLoc = locs[3]), this.tryEntries.push(entry); } function resetTryEntry(entry) { var record = entry.completion || {}; record.type = "normal", delete record.arg, entry.completion = record; } function Context(tryLocsList) { this.tryEntries = [{ tryLoc: "root" }], tryLocsList.forEach(pushTryEntry, this), this.reset(!0); } function values(iterable) { if (iterable) { var iteratorMethod = iterable[iteratorSymbol]; if (iteratorMethod) return iteratorMethod.call(iterable); if ("function" == typeof iterable.next) return iterable; if (!isNaN(iterable.length)) { var i = -1, next = function next() { for (; ++i < iterable.length;) if (hasOwn.call(iterable, i)) return next.value = iterable[i], next.done = !1, next; return next.value = undefined, next.done = !0, next; }; return next.next = next; } } return { next: doneResult }; } function doneResult() { return { value: undefined, done: !0 }; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, defineProperty(Gp, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), defineProperty(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, toStringTagSymbol, "GeneratorFunction"), exports.isGeneratorFunction = function (genFun) { var ctor = "function" == typeof genFun && genFun.constructor; return !!ctor && (ctor === GeneratorFunction || "GeneratorFunction" === (ctor.displayName || ctor.name)); }, exports.mark = function (genFun) { return Object.setPrototypeOf ? Object.setPrototypeOf(genFun, GeneratorFunctionPrototype) : (genFun.__proto__ = GeneratorFunctionPrototype, define(genFun, toStringTagSymbol, "GeneratorFunction")), genFun.prototype = Object.create(Gp), genFun; }, exports.awrap = function (arg) { return { __await: arg }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, asyncIteratorSymbol, function () { return this; }), exports.AsyncIterator = AsyncIterator, exports.async = function (innerFn, outerFn, self, tryLocsList, PromiseImpl) { void 0 === PromiseImpl && (PromiseImpl = Promise); var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList), PromiseImpl); return exports.isGeneratorFunction(outerFn) ? iter : iter.next().then(function (result) { return result.done ? result.value : iter.next(); }); }, defineIteratorMethods(Gp), define(Gp, toStringTagSymbol, "Generator"), define(Gp, iteratorSymbol, function () { return this; }), define(Gp, "toString", function () { return "[object Generator]"; }), exports.keys = function (val) { var object = Object(val), keys = []; for (var key in object) keys.push(key); return keys.reverse(), function next() { for (; keys.length;) { var key = keys.pop(); if (key in object) return next.value = key, next.done = !1, next; } return next.done = !0, next; }; }, exports.values = values, Context.prototype = { constructor: Context, reset: function reset(skipTempReset) { if (this.prev = 0, this.next = 0, this.sent = this._sent = undefined, this.done = !1, this.delegate = null, this.method = "next", this.arg = undefined, this.tryEntries.forEach(resetTryEntry), !skipTempReset) for (var name in this) "t" === name.charAt(0) && hasOwn.call(this, name) && !isNaN(+name.slice(1)) && (this[name] = undefined); }, stop: function stop() { this.done = !0; var rootRecord = this.tryEntries[0].completion; if ("throw" === rootRecord.type) throw rootRecord.arg; return this.rval; }, dispatchException: function dispatchException(exception) { if (this.done) throw exception; var context = this; function handle(loc, caught) { return record.type = "throw", record.arg = exception, context.next = loc, caught && (context.method = "next", context.arg = undefined), !!caught; } for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i], record = entry.completion; if ("root" === entry.tryLoc) return handle("end"); if (entry.tryLoc <= this.prev) { var hasCatch = hasOwn.call(entry, "catchLoc"), hasFinally = hasOwn.call(entry, "finallyLoc"); if (hasCatch && hasFinally) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } else if (hasCatch) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); } else { if (!hasFinally) throw new Error("try statement without catch or finally"); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } } } }, abrupt: function abrupt(type, arg) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc <= this.prev && hasOwn.call(entry, "finallyLoc") && this.prev < entry.finallyLoc) { var finallyEntry = entry; break; } } finallyEntry && ("break" === type || "continue" === type) && finallyEntry.tryLoc <= arg && arg <= finallyEntry.finallyLoc && (finallyEntry = null); var record = finallyEntry ? finallyEntry.completion : {}; return record.type = type, record.arg = arg, finallyEntry ? (this.method = "next", this.next = finallyEntry.finallyLoc, ContinueSentinel) : this.complete(record); }, complete: function complete(record, afterLoc) { if ("throw" === record.type) throw record.arg; return "break" === record.type || "continue" === record.type ? this.next = record.arg : "return" === record.type ? (this.rval = this.arg = record.arg, this.method = "return", this.next = "end") : "normal" === record.type && afterLoc && (this.next = afterLoc), ContinueSentinel; }, finish: function finish(finallyLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.finallyLoc === finallyLoc) return this.complete(entry.completion, entry.afterLoc), resetTryEntry(entry), ContinueSentinel; } }, "catch": function _catch(tryLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc === tryLoc) { var record = entry.completion; if ("throw" === record.type) { var thrown = record.arg; resetTryEntry(entry); } return thrown; } } throw new Error("illegal catch attempt"); }, delegateYield: function delegateYield(iterable, resultName, nextLoc) { return this.delegate = { iterator: values(iterable), resultName: resultName, nextLoc: nextLoc }, "next" === this.method && (this.arg = undefined), ContinueSentinel; } }, exports; }
+function asyncGeneratorStep$5(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function _asyncToGenerator$5(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep$5(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep$5(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+function _slicedToArray$h(arr, i) { return _arrayWithHoles$h(arr) || _iterableToArrayLimit$h(arr, i) || _unsupportedIterableToArray$h(arr, i) || _nonIterableRest$h(); }
+function _nonIterableRest$h() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$h(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$h(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$h(o, minLen); }
+function _arrayLikeToArray$h(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$h(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$h(arr) { if (Array.isArray(arr)) return arr; }
+var CallSoundWave = function CallSoundWave(_ref) {
+  var audioSource = _ref.audioSource,
+    callId = _ref.callId,
+    setError = _ref.setError;
+  var waveRef = useRef();
+  var _useState = useState(true),
+    _useState2 = _slicedToArray$h(_useState, 2),
+    isLoading = _useState2[0],
+    setIsLoading = _useState2[1];
+  var _useState3 = useState(false),
+    _useState4 = _slicedToArray$h(_useState3, 2),
+    isPlaying = _useState4[0],
+    setIsPlaying = _useState4[1];
+  var _useState5 = useState(undefined),
+    _useState6 = _slicedToArray$h(_useState5, 2),
+    audio = _useState6[0],
+    setAudio = _useState6[1];
+  var _useState7 = useState(''),
+    _useState8 = _slicedToArray$h(_useState7, 2),
+    url = _useState8[0],
+    setUrl = _useState8[1];
+  //const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  var accountId = useActiveAccountId();
+  var enabledNumintecDialer = useNumintecEnabled(accountId);
+  var buttonProps = isPlaying ? {
+    name: 'pause',
+    onClick: function onClick() {
+      var _waveRef$current;
+      setIsPlaying(false);
+      // @ts-ignore
+      waveRef === null || waveRef === void 0 ? void 0 : (_waveRef$current = waveRef.current) === null || _waveRef$current === void 0 ? void 0 : _waveRef$current.pause();
+    }
+  } : {
+    name: 'play',
+    onClick: function onClick() {
+      var _waveRef$current2;
+      setIsPlaying(true);
+      // @ts-ignore
+      waveRef === null || waveRef === void 0 ? void 0 : (_waveRef$current2 = waveRef.current) === null || _waveRef$current2 === void 0 ? void 0 : _waveRef$current2.play();
+    }
+  };
+
+  /*function handleIncreasePlaybackSpeed(boo) {
+    let speed = playbackSpeed;
+    switch (speed) {
+      case 0.5:
+        speed = boo ? 1 : 0.5;
+        break;
+      case 1:
+        speed = boo ? 1.5 : 0.5;
+        break;
+      case 1.5:
+        speed = boo ? 2 : 1;
+        break;
+      case 2:
+        speed = boo ? 2 : 1.5;
+        break;
+    }
+    waveRef.current.setPlaybackRate(speed);
+    setPlaybackSpeed(speed);
+  }*/
+
+  useEffect(function () {
+    var _waveRef$current4, _waveRef$current4$han, _waveRef$current6, _waveRef$current6$han;
+    if (waveRef.current) {
+      var _waveRef$current3;
+      // @ts-ignore
+      waveRef === null || waveRef === void 0 ? void 0 : (_waveRef$current3 = waveRef.current) === null || _waveRef$current3 === void 0 ? void 0 : _waveRef$current3.destroy();
+      setIsLoading(true);
+    }
+    waveRef.current = WaveSurfer.create({
+      container: '#waveform',
+      waveColor: '#94A5B4',
+      progressColor: 'black',
+      barWidth: 3
+    });
+    // @ts-ignore
+    if (!((_waveRef$current4 = waveRef.current) !== null && _waveRef$current4 !== void 0 && (_waveRef$current4$han = _waveRef$current4.handlers) !== null && _waveRef$current4$han !== void 0 && _waveRef$current4$han.ready)) {
+      var _waveRef$current5;
+      // @ts-ignore
+      (_waveRef$current5 = waveRef.current) === null || _waveRef$current5 === void 0 ? void 0 : _waveRef$current5.on('ready', function () {
+        setIsLoading(false);
+      });
+    }
+    // @ts-ignore
+    if (!((_waveRef$current6 = waveRef.current) !== null && _waveRef$current6 !== void 0 && (_waveRef$current6$han = _waveRef$current6.handlers) !== null && _waveRef$current6$han !== void 0 && _waveRef$current6$han.error)) {
+      var _waveRef$current7;
+      // @ts-ignore
+      (_waveRef$current7 = waveRef.current) === null || _waveRef$current7 === void 0 ? void 0 : _waveRef$current7.on('error', function (e) {
+        console.warn(e);
+      });
+    }
+    var getSignedCallRecordingUrl = /*#__PURE__*/function () {
+      var _ref2 = _asyncToGenerator$5( /*#__PURE__*/_regeneratorRuntime$5().mark(function _callee() {
+        var _callId$replace, _audio, oldRecordingRegex, callSid, itsADeprecatedRecordingLink, signedUrl;
+        return _regeneratorRuntime$5().wrap(function _callee$(_context) {
+          while (1) switch (_context.prev = _context.next) {
+            case 0:
+              if (!enabledNumintecDialer) {
+                _context.next = 11;
+                break;
+              }
+              _context.prev = 1;
+              _context.next = 4;
+              return api.get("/calls/numintec/recording/".concat(callId === null || callId === void 0 ? void 0 : (_callId$replace = callId.replace('-', '')) === null || _callId$replace === void 0 ? void 0 : _callId$replace.replace('.', '')), {
+                responseType: 'blob'
+              });
+            case 4:
+              _audio = _context.sent;
+              return _context.abrupt("return", setAudio(_audio.data));
+            case 8:
+              _context.prev = 8;
+              _context.t0 = _context["catch"](1);
+              setError(_context.t0);
+            case 11:
+              oldRecordingRegex = /^(https:\/\/record-calls.bloobirds.com\/)(.{34})/g;
+              callSid = audioSource;
+              itsADeprecatedRecordingLink = audioSource === null || audioSource === void 0 ? void 0 : audioSource.match(oldRecordingRegex);
+              if (!(!itsADeprecatedRecordingLink && isUrl(audioSource))) {
+                _context.next = 16;
+                break;
+              }
+              return _context.abrupt("return", audioSource);
+            case 16:
+              if (audioSource && itsADeprecatedRecordingLink) {
+                callSid = audioSource.split('/').at(-1);
+              } else {
+                callSid = audioSource.split('/')[1];
+              }
+              _context.next = 19;
+              return api.get("/calls/whiteLabel/calls/".concat(callSid, "/recording"));
+            case 19:
+              signedUrl = _context.sent;
+              if (!(signedUrl.status === 200)) {
+                _context.next = 24;
+                break;
+              }
+              return _context.abrupt("return", signedUrl.data.url);
+            case 24:
+              throw new Error('Failed to get signed url');
+            case 25:
+            case "end":
+              return _context.stop();
+          }
+        }, _callee, null, [[1, 8]]);
+      }));
+      return function getSignedCallRecordingUrl() {
+        return _ref2.apply(this, arguments);
+      };
+    }();
+    getSignedCallRecordingUrl().then(function (url) {
+      setUrl(url);
+    });
+    return function () {
+      // @ts-ignore
+      waveRef.current.destroy();
+    };
+  }, [audioSource, callId]);
+  useEffect(function () {
+    if (url) {
+      fetch(url).then(function (res) {
+        return res.blob();
+      }).then(function (blob) {
+        return setAudio(blob);
+      });
+    }
+  }, [url, audioSource]);
+  useEffect(function () {
+    if (audio && (audio === null || audio === void 0 ? void 0 : audio.size) !== 0) {
+      var _waveRef$current8;
+      // @ts-ignore
+      (_waveRef$current8 = waveRef.current) === null || _waveRef$current8 === void 0 ? void 0 : _waveRef$current8.loadBlob(audio);
+    }
+  }, [audio]);
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsx("div", {
+      id: "waveform",
+      style: {
+        display: isLoading ? 'hidden' : ''
+      }
+    }), isLoading && /*#__PURE__*/jsx("div", {
+      className: styles$e.loader,
+      children: /*#__PURE__*/jsx(Spinner, {
+        name: "loadingCircle"
+      })
+    }), /*#__PURE__*/jsx("div", {
+      className: styles$e.controls,
+      children: /*#__PURE__*/jsx(IconButton, _objectSpread$8(_objectSpread$8({}, buttonProps), {}, {
+        size: 36
+      }))
+    })]
+  });
+};
+
+function _typeof$h(obj) { "@babel/helpers - typeof"; return _typeof$h = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$h(obj); }
+function _defineProperty$g(obj, key, value) { key = _toPropertyKey$g(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$g(arg) { var key = _toPrimitive$g(arg, "string"); return _typeof$h(key) === "symbol" ? key : String(key); }
+function _toPrimitive$g(input, hint) { if (_typeof$h(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$h(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$g(arr, i) { return _arrayWithHoles$g(arr) || _iterableToArrayLimit$g(arr, i) || _unsupportedIterableToArray$g(arr, i) || _nonIterableRest$g(); }
+function _nonIterableRest$g() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$g(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$g(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$g(o, minLen); }
+function _arrayLikeToArray$g(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$g(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$g(arr) { if (Array.isArray(arr)) return arr; }
+var NoCallRecordingMessage = function NoCallRecordingMessage() {
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  return /*#__PURE__*/jsx("div", {
+    children: /*#__PURE__*/jsx(Text, {
+      align: "center",
+      className: styles$f.noRecordingText,
+      children: t('callDetail.noCallRecordingMessage')
+    })
+  });
+};
+var DetailedActivity$3 = function DetailedActivity(_ref) {
+  var _getTextFromLogicRole, _getTextFromLogicRole2, _activity$id;
+  var activity = _ref.activity,
+    dataModel = _ref.dataModel,
+    userId = _ref.userId,
+    actionsDisabled = _ref.actionsDisabled,
+    openContactFlow = _ref.openContactFlow,
+    isBubble = _ref.isBubble;
+  var _useState = useState(undefined),
+    _useState2 = _slicedToArray$g(_useState, 2),
+    error = _useState2[0],
+    setError = _useState2[1];
+  var creationDate = (_getTextFromLogicRole = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.CREATION_DATETIME)) === null || _getTextFromLogicRole === void 0 ? void 0 : (_getTextFromLogicRole2 = _getTextFromLogicRole.split('.')[0]) === null || _getTextFromLogicRole2 === void 0 ? void 0 : _getTextFromLogicRole2.toString();
+  var leadNumber = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.CALL_LEAD_PHONE_NUMBER);
+  var userPhone = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.CALL_USER_PHONE_NUMBER);
+  var parsedCreationDate = creationDate + ((creationDate === null || creationDate === void 0 ? void 0 : creationDate.slice(-1)) === 'Z' ? '' : 'Z');
+  var creationDateTime = creationDate ? formatDate$1(new Date(parsedCreationDate), 'MMM dd yyyy, HH:mm') : '';
+  var callDuration = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.CALL_DURATION);
+  var result = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.CALL_RESULT);
+  var callNote = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.NOTE);
+  var audioSource = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.CALL_RECORD_URL);
+  var callSid = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.SID);
+  var enabledNumintecDialer = useNumintecEnabled(dataModel === null || dataModel === void 0 ? void 0 : dataModel.getAccountId());
+  var SoundWave = useCallback(function () {
+    return /*#__PURE__*/jsx(CallSoundWave, {
+      audioSource: audioSource,
+      callId: callSid,
+      setError: setError
+    });
+  }, [audioSource, callSid]);
+  var _useCopilotActivity = useCopilotActivity(),
+    hasOverlay = _useCopilotActivity.hasOverlay,
+    transcript = _useCopilotActivity.transcript,
+    overlay = _useCopilotActivity.overlay,
+    resetOverlay = _useCopilotActivity.resetOverlay;
+  useEffect(function () {
+    resetOverlay();
+  }, [activity === null || activity === void 0 ? void 0 : (_activity$id = activity.id) === null || _activity$id === void 0 ? void 0 : _activity$id.objectId]);
+  var isCopilotEnabled = useCopilotEnabled(dataModel === null || dataModel === void 0 ? void 0 : dataModel.getAccountId());
+  var _useTranslation2 = useTranslation(),
+    t = _useTranslation2.t;
+  useEffect(function () {
+    if (error) setError(undefined);
+  }, [callSid]);
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$f.htmlBody,
+    children: [/*#__PURE__*/jsx(ActivityTimelineItem, {
+      activity: activity,
+      startDisplayDivider: false,
+      endDisplayDivider: false,
+      activeHover: false,
+      extended: true,
+      alternativeDescription: true,
+      dataModel: dataModel,
+      userId: userId,
+      actionsDisabled: actionsDisabled,
+      openContactFlow: openContactFlow
+    }), /*#__PURE__*/jsxs("div", {
+      className: styles$f.callInfoWrapper,
+      children: [!error && (audioSource || enabledNumintecDialer && Number(callDuration)) ? /*#__PURE__*/jsx(SoundWave, {}) : /*#__PURE__*/jsx(NoCallRecordingMessage, {}), overlay === 'transcript' && /*#__PURE__*/jsx(TranscriptView, {
+        activity: activity
+      }), overlay === 'analysis' && /*#__PURE__*/jsx(CopilotAnalysis, {
+        activity: activity
+      }), !hasOverlay && /*#__PURE__*/jsxs(Fragment, {
+        children: [isCopilotEnabled && (transcript === null || transcript === void 0 ? void 0 : transcript.status) === 'GENERATED' && /*#__PURE__*/jsxs(Fragment, {
+          children: [/*#__PURE__*/jsx("div", {
+            className: styles$f.separator
+          }), /*#__PURE__*/jsx(CopilotSuggestionsCallout, {
+            isBubble: isBubble
+          })]
+        }), /*#__PURE__*/jsxs(ExpandedBoxSection, {
+          grid: true,
+          children: [/*#__PURE__*/jsx(InfoBox, {
+            icon: "agendaPerson",
+            title: t('detailedActivity.expandedBoxSection.leadNumber'),
+            info: leadNumber || t('common.none')
+          }), /*#__PURE__*/jsx(InfoBox, {
+            icon: "phone",
+            title: t('detailedActivity.expandedBoxSection.userNumber'),
+            info: userPhone || t('common.none')
+          }), /*#__PURE__*/jsx(InfoBox, {
+            icon: "calendar",
+            title: t('detailedActivity.expandedBoxSection.callDate'),
+            info: creationDateTime
+          }), /*#__PURE__*/jsx(InfoBox, {
+            icon: "clock",
+            title: t('detailedActivity.expandedBoxSection.callDuration'),
+            info: callDuration ? new Date(callDuration * 1000).toISOString().substring(14, 19) : t('common.none').toLowerCase()
+          }), result ? /*#__PURE__*/jsx(InfoBox, {
+            icon: "phoneHang",
+            title: t('detailedActivity.expandedBoxSection.callResult'),
+            info: result
+          }) : /*#__PURE__*/jsx(Fragment, {}), isCopilotEnabled && transcript && /*#__PURE__*/jsx(ShowTranscriptButton, {
+            activity: activity
+          })]
+        }), /*#__PURE__*/jsx(ExpandedBoxSection, {
+          children: /*#__PURE__*/jsx(InfoBox, {
+            icon: "noteAction",
+            title: t('detailedActivity.expandedBoxSection.noteAction'),
+            info: callNote
+          })
+        })]
+      })]
+    })]
+  });
+};
+var CallDetail = function CallDetail(_ref2) {
+  var _getFieldByLogicRole, _getFieldByLogicRole2;
+  var activity = _ref2.activity,
+    dataModel = _ref2.dataModel,
+    _ref2$visibleFooter = _ref2.visibleFooter,
+    visibleFooter = _ref2$visibleFooter === void 0 ? true : _ref2$visibleFooter,
+    onSave = _ref2.onSave,
+    _ref2$actionsDisabled = _ref2.actionsDisabled,
+    actionsDisabled = _ref2$actionsDisabled === void 0 ? false : _ref2$actionsDisabled,
+    userId = _ref2.userId,
+    isBubble = _ref2.isBubble;
+  var reportResult = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.CALL_RESULT);
+  var callReported = (_getFieldByLogicRole = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.REPORTED)) === null || _getFieldByLogicRole === void 0 ? void 0 : _getFieldByLogicRole.valueLogicRole;
+  var _useState3 = useState(false),
+    _useState4 = _slicedToArray$g(_useState3, 2),
+    isOpenContactFlowModal = _useState4[0],
+    setIsOpenContactFlowModal = _useState4[1];
+  var _useState5 = useState(
+    // @ts-ignore
+    getReferencedBobject(activity)),
+    _useState6 = _slicedToArray$g(_useState5, 2),
+    referenceBobject = _useState6[0],
+    setReferenceBobject = _useState6[1];
+  var _useTranslation3 = useTranslation(),
+    t = _useTranslation3.t;
+  var _useWizardContext = useWizardContext(),
+    openWizard = _useWizardContext.openWizard,
+    resetWizardProperties = _useWizardContext.resetWizardProperties;
+  var assignee = ((_getFieldByLogicRole2 = getFieldByLogicRole(referenceBobject, LEAD_FIELDS_LOGIC_ROLE.ASSIGNED_TO)) === null || _getFieldByLogicRole2 === void 0 ? void 0 : _getFieldByLogicRole2.value) || (referenceBobject === null || referenceBobject === void 0 ? void 0 : referenceBobject.assignedTo);
+  var assignedToActiveUser = assignee === userId;
+  function handleClose() {
+    setIsOpenContactFlowModal(false);
+    onSave === null || onSave === void 0 ? void 0 : onSave();
+    resetWizardProperties(WIZARD_MODALS.CONTACT_FLOW_OTO);
+  }
+  function handleOnClick() {
+    var referencedBobject = getReferencedBobject(activity);
+    if (!referencedBobject) getExtensionBobjectByIdFields(referencedBobject.id).then(function (_ref3) {
+      var data = _ref3.data;
+      return setReferenceBobject(data);
+    });
+    setIsOpenContactFlowModal(true);
+  }
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$f.container,
+    children: [!activity ? /*#__PURE__*/jsx("div", {
+      className: styles$f.loading,
+      children: /*#__PURE__*/jsx(Spinner, {
+        name: "loadingCircle"
+      })
+    }) : /*#__PURE__*/jsxs(Fragment, {
+      children: [/*#__PURE__*/jsx(CopilotActivityContextProvider, {
+        activity: activity,
+        children: /*#__PURE__*/jsx(DetailedActivity$3, {
+          activity: activity,
+          dataModel: dataModel,
+          userId: userId,
+          actionsDisabled: actionsDisabled,
+          openContactFlow: handleOnClick,
+          isBubble: isBubble
+        })
+      }), visibleFooter && /*#__PURE__*/jsx(DetailsFooter, {
+        children: callReported && callReported === REPORTED_VALUES_LOGIC_ROLE.YES ? /*#__PURE__*/jsxs(Button, {
+          variant: "primary",
+          color: "verySoftMelon",
+          className: clsx(styles$f.reportResultButton, _defineProperty$g({}, styles$f.disabledButton, actionsDisabled && !assignedToActiveUser)),
+          onClick: handleOnClick,
+          disabled: actionsDisabled && !assignedToActiveUser,
+          children: [/*#__PURE__*/jsx(Icon, {
+            name: "thumbsUp",
+            size: 14,
+            color: "melon"
+          }), reportResult || t('detailedActivity.expandedBoxSection.callReported')]
+        }) : /*#__PURE__*/jsxs(Button, {
+          variant: "secondary",
+          onClick: handleOnClick,
+          disabled: actionsDisabled && !assignedToActiveUser,
+          children: [/*#__PURE__*/jsx(Icon, {
+            name: "thumbsUp",
+            size: 14
+          }), t('common.reportResult')]
+        })
+      })]
+    }), isOpenContactFlowModal && referenceBobject && openWizard(WIZARD_MODALS.CONTACT_FLOW_OTO, activity, {
+      referenceBobject: referenceBobject,
+      handleClose: handleClose
+    })]
+  });
+};
+
+function _typeof$g(obj) { "@babel/helpers - typeof"; return _typeof$g = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$g(obj); }
+function _defineProperty$f(obj, key, value) { key = _toPropertyKey$f(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$f(arg) { var key = _toPrimitive$f(arg, "string"); return _typeof$g(key) === "symbol" ? key : String(key); }
+function _toPrimitive$f(input, hint) { if (_typeof$g(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$g(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var useEmailThreadActivities = function useEmailThreadActivities(threadId, accountId) {
+  var _injectReferencesSear, _data$data;
+  var fetchActivities = function fetchActivities() {
+    return api.post('/bobjects/' + accountId + '/Activity/search', {
+      //TODO: Add columns in query
+      query: _defineProperty$f(_defineProperty$f({}, ACTIVITY_FIELDS_LOGIC_ROLE.TYPE, [ACTIVITY_TYPES_VALUES_LOGIC_ROLE.EMAIL]), ACTIVITY_FIELDS_LOGIC_ROLE.EMAIL_THREAD_ID, threadId),
+      page: 0,
+      formFields: true,
+      pageSize: 30,
+      injectReferences: true,
+      sort: [{
+        field: ACTIVITY_FIELDS_LOGIC_ROLE.TIME,
+        direction: 'DESC'
+      }],
+      trimBigBodies: true
+    });
+  };
+  var _useSWR = useSWR(accountId && threadId && "/emailThreadActivities/".concat(threadId), fetchActivities),
+    data = _useSWR.data;
+  return {
+    data: data,
+    activities: data && ((_injectReferencesSear = injectReferencesSearchProcess(data === null || data === void 0 ? void 0 : data.data)) === null || _injectReferencesSear === void 0 ? void 0 : _injectReferencesSear.contents),
+    total: data === null || data === void 0 ? void 0 : (_data$data = data.data) === null || _data$data === void 0 ? void 0 : _data$data.totalMatching
+  };
+};
+
+var css_248z$d = ".emailThreadDetail-module_container__qYDfL {\n  padding-top: 4px;\n  height: 100%;\n  justify-content: space-between;\n  display: flex;\n  flex-direction: column;\n}\n\n.emailThreadDetail-module_container__qYDfL * {\n  font-size: 13px;\n}\n\n.emailThreadDetail-module_emailDetail_container__x8ay- {\n  margin-top: 2px;\n  height: 93%;\n  overflow: auto;\n  box-sizing: border-box;\n  flex: 1;\n}\n\n.emailThreadDetail-module_loading__YieT7 {\n  display: flex;\n  justify-content: center;\n}\n\n.emailThreadDetail-module_htmlBody__mhg2P {\n  padding: 10px 20px;\n}\n\n.emailThreadDetail-module_htmlBody__mhg2P > * {\n  font-size: 10px;\n}\n\n.emailThreadDetail-module_htmlBody__mhg2P > div {\n  max-width: 350px !important;\n}\n\n.emailThreadDetail-module_htmlBody__mhg2P > div * {\n  max-width: 350px !important;\n}\n\n.emailThreadDetail-module_htmlBody__mhg2P > div ul,\n.emailThreadDetail-module_htmlBody__mhg2P > div ol {\n  padding-left: 16px !important;\n}\n\n.emailThreadDetail-module_openedClickedElement__W-ltS {\n  margin-top: 8px;\n}\n\n.emailThreadDetail-module__text_message__c-mNg {\n  overflow: auto;\n  overscroll-behavior-y: contain;\n}\n\n.emailThreadDetail-module_htmlBody__mhg2P ul {\n  margin-top: 4px;\n  list-style-type: disc;\n  margin-left: 15px;\n}\n\n.emailThreadDetail-module_htmlBody__mhg2P ol {\n  margin-top: 4px;\n  list-style-type: decimal;\n  margin-left: 15px;\n}\n\n.emailThreadDetail-module_htmlBody__mhg2P ul ul,\n.emailThreadDetail-module_htmlBody__mhg2P ol ul {\n  list-style-type: circle;\n  margin-left: 15px;\n}\n\n.emailThreadDetail-module_htmlBody__mhg2P ol ol,\n.emailThreadDetail-module_htmlBody__mhg2P ul ol {\n  list-style-type: lower-latin;\n  margin-left: 15px;\n}\n\n.emailThreadDetail-module_htmlBody__mhg2P > div:first-child img {\n  max-width: 100% !important;\n  height: auto !important;\n}\n";
+var styles$d = {"container":"emailThreadDetail-module_container__qYDfL","emailDetail_container":"emailThreadDetail-module_emailDetail_container__x8ay-","loading":"emailThreadDetail-module_loading__YieT7","htmlBody":"emailThreadDetail-module_htmlBody__mhg2P","openedClickedElement":"emailThreadDetail-module_openedClickedElement__W-ltS","_text_message":"emailThreadDetail-module__text_message__c-mNg"};
+styleInject(css_248z$d);
+
+function ownKeys$7(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$7(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$7(Object(source), !0).forEach(function (key) { _defineProperty$e(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$7(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$e(obj, key, value) { key = _toPropertyKey$e(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$e(arg) { var key = _toPrimitive$e(arg, "string"); return _typeof$f(key) === "symbol" ? key : String(key); }
+function _toPrimitive$e(input, hint) { if (_typeof$f(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$f(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _toConsumableArray$5(arr) { return _arrayWithoutHoles$5(arr) || _iterableToArray$5(arr) || _unsupportedIterableToArray$f(arr) || _nonIterableSpread$5(); }
+function _nonIterableSpread$5() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray$5(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function _arrayWithoutHoles$5(arr) { if (Array.isArray(arr)) return _arrayLikeToArray$f(arr); }
+function _typeof$f(obj) { "@babel/helpers - typeof"; return _typeof$f = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$f(obj); }
+function _slicedToArray$f(arr, i) { return _arrayWithHoles$f(arr) || _iterableToArrayLimit$f(arr, i) || _unsupportedIterableToArray$f(arr, i) || _nonIterableRest$f(); }
+function _nonIterableRest$f() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$f(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$f(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$f(o, minLen); }
+function _arrayLikeToArray$f(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$f(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$f(arr) { if (Array.isArray(arr)) return arr; }
+function _regeneratorRuntime$4() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime$4 = function _regeneratorRuntime() { return exports; }; var exports = {}, Op = Object.prototype, hasOwn = Op.hasOwnProperty, defineProperty = Object.defineProperty || function (obj, key, desc) { obj[key] = desc.value; }, $Symbol = "function" == typeof Symbol ? Symbol : {}, iteratorSymbol = $Symbol.iterator || "@@iterator", asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator", toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag"; function define(obj, key, value) { return Object.defineProperty(obj, key, { value: value, enumerable: !0, configurable: !0, writable: !0 }), obj[key]; } try { define({}, ""); } catch (err) { define = function define(obj, key, value) { return obj[key] = value; }; } function wrap(innerFn, outerFn, self, tryLocsList) { var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator, generator = Object.create(protoGenerator.prototype), context = new Context(tryLocsList || []); return defineProperty(generator, "_invoke", { value: makeInvokeMethod(innerFn, self, context) }), generator; } function tryCatch(fn, obj, arg) { try { return { type: "normal", arg: fn.call(obj, arg) }; } catch (err) { return { type: "throw", arg: err }; } } exports.wrap = wrap; var ContinueSentinel = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var IteratorPrototype = {}; define(IteratorPrototype, iteratorSymbol, function () { return this; }); var getProto = Object.getPrototypeOf, NativeIteratorPrototype = getProto && getProto(getProto(values([]))); NativeIteratorPrototype && NativeIteratorPrototype !== Op && hasOwn.call(NativeIteratorPrototype, iteratorSymbol) && (IteratorPrototype = NativeIteratorPrototype); var Gp = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(IteratorPrototype); function defineIteratorMethods(prototype) { ["next", "throw", "return"].forEach(function (method) { define(prototype, method, function (arg) { return this._invoke(method, arg); }); }); } function AsyncIterator(generator, PromiseImpl) { function invoke(method, arg, resolve, reject) { var record = tryCatch(generator[method], generator, arg); if ("throw" !== record.type) { var result = record.arg, value = result.value; return value && "object" == _typeof$f(value) && hasOwn.call(value, "__await") ? PromiseImpl.resolve(value.__await).then(function (value) { invoke("next", value, resolve, reject); }, function (err) { invoke("throw", err, resolve, reject); }) : PromiseImpl.resolve(value).then(function (unwrapped) { result.value = unwrapped, resolve(result); }, function (error) { return invoke("throw", error, resolve, reject); }); } reject(record.arg); } var previousPromise; defineProperty(this, "_invoke", { value: function value(method, arg) { function callInvokeWithMethodAndArg() { return new PromiseImpl(function (resolve, reject) { invoke(method, arg, resolve, reject); }); } return previousPromise = previousPromise ? previousPromise.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(innerFn, self, context) { var state = "suspendedStart"; return function (method, arg) { if ("executing" === state) throw new Error("Generator is already running"); if ("completed" === state) { if ("throw" === method) throw arg; return doneResult(); } for (context.method = method, context.arg = arg;;) { var delegate = context.delegate; if (delegate) { var delegateResult = maybeInvokeDelegate(delegate, context); if (delegateResult) { if (delegateResult === ContinueSentinel) continue; return delegateResult; } } if ("next" === context.method) context.sent = context._sent = context.arg;else if ("throw" === context.method) { if ("suspendedStart" === state) throw state = "completed", context.arg; context.dispatchException(context.arg); } else "return" === context.method && context.abrupt("return", context.arg); state = "executing"; var record = tryCatch(innerFn, self, context); if ("normal" === record.type) { if (state = context.done ? "completed" : "suspendedYield", record.arg === ContinueSentinel) continue; return { value: record.arg, done: context.done }; } "throw" === record.type && (state = "completed", context.method = "throw", context.arg = record.arg); } }; } function maybeInvokeDelegate(delegate, context) { var methodName = context.method, method = delegate.iterator[methodName]; if (undefined === method) return context.delegate = null, "throw" === methodName && delegate.iterator["return"] && (context.method = "return", context.arg = undefined, maybeInvokeDelegate(delegate, context), "throw" === context.method) || "return" !== methodName && (context.method = "throw", context.arg = new TypeError("The iterator does not provide a '" + methodName + "' method")), ContinueSentinel; var record = tryCatch(method, delegate.iterator, context.arg); if ("throw" === record.type) return context.method = "throw", context.arg = record.arg, context.delegate = null, ContinueSentinel; var info = record.arg; return info ? info.done ? (context[delegate.resultName] = info.value, context.next = delegate.nextLoc, "return" !== context.method && (context.method = "next", context.arg = undefined), context.delegate = null, ContinueSentinel) : info : (context.method = "throw", context.arg = new TypeError("iterator result is not an object"), context.delegate = null, ContinueSentinel); } function pushTryEntry(locs) { var entry = { tryLoc: locs[0] }; 1 in locs && (entry.catchLoc = locs[1]), 2 in locs && (entry.finallyLoc = locs[2], entry.afterLoc = locs[3]), this.tryEntries.push(entry); } function resetTryEntry(entry) { var record = entry.completion || {}; record.type = "normal", delete record.arg, entry.completion = record; } function Context(tryLocsList) { this.tryEntries = [{ tryLoc: "root" }], tryLocsList.forEach(pushTryEntry, this), this.reset(!0); } function values(iterable) { if (iterable) { var iteratorMethod = iterable[iteratorSymbol]; if (iteratorMethod) return iteratorMethod.call(iterable); if ("function" == typeof iterable.next) return iterable; if (!isNaN(iterable.length)) { var i = -1, next = function next() { for (; ++i < iterable.length;) if (hasOwn.call(iterable, i)) return next.value = iterable[i], next.done = !1, next; return next.value = undefined, next.done = !0, next; }; return next.next = next; } } return { next: doneResult }; } function doneResult() { return { value: undefined, done: !0 }; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, defineProperty(Gp, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), defineProperty(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, toStringTagSymbol, "GeneratorFunction"), exports.isGeneratorFunction = function (genFun) { var ctor = "function" == typeof genFun && genFun.constructor; return !!ctor && (ctor === GeneratorFunction || "GeneratorFunction" === (ctor.displayName || ctor.name)); }, exports.mark = function (genFun) { return Object.setPrototypeOf ? Object.setPrototypeOf(genFun, GeneratorFunctionPrototype) : (genFun.__proto__ = GeneratorFunctionPrototype, define(genFun, toStringTagSymbol, "GeneratorFunction")), genFun.prototype = Object.create(Gp), genFun; }, exports.awrap = function (arg) { return { __await: arg }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, asyncIteratorSymbol, function () { return this; }), exports.AsyncIterator = AsyncIterator, exports.async = function (innerFn, outerFn, self, tryLocsList, PromiseImpl) { void 0 === PromiseImpl && (PromiseImpl = Promise); var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList), PromiseImpl); return exports.isGeneratorFunction(outerFn) ? iter : iter.next().then(function (result) { return result.done ? result.value : iter.next(); }); }, defineIteratorMethods(Gp), define(Gp, toStringTagSymbol, "Generator"), define(Gp, iteratorSymbol, function () { return this; }), define(Gp, "toString", function () { return "[object Generator]"; }), exports.keys = function (val) { var object = Object(val), keys = []; for (var key in object) keys.push(key); return keys.reverse(), function next() { for (; keys.length;) { var key = keys.pop(); if (key in object) return next.value = key, next.done = !1, next; } return next.done = !0, next; }; }, exports.values = values, Context.prototype = { constructor: Context, reset: function reset(skipTempReset) { if (this.prev = 0, this.next = 0, this.sent = this._sent = undefined, this.done = !1, this.delegate = null, this.method = "next", this.arg = undefined, this.tryEntries.forEach(resetTryEntry), !skipTempReset) for (var name in this) "t" === name.charAt(0) && hasOwn.call(this, name) && !isNaN(+name.slice(1)) && (this[name] = undefined); }, stop: function stop() { this.done = !0; var rootRecord = this.tryEntries[0].completion; if ("throw" === rootRecord.type) throw rootRecord.arg; return this.rval; }, dispatchException: function dispatchException(exception) { if (this.done) throw exception; var context = this; function handle(loc, caught) { return record.type = "throw", record.arg = exception, context.next = loc, caught && (context.method = "next", context.arg = undefined), !!caught; } for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i], record = entry.completion; if ("root" === entry.tryLoc) return handle("end"); if (entry.tryLoc <= this.prev) { var hasCatch = hasOwn.call(entry, "catchLoc"), hasFinally = hasOwn.call(entry, "finallyLoc"); if (hasCatch && hasFinally) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } else if (hasCatch) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); } else { if (!hasFinally) throw new Error("try statement without catch or finally"); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } } } }, abrupt: function abrupt(type, arg) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc <= this.prev && hasOwn.call(entry, "finallyLoc") && this.prev < entry.finallyLoc) { var finallyEntry = entry; break; } } finallyEntry && ("break" === type || "continue" === type) && finallyEntry.tryLoc <= arg && arg <= finallyEntry.finallyLoc && (finallyEntry = null); var record = finallyEntry ? finallyEntry.completion : {}; return record.type = type, record.arg = arg, finallyEntry ? (this.method = "next", this.next = finallyEntry.finallyLoc, ContinueSentinel) : this.complete(record); }, complete: function complete(record, afterLoc) { if ("throw" === record.type) throw record.arg; return "break" === record.type || "continue" === record.type ? this.next = record.arg : "return" === record.type ? (this.rval = this.arg = record.arg, this.method = "return", this.next = "end") : "normal" === record.type && afterLoc && (this.next = afterLoc), ContinueSentinel; }, finish: function finish(finallyLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.finallyLoc === finallyLoc) return this.complete(entry.completion, entry.afterLoc), resetTryEntry(entry), ContinueSentinel; } }, "catch": function _catch(tryLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc === tryLoc) { var record = entry.completion; if ("throw" === record.type) { var thrown = record.arg; resetTryEntry(entry); } return thrown; } } throw new Error("illegal catch attempt"); }, delegateYield: function delegateYield(iterable, resultName, nextLoc) { return this.delegate = { iterator: values(iterable), resultName: resultName, nextLoc: nextLoc }, "next" === this.method && (this.arg = undefined), ContinueSentinel; } }, exports; }
+function asyncGeneratorStep$4(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function _asyncToGenerator$4(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep$4(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep$4(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+var openHtmlNewTab = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator$4( /*#__PURE__*/_regeneratorRuntime$4().mark(function _callee(activityId) {
+    var response, blob, url;
+    return _regeneratorRuntime$4().wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          _context.next = 2;
+          return api.get("/utils/service/activity/".concat(activityId, "/body"));
+        case 2:
+          response = _context.sent;
+          blob = new Blob([response.data], {
+            type: 'text/html'
+          });
+          url = URL.createObjectURL(blob);
+          window.open(url, '_blank');
+        case 6:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee);
+  }));
+  return function openHtmlNewTab(_x) {
+    return _ref.apply(this, arguments);
+  };
+}();
+var DetailedActivity$2 = function DetailedActivity(_ref2) {
+  var _activityBody, _activityBody2;
+  var activity = _ref2.activity;
+  var _useState = useState(false),
+    _useState2 = _slicedToArray$f(_useState, 2),
+    loading = _useState2[0],
+    setLoading = _useState2[1];
+  var plugins = useRichTextEditorPlugins({
+    rawHTMLBlock: true,
+    replyHistory: true,
+    keepDivs: true
+  });
+  var activityBody = getValueFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.MESSAGE_BODY);
+  if ((_activityBody = activityBody) !== null && _activityBody !== void 0 && _activityBody.includes('"type":"p"') && typeof activityBody === 'string' && _typeof$f(JSON.parse(activityBody)) === 'object') {
+    activityBody = serialize(activityBody, {
+      format: 'AST',
+      plugins: plugins
+    });
+  }
+  var cleanedHtmlString = (_activityBody2 = activityBody) === null || _activityBody2 === void 0 ? void 0 : _activityBody2.replace(/<style>[\s\S]*?<\/style>/g, '');
+  var isHtmlMessage = activityBody && isHtml(activityBody);
+  var activityAttachedFiles = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.ATTACHED_FILES);
+  var activityAttachments = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.ATTACHMENTS);
+  var isIncomingActivity = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.DIRECTION) === ACTIVITY_DIRECTION.INCOMING;
+  var parsedAttachedFiles = activityAttachedFiles && JSON.parse(activityAttachedFiles);
+  var parsedAttachments = activityAttachments && JSON.parse(activityAttachments);
+  var isBodyTooLarge = activityBody.includes('Content too long to display');
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$d.htmlBody,
+    children: [!isBodyTooLarge ? isHtmlMessage ? /*#__PURE__*/jsx("div", {
+      dangerouslySetInnerHTML: {
+        __html: parseEmailPixels(cleanedHtmlString)
+      }
+    }) : /*#__PURE__*/jsx("div", {
+      className: styles$d._text_message,
+      children: /*#__PURE__*/jsx(Text, {
+        size: "xs",
+        children: activityBody
+      })
+    }) : /*#__PURE__*/jsxs("div", {
+      style: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px'
+      },
+      children: [/*#__PURE__*/jsx(Text, {
+        size: "xs",
+        children: "The message body is too large to be displayed."
+      }), /*#__PURE__*/jsx(Button, {
+        uppercase: false,
+        size: "small",
+        variant: "tertiary",
+        onClick: /*#__PURE__*/function () {
+          var _ref3 = _asyncToGenerator$4( /*#__PURE__*/_regeneratorRuntime$4().mark(function _callee2(e) {
+            var _activity$id;
+            return _regeneratorRuntime$4().wrap(function _callee2$(_context2) {
+              while (1) switch (_context2.prev = _context2.next) {
+                case 0:
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setLoading(true);
+                  _context2.next = 5;
+                  return openHtmlNewTab((_activity$id = activity.id) === null || _activity$id === void 0 ? void 0 : _activity$id.objectId);
+                case 5:
+                  setLoading(false);
+                case 6:
+                case "end":
+                  return _context2.stop();
+              }
+            }, _callee2);
+          }));
+          return function (_x2) {
+            return _ref3.apply(this, arguments);
+          };
+        }(),
+        children: !loading ? 'Click here to open in new tab' : /*#__PURE__*/jsx("div", {
+          className: styles$d.loading,
+          children: /*#__PURE__*/jsx(Spinner, {
+            name: "loadingCircle"
+          })
+        })
+      })]
+    }), parsedAttachedFiles && (parsedAttachedFiles === null || parsedAttachedFiles === void 0 ? void 0 : parsedAttachedFiles.length) !== 0 && /*#__PURE__*/jsx(LightAttachmentList, {
+      files: parsedAttachedFiles,
+      betterAttachments: parsedAttachments
+    }), !isIncomingActivity && /*#__PURE__*/jsx("div", {
+      className: styles$d.openedClickedElement,
+      children: /*#__PURE__*/jsx(OpenClickedStatistics, {
+        bobject: activity,
+        size: "small"
+      })
+    })]
+  });
+};
+var EmailThreadDetail = function EmailThreadDetail(_ref4) {
+  var _activity$id4, _activitiesToRender$, _activitiesToRender$$, _getFieldByLogicRole, _getFieldByLogicRole2, _getFieldByLogicRole3, _concat, _emailMetadata$from, _emailMetadata$from$, _emailMetadata$to, _emailMetadata$cc, _getFieldByLogicRole4, _bobjectsSync$find;
+  var activity = _ref4.activity,
+    emailThreadId = _ref4.emailThreadId,
+    accountId = _ref4.accountId,
+    dataModel = _ref4.dataModel,
+    _ref4$visibleFooter = _ref4.visibleFooter,
+    visibleFooter = _ref4$visibleFooter === void 0 ? true : _ref4$visibleFooter,
+    _ref4$actionsDisabled = _ref4.actionsDisabled,
+    actionsDisabled = _ref4$actionsDisabled === void 0 ? false : _ref4$actionsDisabled,
+    userId = _ref4.userId;
+  var activityId = activity === null || activity === void 0 ? void 0 : activity.id;
+  var _useState3 = useState([activityId]),
+    _useState4 = _slicedToArray$f(_useState3, 2),
+    selectedActivities = _useState4[0],
+    setSelectedActivities = _useState4[1];
+  var _useEmailThreadActivi = useEmailThreadActivities(emailThreadId, accountId),
+    activities = _useEmailThreadActivi.activities;
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  var handleClickRow = function handleClickRow(activity) {
+    if (selectedActivities !== null && selectedActivities !== void 0 && selectedActivities.find(function (act) {
+      var _activity$id2;
+      return (act === null || act === void 0 ? void 0 : act.value) === (activity === null || activity === void 0 ? void 0 : (_activity$id2 = activity.id) === null || _activity$id2 === void 0 ? void 0 : _activity$id2.value);
+    })) {
+      setSelectedActivities(selectedActivities === null || selectedActivities === void 0 ? void 0 : selectedActivities.filter(function (act) {
+        var _activity$id3;
+        return (act === null || act === void 0 ? void 0 : act.value) !== (activity === null || activity === void 0 ? void 0 : (_activity$id3 = activity.id) === null || _activity$id3 === void 0 ? void 0 : _activity$id3.value);
+      }));
+    } else {
+      setSelectedActivities([].concat(_toConsumableArray$5(selectedActivities), [activity === null || activity === void 0 ? void 0 : activity.id]));
+    }
+  };
+  useEffect(function () {
+    setSelectedActivities([activity === null || activity === void 0 ? void 0 : activity.id]);
+  }, [activity === null || activity === void 0 ? void 0 : (_activity$id4 = activity.id) === null || _activity$id4 === void 0 ? void 0 : _activity$id4.value]);
+  var activitiesToRender = emailThreadId ? activities : [activity];
+  var _useSyncBobjectStatus = useSyncBobjectStatus(activitiesToRender === null || activitiesToRender === void 0 ? void 0 : (_activitiesToRender$ = activitiesToRender[0]) === null || _activitiesToRender$ === void 0 ? void 0 : (_activitiesToRender$$ = _activitiesToRender$.id) === null || _activitiesToRender$$ === void 0 ? void 0 : _activitiesToRender$$.accountId, activitiesToRender),
+    bobjectsSync = _useSyncBobjectStatus.bobjectsSync;
+  var setEmailVariablesValue = useBaseSetEmailVariablesValues();
+  var _useMinimizableModals = useMinimizableModals(),
+    openMinimizableModal = _useMinimizableModals.openMinimizableModal;
+  var activityCompany = (_getFieldByLogicRole = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.COMPANY)) === null || _getFieldByLogicRole === void 0 ? void 0 : _getFieldByLogicRole.referencedBobject;
+  var activityLead = (_getFieldByLogicRole2 = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.LEAD)) === null || _getFieldByLogicRole2 === void 0 ? void 0 : _getFieldByLogicRole2.referencedBobject;
+  var activityOpportunity = (_getFieldByLogicRole3 = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.OPPORTUNITY)) === null || _getFieldByLogicRole3 === void 0 ? void 0 : _getFieldByLogicRole3.referencedBobject;
+  var emailMetadataString = getValueFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.EMAIL_METADATA);
+  var emailMetadata = emailMetadataString ? JSON.parse(emailMetadataString) : {};
+  var emailToArray = !!emailMetadata && ((_concat = [(_emailMetadata$from = emailMetadata.from) === null || _emailMetadata$from === void 0 ? void 0 : (_emailMetadata$from$ = _emailMetadata$from[0]) === null || _emailMetadata$from$ === void 0 ? void 0 : _emailMetadata$from$.email].concat((_emailMetadata$to = emailMetadata.to) === null || _emailMetadata$to === void 0 ? void 0 : _emailMetadata$to.map(function (e) {
+    return e.email;
+  }))) === null || _concat === void 0 ? void 0 : _concat.filter(Boolean));
+  var emailCcArray = !!emailMetadata && ((_emailMetadata$cc = emailMetadata.cc) === null || _emailMetadata$cc === void 0 ? void 0 : _emailMetadata$cc.map(function (e) {
+    return e.email;
+  }));
+  var activityDirection = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.DIRECTION);
+  var handleOpenEmailModal = /*#__PURE__*/function () {
+    var _ref5 = _asyncToGenerator$4( /*#__PURE__*/_regeneratorRuntime$4().mark(function _callee3(event, emailTo, emailCc) {
+      var _templateSubject;
+      var templateSubject;
+      return _regeneratorRuntime$4().wrap(function _callee3$(_context3) {
+        while (1) switch (_context3.prev = _context3.next) {
+          case 0:
+            event.preventDefault();
+            event.stopPropagation();
+            mixpanel.track(MIXPANEL_EVENTS.CLICK_ON_REPLY_FROM_EMAIL_OTO);
+            setEmailVariablesValue({
+              company: activityCompany,
+              lead: activityLead,
+              opportunity: activityOpportunity
+            });
+            templateSubject = getValueFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.MESSAGE_SUBJECT, true);
+            if ((_templateSubject = templateSubject) !== null && _templateSubject !== void 0 && _templateSubject.includes('"type":"p"') && typeof templateSubject === 'string' && _typeof$f(JSON.parse(templateSubject)) === 'object') {
+              templateSubject = removeHtmlTags(serialize(templateSubject));
+            }
+            openMinimizableModal({
+              type: 'email',
+              title: removeHtmlTags(templateSubject),
+              data: _objectSpread$7(_objectSpread$7({
+                template: {
+                  body: '',
+                  subject: templateSubject || ''
+                },
+                mode: EMAIL_MODE.REPLY,
+                activity: activity,
+                company: activityCompany,
+                lead: activityLead,
+                pageBobjectType: activityLead ? BobjectTypes.Lead : BobjectTypes.Company
+              }, emailTo ? {
+                defaultToEmail: emailTo.map(function (email) {
+                  return email === null || email === void 0 ? void 0 : email.toLowerCase();
+                })
+              } : {}), emailCc ? {
+                defaultCcEmail: emailCc.map(function (email) {
+                  return email === null || email === void 0 ? void 0 : email.toLowerCase();
+                })
+              } : {}),
+              onSave: function onSave() {
+                window.dispatchEvent(new CustomEvent(MessagesEvents.ActiveBobjectUpdated, {
+                  detail: {
+                    type: BobjectTypes.Activity
+                  }
+                }));
+              }
+            });
+          case 7:
+          case "end":
+            return _context3.stop();
+        }
+      }, _callee3);
+    }));
+    return function handleOpenEmailModal(_x3, _x4, _x5) {
+      return _ref5.apply(this, arguments);
+    };
+  }();
+  var referenceBobject = getReferencedBobject(activity);
+  var assignee = ((_getFieldByLogicRole4 = getFieldByLogicRole(referenceBobject, LEAD_FIELDS_LOGIC_ROLE.ASSIGNED_TO
+  // @ts-ignore
+  )) === null || _getFieldByLogicRole4 === void 0 ? void 0 : _getFieldByLogicRole4.value) || (referenceBobject === null || referenceBobject === void 0 ? void 0 : referenceBobject.assignedTo);
+  var assignedToActiveUser = assignee === userId;
+  var syncStatus = bobjectsSync === null || bobjectsSync === void 0 ? void 0 : (_bobjectsSync$find = bobjectsSync.find(function (sync) {
+    var _activity$id5;
+    return (sync === null || sync === void 0 ? void 0 : sync.bobjectId) === (activity === null || activity === void 0 ? void 0 : (_activity$id5 = activity.id) === null || _activity$id5 === void 0 ? void 0 : _activity$id5.objectId);
+  })) === null || _bobjectsSync$find === void 0 ? void 0 : _bobjectsSync$find.syncStatusOk;
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$d.container,
+    children: [/*#__PURE__*/jsx("div", {
+      className: styles$d.emailDetail_container,
+      children: !activitiesToRender ? /*#__PURE__*/jsx("div", {
+        className: styles$d.loading,
+        children: /*#__PURE__*/jsx(Spinner, {
+          name: "loadingCircle"
+        })
+      }) : /*#__PURE__*/jsx(Timeline, {
+        size: "small",
+        children: activitiesToRender === null || activitiesToRender === void 0 ? void 0 : activitiesToRender.map(function (activity, index) {
+          var _activity$id6, _activity$id7, _activity$id8;
+          var isSelected = selectedActivities === null || selectedActivities === void 0 ? void 0 : selectedActivities.map(function (act) {
+            return act === null || act === void 0 ? void 0 : act.value;
+          }).includes(activity === null || activity === void 0 ? void 0 : (_activity$id6 = activity.id) === null || _activity$id6 === void 0 ? void 0 : _activity$id6.value);
+          return /*#__PURE__*/jsxs("div", {
+            children: [/*#__PURE__*/jsx(ActivityTimelineItem, {
+              activity: activity,
+              onClick: handleClickRow,
+              startDisplayDivider: (activities === null || activities === void 0 ? void 0 : activities.length) > 1 && index !== 0,
+              endDisplayDivider: (activities === null || activities === void 0 ? void 0 : activities.length) > 1 && index + 1 !== (activities === null || activities === void 0 ? void 0 : activities.length),
+              activeHover: !isSelected,
+              extended: true,
+              dataModel: dataModel,
+              alternativeDescription: true,
+              syncStatus: syncStatus
+            }, activity === null || activity === void 0 ? void 0 : (_activity$id8 = activity.id) === null || _activity$id8 === void 0 ? void 0 : _activity$id8.value), (selectedActivities === null || selectedActivities === void 0 ? void 0 : selectedActivities.find(function (act) {
+              var _activity$id9;
+              return (act === null || act === void 0 ? void 0 : act.value) === (activity === null || activity === void 0 ? void 0 : (_activity$id9 = activity.id) === null || _activity$id9 === void 0 ? void 0 : _activity$id9.value);
+            })) && /*#__PURE__*/jsx(DetailedActivity$2, {
+              activity: activity
+            })]
+          }, (activity === null || activity === void 0 ? void 0 : (_activity$id7 = activity.id) === null || _activity$id7 === void 0 ? void 0 : _activity$id7.value) + '-' + index);
+        })
+      })
+    }), visibleFooter && /*#__PURE__*/jsx(DetailsFooter, {
+      children: /*#__PURE__*/jsxs(Fragment, {
+        children: [activityDirection === ACTIVITY_DIRECTION.INCOMING && /*#__PURE__*/jsxs(Button, {
+          variant: "secondary",
+          onClick: function onClick(e) {
+            return handleOpenEmailModal(e, emailToArray, emailCcArray);
+          },
+          disabled: actionsDisabled && !assignedToActiveUser,
+          children: [/*#__PURE__*/jsx(Icon, {
+            name: "replyAll",
+            size: 14
+          }), t('activityTimelineItem.item.replyAll')]
+        }), /*#__PURE__*/jsxs(Button, {
+          variant: "secondary",
+          onClick: function onClick(e) {
+            return handleOpenEmailModal(e, activityDirection === ACTIVITY_DIRECTION.INCOMING || emailToArray && (emailToArray === null || emailToArray === void 0 ? void 0 : emailToArray.length) === 0 ? undefined : emailToArray, activityDirection === ACTIVITY_DIRECTION.INCOMING || emailCcArray && (emailCcArray === null || emailCcArray === void 0 ? void 0 : emailCcArray.length) === 0 ? undefined : emailCcArray);
+          },
+          disabled: actionsDisabled && !assignedToActiveUser,
+          children: [/*#__PURE__*/jsx(Icon, {
+            name: activityDirection === ACTIVITY_DIRECTION.INCOMING ? 'reply' : 'mail',
+            size: 14
+          }), activityDirection === ACTIVITY_DIRECTION.INCOMING ? t('activityTimelineItem.item.reply') : t('activityTimelineItem.item.sendAnother')]
+        })]
+      })
+    })]
+  });
+};
+
+var css_248z$c = ".inboundDetail-module_container__Utt6y {\n  padding-top: 4px;\n  height: 100%;\n  display: flex;\n  flex-direction: column;\n  justify-content: space-between;\n}\n\n.inboundDetail-module_htmlBody__ec4p6 {\n  overflow: auto;\n}\n\n.inboundDetail-module_htmlBody__ec4p6 > * {\n  font-size: 10px;\n}\n\n.inboundDetail-module_inboundInfoWrapper__vOVce {\n  padding: 6px 14px 45px 18px;\n}\n\n.inboundDetail-module_infoBlock__l7E7O {\n  margin-bottom: 4px\n}\n\n.inboundDetail-module_infoBlockFieldName__cDIyk {\n  margin-bottom: 5px\n}\n\n.inboundDetail-module_loading__sIp-I {\n  margin: auto;\n  width: 90%;\n  height: 80%;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n}\n";
+var styles$c = {"container":"inboundDetail-module_container__Utt6y","htmlBody":"inboundDetail-module_htmlBody__ec4p6","inboundInfoWrapper":"inboundDetail-module_inboundInfoWrapper__vOVce","infoBlock":"inboundDetail-module_infoBlock__l7E7O","infoBlockFieldName":"inboundDetail-module_infoBlockFieldName__cDIyk","loading":"inboundDetail-module_loading__sIp-I"};
+styleInject(css_248z$c);
+
+var InfoBlock = function InfoBlock(_ref) {
+  var field = _ref.field,
+    value = _ref.value;
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$c.infoBlock,
+    children: [/*#__PURE__*/jsx(Text, {
+      className: styles$c.infoBlockFieldName,
+      size: "xs",
+      color: "softPeanut",
+      children: field
+    }), /*#__PURE__*/jsx(Text, {
+      size: "xs",
+      children: value ? value : '-'
+    })]
+  });
+};
+var DetailedActivity$1 = function DetailedActivity(_ref2) {
+  var activity = _ref2.activity,
+    dataModel = _ref2.dataModel;
+  var fields = dataModel === null || dataModel === void 0 ? void 0 : dataModel.getFieldsByBobjectType('Activity');
+  var inboundFields = fields === null || fields === void 0 ? void 0 : fields.filter(function (field) {
+    return field.inboundField;
+  }).sort(function (a, b) {
+    return a.ordering - b.ordering;
+  });
+  var fieldsToDisplay = inboundFields === null || inboundFields === void 0 ? void 0 : inboundFields.map(function (field) {
+    var _getFieldById;
+    return {
+      fieldName: field === null || field === void 0 ? void 0 : field.name,
+      value: (_getFieldById = getFieldById(activity, field === null || field === void 0 ? void 0 : field.id)) === null || _getFieldById === void 0 ? void 0 : _getFieldById.text
+    };
+  });
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$c.htmlBody,
+    children: [/*#__PURE__*/jsx(ActivityTimelineItem, {
+      activity: activity,
+      startDisplayDivider: false,
+      endDisplayDivider: false,
+      extended: true,
+      alternativeDescription: true,
+      activeHover: false,
+      dataModel: dataModel
+    }), /*#__PURE__*/jsx("div", {
+      className: styles$c.inboundInfoWrapper,
+      children: fieldsToDisplay && (fieldsToDisplay === null || fieldsToDisplay === void 0 ? void 0 : fieldsToDisplay.map(function (_ref3) {
+        var fieldName = _ref3.fieldName,
+          value = _ref3.value;
+        return /*#__PURE__*/jsx(InfoBlock, {
+          field: fieldName,
+          value: value
+        }, fieldName);
+      }))
+    })]
+  });
+};
+var InboundDetail = function InboundDetail(_ref4) {
+  var activity = _ref4.activity,
+    dataModel = _ref4.dataModel;
+  return /*#__PURE__*/jsx("div", {
+    className: styles$c.container,
+    children: !activity ? /*#__PURE__*/jsx("div", {
+      className: styles$c.loading,
+      children: /*#__PURE__*/jsx(Spinner, {
+        name: "loadingCircle"
+      })
+    }) : /*#__PURE__*/jsx(DetailedActivity$1, {
+      activity: activity,
+      dataModel: dataModel
+    })
+  });
+};
+
+function _typeof$e(obj) { "@babel/helpers - typeof"; return _typeof$e = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$e(obj); }
+function _regeneratorRuntime$3() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime$3 = function _regeneratorRuntime() { return exports; }; var exports = {}, Op = Object.prototype, hasOwn = Op.hasOwnProperty, defineProperty = Object.defineProperty || function (obj, key, desc) { obj[key] = desc.value; }, $Symbol = "function" == typeof Symbol ? Symbol : {}, iteratorSymbol = $Symbol.iterator || "@@iterator", asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator", toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag"; function define(obj, key, value) { return Object.defineProperty(obj, key, { value: value, enumerable: !0, configurable: !0, writable: !0 }), obj[key]; } try { define({}, ""); } catch (err) { define = function define(obj, key, value) { return obj[key] = value; }; } function wrap(innerFn, outerFn, self, tryLocsList) { var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator, generator = Object.create(protoGenerator.prototype), context = new Context(tryLocsList || []); return defineProperty(generator, "_invoke", { value: makeInvokeMethod(innerFn, self, context) }), generator; } function tryCatch(fn, obj, arg) { try { return { type: "normal", arg: fn.call(obj, arg) }; } catch (err) { return { type: "throw", arg: err }; } } exports.wrap = wrap; var ContinueSentinel = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var IteratorPrototype = {}; define(IteratorPrototype, iteratorSymbol, function () { return this; }); var getProto = Object.getPrototypeOf, NativeIteratorPrototype = getProto && getProto(getProto(values([]))); NativeIteratorPrototype && NativeIteratorPrototype !== Op && hasOwn.call(NativeIteratorPrototype, iteratorSymbol) && (IteratorPrototype = NativeIteratorPrototype); var Gp = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(IteratorPrototype); function defineIteratorMethods(prototype) { ["next", "throw", "return"].forEach(function (method) { define(prototype, method, function (arg) { return this._invoke(method, arg); }); }); } function AsyncIterator(generator, PromiseImpl) { function invoke(method, arg, resolve, reject) { var record = tryCatch(generator[method], generator, arg); if ("throw" !== record.type) { var result = record.arg, value = result.value; return value && "object" == _typeof$e(value) && hasOwn.call(value, "__await") ? PromiseImpl.resolve(value.__await).then(function (value) { invoke("next", value, resolve, reject); }, function (err) { invoke("throw", err, resolve, reject); }) : PromiseImpl.resolve(value).then(function (unwrapped) { result.value = unwrapped, resolve(result); }, function (error) { return invoke("throw", error, resolve, reject); }); } reject(record.arg); } var previousPromise; defineProperty(this, "_invoke", { value: function value(method, arg) { function callInvokeWithMethodAndArg() { return new PromiseImpl(function (resolve, reject) { invoke(method, arg, resolve, reject); }); } return previousPromise = previousPromise ? previousPromise.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(innerFn, self, context) { var state = "suspendedStart"; return function (method, arg) { if ("executing" === state) throw new Error("Generator is already running"); if ("completed" === state) { if ("throw" === method) throw arg; return doneResult(); } for (context.method = method, context.arg = arg;;) { var delegate = context.delegate; if (delegate) { var delegateResult = maybeInvokeDelegate(delegate, context); if (delegateResult) { if (delegateResult === ContinueSentinel) continue; return delegateResult; } } if ("next" === context.method) context.sent = context._sent = context.arg;else if ("throw" === context.method) { if ("suspendedStart" === state) throw state = "completed", context.arg; context.dispatchException(context.arg); } else "return" === context.method && context.abrupt("return", context.arg); state = "executing"; var record = tryCatch(innerFn, self, context); if ("normal" === record.type) { if (state = context.done ? "completed" : "suspendedYield", record.arg === ContinueSentinel) continue; return { value: record.arg, done: context.done }; } "throw" === record.type && (state = "completed", context.method = "throw", context.arg = record.arg); } }; } function maybeInvokeDelegate(delegate, context) { var methodName = context.method, method = delegate.iterator[methodName]; if (undefined === method) return context.delegate = null, "throw" === methodName && delegate.iterator["return"] && (context.method = "return", context.arg = undefined, maybeInvokeDelegate(delegate, context), "throw" === context.method) || "return" !== methodName && (context.method = "throw", context.arg = new TypeError("The iterator does not provide a '" + methodName + "' method")), ContinueSentinel; var record = tryCatch(method, delegate.iterator, context.arg); if ("throw" === record.type) return context.method = "throw", context.arg = record.arg, context.delegate = null, ContinueSentinel; var info = record.arg; return info ? info.done ? (context[delegate.resultName] = info.value, context.next = delegate.nextLoc, "return" !== context.method && (context.method = "next", context.arg = undefined), context.delegate = null, ContinueSentinel) : info : (context.method = "throw", context.arg = new TypeError("iterator result is not an object"), context.delegate = null, ContinueSentinel); } function pushTryEntry(locs) { var entry = { tryLoc: locs[0] }; 1 in locs && (entry.catchLoc = locs[1]), 2 in locs && (entry.finallyLoc = locs[2], entry.afterLoc = locs[3]), this.tryEntries.push(entry); } function resetTryEntry(entry) { var record = entry.completion || {}; record.type = "normal", delete record.arg, entry.completion = record; } function Context(tryLocsList) { this.tryEntries = [{ tryLoc: "root" }], tryLocsList.forEach(pushTryEntry, this), this.reset(!0); } function values(iterable) { if (iterable) { var iteratorMethod = iterable[iteratorSymbol]; if (iteratorMethod) return iteratorMethod.call(iterable); if ("function" == typeof iterable.next) return iterable; if (!isNaN(iterable.length)) { var i = -1, next = function next() { for (; ++i < iterable.length;) if (hasOwn.call(iterable, i)) return next.value = iterable[i], next.done = !1, next; return next.value = undefined, next.done = !0, next; }; return next.next = next; } } return { next: doneResult }; } function doneResult() { return { value: undefined, done: !0 }; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, defineProperty(Gp, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), defineProperty(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, toStringTagSymbol, "GeneratorFunction"), exports.isGeneratorFunction = function (genFun) { var ctor = "function" == typeof genFun && genFun.constructor; return !!ctor && (ctor === GeneratorFunction || "GeneratorFunction" === (ctor.displayName || ctor.name)); }, exports.mark = function (genFun) { return Object.setPrototypeOf ? Object.setPrototypeOf(genFun, GeneratorFunctionPrototype) : (genFun.__proto__ = GeneratorFunctionPrototype, define(genFun, toStringTagSymbol, "GeneratorFunction")), genFun.prototype = Object.create(Gp), genFun; }, exports.awrap = function (arg) { return { __await: arg }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, asyncIteratorSymbol, function () { return this; }), exports.AsyncIterator = AsyncIterator, exports.async = function (innerFn, outerFn, self, tryLocsList, PromiseImpl) { void 0 === PromiseImpl && (PromiseImpl = Promise); var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList), PromiseImpl); return exports.isGeneratorFunction(outerFn) ? iter : iter.next().then(function (result) { return result.done ? result.value : iter.next(); }); }, defineIteratorMethods(Gp), define(Gp, toStringTagSymbol, "Generator"), define(Gp, iteratorSymbol, function () { return this; }), define(Gp, "toString", function () { return "[object Generator]"; }), exports.keys = function (val) { var object = Object(val), keys = []; for (var key in object) keys.push(key); return keys.reverse(), function next() { for (; keys.length;) { var key = keys.pop(); if (key in object) return next.value = key, next.done = !1, next; } return next.done = !0, next; }; }, exports.values = values, Context.prototype = { constructor: Context, reset: function reset(skipTempReset) { if (this.prev = 0, this.next = 0, this.sent = this._sent = undefined, this.done = !1, this.delegate = null, this.method = "next", this.arg = undefined, this.tryEntries.forEach(resetTryEntry), !skipTempReset) for (var name in this) "t" === name.charAt(0) && hasOwn.call(this, name) && !isNaN(+name.slice(1)) && (this[name] = undefined); }, stop: function stop() { this.done = !0; var rootRecord = this.tryEntries[0].completion; if ("throw" === rootRecord.type) throw rootRecord.arg; return this.rval; }, dispatchException: function dispatchException(exception) { if (this.done) throw exception; var context = this; function handle(loc, caught) { return record.type = "throw", record.arg = exception, context.next = loc, caught && (context.method = "next", context.arg = undefined), !!caught; } for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i], record = entry.completion; if ("root" === entry.tryLoc) return handle("end"); if (entry.tryLoc <= this.prev) { var hasCatch = hasOwn.call(entry, "catchLoc"), hasFinally = hasOwn.call(entry, "finallyLoc"); if (hasCatch && hasFinally) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } else if (hasCatch) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); } else { if (!hasFinally) throw new Error("try statement without catch or finally"); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } } } }, abrupt: function abrupt(type, arg) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc <= this.prev && hasOwn.call(entry, "finallyLoc") && this.prev < entry.finallyLoc) { var finallyEntry = entry; break; } } finallyEntry && ("break" === type || "continue" === type) && finallyEntry.tryLoc <= arg && arg <= finallyEntry.finallyLoc && (finallyEntry = null); var record = finallyEntry ? finallyEntry.completion : {}; return record.type = type, record.arg = arg, finallyEntry ? (this.method = "next", this.next = finallyEntry.finallyLoc, ContinueSentinel) : this.complete(record); }, complete: function complete(record, afterLoc) { if ("throw" === record.type) throw record.arg; return "break" === record.type || "continue" === record.type ? this.next = record.arg : "return" === record.type ? (this.rval = this.arg = record.arg, this.method = "return", this.next = "end") : "normal" === record.type && afterLoc && (this.next = afterLoc), ContinueSentinel; }, finish: function finish(finallyLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.finallyLoc === finallyLoc) return this.complete(entry.completion, entry.afterLoc), resetTryEntry(entry), ContinueSentinel; } }, "catch": function _catch(tryLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc === tryLoc) { var record = entry.completion; if ("throw" === record.type) { var thrown = record.arg; resetTryEntry(entry); } return thrown; } } throw new Error("illegal catch attempt"); }, delegateYield: function delegateYield(iterable, resultName, nextLoc) { return this.delegate = { iterator: values(iterable), resultName: resultName, nextLoc: nextLoc }, "next" === this.method && (this.arg = undefined), ContinueSentinel; } }, exports; }
+function asyncGeneratorStep$3(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function _asyncToGenerator$3(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep$3(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep$3(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+function _defineProperty$d(obj, key, value) { key = _toPropertyKey$d(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$d(arg) { var key = _toPrimitive$d(arg, "string"); return _typeof$e(key) === "symbol" ? key : String(key); }
+function _toPrimitive$d(input, hint) { if (_typeof$e(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$e(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$e(arr, i) { return _arrayWithHoles$e(arr) || _iterableToArrayLimit$e(arr, i) || _unsupportedIterableToArray$e(arr, i) || _nonIterableRest$e(); }
+function _nonIterableRest$e() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$e(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$e(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$e(o, minLen); }
+function _arrayLikeToArray$e(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$e(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$e(arr) { if (Array.isArray(arr)) return arr; }
+var SIDEPEEK_PAGE_SIZE = 20;
+var useLinkedinThreads = function useLinkedinThreads(linkedinThread, accountId, leadId, reverse) {
+  var _response$data2, _response$data2$injec, _response$data3;
+  var _useState = useState(1),
+    _useState2 = _slicedToArray$e(_useState, 2),
+    page = _useState2[0],
+    setPage = _useState2[1];
+  //const { useGetSidePeekEnabled } = useExtensionContext();
+  //const isSidePeekEnabled = useGetSidePeekEnabled();
+  //const pageSize = isSidePeekEnabled ? SIDEPEEK_PAGE_SIZE : PAGE_SIZE;
+  var pageSize = SIDEPEEK_PAGE_SIZE;
+  var fetchNextPage = function fetchNextPage() {
+    setPage(page + 1);
+  };
+
+  // TODO: To be changed
+  var query = _defineProperty$d(_defineProperty$d(_defineProperty$d(_defineProperty$d({}, ACTIVITY_FIELDS_LOGIC_ROLE.LEAD, [leadId]), ACTIVITY_FIELDS_LOGIC_ROLE.TYPE, [ACTIVITY_TYPES_VALUES_LOGIC_ROLE.LINKEDIN]), ACTIVITY_FIELDS_LOGIC_ROLE.SOURCE, [DATA_SOURCES.CHROME_EXTENSION]), ACTIVITY_FIELDS_LOGIC_ROLE.LINKEDIN_THREAD, [linkedinThread]);
+  var response = useSWR("/bobjects/".concat(accountId, "/Activity/search/").concat(leadId, "/").concat(linkedinThread, "/").concat(page, "}"), /*#__PURE__*/_asyncToGenerator$3( /*#__PURE__*/_regeneratorRuntime$3().mark(function _callee() {
+    var response, _response$data;
+    return _regeneratorRuntime$3().wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          _context.next = 2;
+          return api.post('/bobjects/' + accountId + '/Activity/search', {
+            query: query,
+            formFields: true,
+            sort: [{
+              field: ACTIVITY_FIELDS_LOGIC_ROLE.TIME,
+              direction: reverse ? 'DESC' : 'ASC'
+            }, {
+              field: ACTIVITY_FIELDS_LOGIC_ROLE.LEAD,
+              direction: 'DESC'
+            }],
+            page: 0,
+            pageSize: page ? page * pageSize : 100,
+            injectReferences: true
+          });
+        case 2:
+          response = _context.sent;
+          if (!(response !== null && response !== void 0 && response.data)) {
+            _context.next = 5;
+            break;
+          }
+          return _context.abrupt("return", {
+            injectedContents: injectReferencesSearchProcess(response === null || response === void 0 ? void 0 : response.data),
+            totalMatching: (_response$data = response.data) === null || _response$data === void 0 ? void 0 : _response$data.totalMatching
+          });
+        case 5:
+          return _context.abrupt("return", null);
+        case 6:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee);
+  })), {
+    use: [keepPreviousResponse]
+  });
+  return {
+    items: response === null || response === void 0 ? void 0 : (_response$data2 = response.data) === null || _response$data2 === void 0 ? void 0 : (_response$data2$injec = _response$data2.injectedContents) === null || _response$data2$injec === void 0 ? void 0 : _response$data2$injec.contents,
+    isLoading: !response,
+    totalMatching: response === null || response === void 0 ? void 0 : (_response$data3 = response.data) === null || _response$data3 === void 0 ? void 0 : _response$data3.totalMatching,
+    mutate: response === null || response === void 0 ? void 0 : response.mutate,
+    fetchNextPage: fetchNextPage
+  };
+};
+
+var css_248z$b = ".linkedInDetail-module_container__FKFyS {\n  display: flex;\n  flex-direction: column;\n  height: 100%;\n  justify-content: space-between;\n  box-sizing: border-box;\n}\n\n.linkedInDetail-module_activity_container__MLMcE {\n  margin-top: 2px;\n  height: 93%;\n  overflow: auto;\n  box-sizing: border-box;\n  display: flex;\n  flex-direction: column;\n  flex: 1;\n}\n\n.linkedInDetail-module__messages_wrapper__SY7VI {\n  min-height: 0;\n  height: calc(100% - 46px);\n  overflow-y: overlay;\n  display: flex;\n  flex-direction: column-reverse;\n  justify-content: flex-end;\n  background-color: var(--lightBloobirds);\n  width: 100%;\n  padding-top: 4px;\n  padding-bottom: 4px;\n}\n\n.linkedInDetail-module__messages_wrapper__SY7VI > div {\n  height: 100%;\n  display: flex;\n  flex-direction: column-reverse;\n}\n\n.linkedInDetail-module__messages_wrapper__SY7VI > div > div {\n  overflow-y: overlay;\n  overflow-x: unset;\n}\n\n.linkedInDetail-module__reported_separator__kgdYu {\n  background-color: rgba(255, 255, 255, 0.4);\n  padding: 12px;\n  margin-bottom: 10px;\n}\n\n.linkedInDetail-module__date_separator__Jk1OI {\n  padding: 12px;\n}\n\n.linkedInDetail-module__message__AV8m- {\n  display: flex;\n  align-items: center;\n  margin-bottom: 15px;\n  box-sizing: border-box;\n  padding: 0 15px;\n}\n\n.linkedInDetail-module__message__AV8m- > div {\n  position: relative;\n  box-sizing: border-box;\n  max-width: 70%;\n  padding: 8px;\n  border-radius: 4px;\n}\n\n.linkedInDetail-module__message_outgoing__Qy1DW {\n  justify-content: flex-end;\n}\n\n.linkedInDetail-module__message_outgoing__Qy1DW > div {\n  background-color: var(--verySoftBloobirds);\n}\n\n.linkedInDetail-module__message_incoming__7Ogin > div {\n  background-color: var(--white);\n}\n\n.linkedInDetail-module__message_body__PBJJZ{\n  word-wrap: break-word;\n}\n.linkedInDetail-module__svg_wrapper__70opi span {\n  width: 20px;\n  height: 20px;\n}\n\n.linkedInDetail-module__svg_incoming__dk8iD {\n  transform: translate(45%, -35%);\n  position: absolute;\n  top: 0;\n  right: 0;\n}\n\n.linkedInDetail-module__svg_outgoing__cVv54 {\n  transform: translate(-45%, -35%);\n  position: absolute;\n  top: 0;\n  left: 0;\n}\n\n.linkedInDetail-module_loading__Qm4kl {\n  margin: auto;\n  width: 100%;\n  min-height: 30px;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n}\n\n.linkedInDetail-module__conversation_wrapper__iKJES {\n  display: flex;\n  flex-direction: column-reverse;\n}\n";
+var styles$b = {"container":"linkedInDetail-module_container__FKFyS","activity_container":"linkedInDetail-module_activity_container__MLMcE","_messages_wrapper":"linkedInDetail-module__messages_wrapper__SY7VI","_reported_separator":"linkedInDetail-module__reported_separator__kgdYu","_date_separator":"linkedInDetail-module__date_separator__Jk1OI","_message":"linkedInDetail-module__message__AV8m-","_message_outgoing":"linkedInDetail-module__message_outgoing__Qy1DW","_message_incoming":"linkedInDetail-module__message_incoming__7Ogin","_message_body":"linkedInDetail-module__message_body__PBJJZ","_svg_wrapper":"linkedInDetail-module__svg_wrapper__70opi","_svg_incoming":"linkedInDetail-module__svg_incoming__dk8iD","_svg_outgoing":"linkedInDetail-module__svg_outgoing__cVv54","loading":"linkedInDetail-module_loading__Qm4kl","_conversation_wrapper":"linkedInDetail-module__conversation_wrapper__iKJES"};
+styleInject(css_248z$b);
+
+function _typeof$d(obj) { "@babel/helpers - typeof"; return _typeof$d = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$d(obj); }
+function _defineProperty$c(obj, key, value) { key = _toPropertyKey$c(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$c(arg) { var key = _toPrimitive$c(arg, "string"); return _typeof$d(key) === "symbol" ? key : String(key); }
+function _toPrimitive$c(input, hint) { if (_typeof$d(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$d(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var LinkedInDetailedActivity = function LinkedInDetailedActivity(_ref) {
+  var _items$, _items$$id, _activity$id, _activity$id2;
+  var activity = _ref.activity,
+    dataModel = _ref.dataModel,
+    items = _ref.items,
+    totalMatching = _ref.totalMatching,
+    fetchNextPage = _ref.fetchNextPage,
+    isLoading = _ref.isLoading;
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'linkedInDetail'
+    }),
+    t = _useTranslation.t;
+  var ref = useRef();
+  var _useSyncBobjectStatus = useSyncBobjectStatus(items === null || items === void 0 ? void 0 : (_items$ = items[0]) === null || _items$ === void 0 ? void 0 : (_items$$id = _items$.id) === null || _items$$id === void 0 ? void 0 : _items$$id.accountId, items),
+    bobjectsSync = _useSyncBobjectStatus.bobjectsSync;
+  var hasNextPage = useMemo(function () {
+    return !((items === null || items === void 0 ? void 0 : items.length) === totalMatching);
+  }, [items === null || items === void 0 ? void 0 : items.length, totalMatching]);
+  if (!items || isLoading) {
+    return /*#__PURE__*/jsx("div", {
+      className: styles$b.loading,
+      children: /*#__PURE__*/jsx(Spinner, {
+        name: "loadingCircle"
+      })
+    });
+  }
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsx(ActivityTimelineItem, {
+      activity: activity,
+      startDisplayDivider: false,
+      endDisplayDivider: false,
+      extended: true,
+      alternativeDescription: true,
+      activeHover: false,
+      dataModel: dataModel
+    }, activity === null || activity === void 0 ? void 0 : (_activity$id = activity.id) === null || _activity$id === void 0 ? void 0 : _activity$id.value), /*#__PURE__*/jsx("div", {
+      className: styles$b._messages_wrapper,
+      id: "conversationContent",
+      ref: ref,
+      children: /*#__PURE__*/jsx(InfiniteScroll, {
+        dataLength: items.length,
+        hasMore: hasNextPage,
+        next: fetchNextPage,
+        inverse: true,
+        height: "100%",
+        scrollThreshold: 0.75,
+        scrollableTarget: "conversationContent",
+        loader: /*#__PURE__*/jsx("div", {
+          className: styles$b.loading,
+          children: /*#__PURE__*/jsx(Spinner, {
+            name: "dots"
+          })
+        }),
+        style: {
+          display: 'flex',
+          flexDirection: 'column-reverse'
+        },
+        children: /*#__PURE__*/jsx("div", {
+          className: styles$b._conversation_wrapper,
+          children: items.map(function (data) {
+            var _bobjectsSync$find, _data$id2, _data$messageDate, _data$messageDate2;
+            var messageText = getTextFromLogicRole(data, ACTIVITY_FIELDS_LOGIC_ROLE.MESSAGE_BODY);
+            var messageDirection = getTextFromLogicRole(data, ACTIVITY_FIELDS_LOGIC_ROLE.DIRECTION);
+            var syncStatus = bobjectsSync === null || bobjectsSync === void 0 ? void 0 : (_bobjectsSync$find = bobjectsSync.find(function (sync) {
+              var _data$id;
+              return (sync === null || sync === void 0 ? void 0 : sync.bobjectId) === (data === null || data === void 0 ? void 0 : (_data$id = data.id) === null || _data$id === void 0 ? void 0 : _data$id.objectId);
+            })) === null || _bobjectsSync$find === void 0 ? void 0 : _bobjectsSync$find.syncStatusOk;
+            return /*#__PURE__*/jsxs("div", {
+              children: [(data === null || data === void 0 ? void 0 : (_data$messageDate = data.messageDate) === null || _data$messageDate === void 0 ? void 0 : _data$messageDate.isFirstOfDay) && /*#__PURE__*/jsx("div", {
+                className: styles$b._date_separator,
+                children: /*#__PURE__*/jsx(Text, {
+                  color: "softPeanut",
+                  size: "s",
+                  align: "center",
+                  children: data === null || data === void 0 ? void 0 : (_data$messageDate2 = data.messageDate) === null || _data$messageDate2 === void 0 ? void 0 : _data$messageDate2.formattedDate
+                })
+              }), /*#__PURE__*/jsx("div", {
+                className: clsx(styles$b._message, _defineProperty$c(_defineProperty$c({}, styles$b._message_incoming, messageDirection === ACTIVITY_DIRECTION.INCOMING), styles$b._message_outgoing, messageDirection === ACTIVITY_DIRECTION.OUTGOING)),
+                children: /*#__PURE__*/jsxs("div", {
+                  className: styles$b._message_body,
+                  children: [/*#__PURE__*/jsx("div", {
+                    className: clsx(styles$b._svg_wrapper, _defineProperty$c(_defineProperty$c({}, styles$b._svg_incoming, messageDirection === ACTIVITY_DIRECTION.INCOMING), styles$b._svg_outgoing, messageDirection === ACTIVITY_DIRECTION.OUTGOING)),
+                    children: syncStatus !== undefined && !syncStatus && /*#__PURE__*/jsx(InfoWarningSync, {
+                      type: 'message',
+                      id: data === null || data === void 0 ? void 0 : data.id
+                    })
+                  }), /*#__PURE__*/jsx(Text, {
+                    size: "s",
+                    className: styles$b._message_body,
+                    children: messageText === 'undefined' ? t('messageNotAvailable') : messageText
+                  })]
+                })
+              })]
+            }, data === null || data === void 0 ? void 0 : (_data$id2 = data.id) === null || _data$id2 === void 0 ? void 0 : _data$id2.value);
+          })
+        }, "".concat(activity === null || activity === void 0 ? void 0 : (_activity$id2 = activity.id) === null || _activity$id2 === void 0 ? void 0 : _activity$id2.value, "-list"))
+      })
+    })]
+  });
+};
+
+function _typeof$c(obj) { "@babel/helpers - typeof"; return _typeof$c = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$c(obj); }
+function ownKeys$6(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$6(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$6(Object(source), !0).forEach(function (key) { _defineProperty$b(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$6(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$b(obj, key, value) { key = _toPropertyKey$b(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$b(arg) { var key = _toPrimitive$b(arg, "string"); return _typeof$c(key) === "symbol" ? key : String(key); }
+function _toPrimitive$b(input, hint) { if (_typeof$c(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$c(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var addConversationGrouping = function addConversationGrouping(items, t, language) {
+  return items.map(function (item, index) {
+    var _getFieldByLogicRole;
+    var date = new Date(getValueFromLogicRole(item, ACTIVITY_FIELDS_LOGIC_ROLE.TIME));
+    var reportedStatus = (_getFieldByLogicRole = getFieldByLogicRole(item, ACTIVITY_FIELDS_LOGIC_ROLE.REPORTED)) === null || _getFieldByLogicRole === void 0 ? void 0 : _getFieldByLogicRole.valueLogicRole;
+    var next = items[index + 1];
+    var nextItemDate = next && new Date(getValueFromLogicRole(next, ACTIVITY_FIELDS_LOGIC_ROLE.TIME));
+    var formatStr = t('dates.standardDate');
+    var formattedDay = isValid(date) ? getI18nSpacetimeLng(language, date).format(formatStr) : '';
+    var dateDay = isValid(date) ? parse(format(date, 'MMMM do, yyyy'), 'MMMM do, yyyy', new Date()) : '';
+    var hashDate = getDateTimestampString(date);
+    var isReported = function isReported(value) {
+      return value === REPORTED_VALUES_LOGIC_ROLE.YES;
+    };
+    return _objectSpread$6(_objectSpread$6({}, item), {}, {
+      messageDate: {
+        isFirstOfDay: !nextItemDate || nextItemDate && !isSameDay(date, nextItemDate),
+        day: dateDay,
+        formattedDate: formattedDay,
+        prefix: generateDatePrefix(date, true, t),
+        hashDate: hashDate
+      },
+      messageStatus: {
+        isReported: isReported(reportedStatus)
+      }
+    });
+  });
+};
+var LinkedInDetail = function LinkedInDetail(_ref) {
+  var _getFieldByLogicRole2;
+  var activity = _ref.activity,
+    accountId = _ref.accountId,
+    dataModel = _ref.dataModel,
+    _ref$visibleFooter = _ref.visibleFooter,
+    visibleFooter = _ref$visibleFooter === void 0 ? true : _ref$visibleFooter,
+    _ref$actionsDisabled = _ref.actionsDisabled,
+    actionsDisabled = _ref$actionsDisabled === void 0 ? false : _ref$actionsDisabled,
+    userId = _ref.userId;
+  var linkedInThreadId = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.LINKEDIN_THREAD);
+  var leadId = getValueFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.LEAD);
+  var _useLinkedinThreads = useLinkedinThreads(linkedInThreadId, accountId, leadId, true),
+    items = _useLinkedinThreads.items,
+    isLoading = _useLinkedinThreads.isLoading,
+    fetchNextPage = _useLinkedinThreads.fetchNextPage,
+    totalMatching = _useLinkedinThreads.totalMatching,
+    mutate = _useLinkedinThreads.mutate;
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t,
+    i18n = _useTranslation.i18n;
+  var aggregatedConversations = items && addConversationGrouping(items, t, i18n.language);
+  var goToLinkedinConversationPage = function goToLinkedinConversationPage() {
+    window.open("https://www.linkedin.com/".concat(linkedInThreadId), '_blank');
+  };
+  var referenceBobject = getReferencedBobject(activity);
+  var assignee = ((_getFieldByLogicRole2 = getFieldByLogicRole(referenceBobject, LEAD_FIELDS_LOGIC_ROLE.ASSIGNED_TO
+  // @ts-ignore
+  )) === null || _getFieldByLogicRole2 === void 0 ? void 0 : _getFieldByLogicRole2.value) || (referenceBobject === null || referenceBobject === void 0 ? void 0 : referenceBobject.assignedTo);
+  var assignedToActiveUser = assignee === userId;
+  useEffect(function () {
+    mutate === null || mutate === void 0 ? void 0 : mutate();
+  }, []);
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$b.container,
+    children: [/*#__PURE__*/jsx("div", {
+      className: styles$b.activity_container,
+      children: /*#__PURE__*/jsx(LinkedInDetailedActivity, {
+        activity: activity,
+        dataModel: dataModel,
+        items: aggregatedConversations,
+        isLoading: isLoading,
+        totalMatching: totalMatching,
+        fetchNextPage: fetchNextPage
+      })
+    }), visibleFooter && /*#__PURE__*/jsx(DetailsFooter, {
+      children: /*#__PURE__*/jsxs(Button, {
+        variant: "secondary",
+        onClick: goToLinkedinConversationPage,
+        disabled: actionsDisabled && !assignedToActiveUser,
+        children: [/*#__PURE__*/jsx(Icon, {
+          name: "linkedin",
+          size: 14
+        }), t('activityTimelineItem.item.reply')]
+      })
+    })]
+  });
+};
+
+var img$5 = "data:image/svg+xml,%3csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M20.4226 16L3 18.5L3.57739 21L21 18.5L20.4226 16Z' fill='%23FFE900'/%3e%3cpath d='M11.9867 8.36216V10.6218H15.0829C14.3678 12.5153 13.0052 13.7389 11.4261 13.7389C10.7354 13.7379 10.0556 13.565 9.44684 13.2357C8.83813 12.9063 8.31933 12.4308 7.93637 11.8509C7.55341 11.2711 7.31811 10.605 7.25131 9.9115C7.18452 9.21806 7.28828 8.5187 7.55342 7.87535C7.81855 7.23201 8.23688 6.66453 8.77135 6.22318C9.30582 5.78183 9.93995 5.48021 10.6176 5.34505C11.2952 5.20989 11.9954 5.24535 12.6562 5.44829C13.317 5.65123 13.918 6.0154 14.406 6.50852L15.9964 4.90353C15.096 3.99511 13.949 3.37628 12.6999 3.12526C11.451 2.87424 10.1563 3.00229 8.97943 3.49323C7.80259 3.98417 6.79645 4.81596 6.08816 5.88348C5.37987 6.95101 5.00122 8.20636 5.00005 9.49088C4.99659 10.3431 5.16101 11.1876 5.48377 11.9752C5.80653 12.7628 6.28121 13.4779 6.88022 14.079C7.47588 14.6848 8.18408 15.1663 8.96434 15.4959C9.74461 15.8255 10.5816 15.9969 11.4276 16C13.6218 16 15.5961 14.5748 16.7597 12.3123V15.7282H19V8.36216H11.9867Z' fill='black'/%3e%3c/svg%3e";
+
+var img$4 = "data:image/svg+xml,%3csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cg clip-path='url(%23clip0_10364_102051)'%3e%3cpath d='M13.1826 12.5L14.9374 14.5313L17.2969 16.0583L17.7083 12.5125L17.2969 9.04584L14.8921 10.3875L13.1826 12.5Z' fill='%2300832D'/%3e%3cpath d='M3 15.7292V18.75C3 19.4406 3.55234 20 4.23429 20H7.21714L7.83429 17.7167L7.21714 15.7292L5.17029 15.1042L3 15.7292Z' fill='%230066DA'/%3e%3cpath d='M7.21714 5L3 9.27083L5.17029 9.89583L7.21714 9.27083L7.824 7.31042L7.21714 5Z' fill='%23E94235'/%3e%3cpath d='M7.21714 9.27084H3V15.7292H7.21714V9.27084Z' fill='%232684FC'/%3e%3cpath d='M19.9921 6.80832L17.2973 9.04582V16.0583L20.0045 18.3062C20.4097 18.6271 21.0022 18.3344 21.0022 17.8125V7.29166C21.0022 6.76353 20.3964 6.47395 19.9921 6.80832ZM13.183 12.5V15.7292H7.21729V20H16.063C16.7449 20 17.2973 19.4406 17.2973 18.75V16.0583L13.183 12.5Z' fill='%2300AC47'/%3e%3cpath d='M16.063 5H7.21729V9.27083H13.183V12.5L17.2973 9.04792V6.25C17.2973 5.55937 16.7449 5 16.063 5Z' fill='%23FFBA00'/%3e%3c/g%3e%3cdefs%3e%3cclipPath id='clip0_10364_102051'%3e%3crect width='18' height='15' fill='white' transform='translate(3 5)'/%3e%3c/clipPath%3e%3c/defs%3e%3c/svg%3e";
+
+var img$3 = "data:image/svg+xml,%3csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M13 11C13 10.4477 13.4477 10 14 10H19C19.5523 10 20 10.4477 20 11V14.5C20 16.433 18.433 18 16.5 18C14.567 18 13 16.433 13 14.5V11Z' fill='%235059C9'/%3e%3ccircle cx='17' cy='7' r='2' fill='%235059C9'/%3e%3cg filter='url(%23filter0_d_10641_218397)'%3e%3cpath d='M8 11C8 10.4477 8.44772 10 9 10H16C16.5523 10 17 10.4477 17 11V15.5C17 17.9853 14.9853 20 12.5 20C10.0147 20 8 17.9853 8 15.5V11Z' fill='%237B83EB'/%3e%3c/g%3e%3ccircle cx='12.5' cy='6.5' r='2.5' fill='%237B83EB'/%3e%3cg filter='url(%23filter1_d_10641_218397)'%3e%3cpath d='M4 8C4 7.44772 4.44772 7 5 7H12C12.5523 7 13 7.44772 13 8V15C13 15.5523 12.5523 16 12 16H5C4.44772 16 4 15.5523 4 15V8Z' fill='%235059C9'/%3e%3cpath fill-rule='evenodd' clip-rule='evenodd' d='M8 9H6V10H8L8 14H9L9 10H11V9H9H8Z' fill='white'/%3e%3c/g%3e%3cdefs%3e%3cfilter id='filter0_d_10641_218397' x='7' y='8' width='13' height='14' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3e%3cfeFlood flood-opacity='0' result='BackgroundImageFix'/%3e%3cfeColorMatrix in='SourceAlpha' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3e%3cfeOffset dx='1'/%3e%3cfeGaussianBlur stdDeviation='1'/%3e%3cfeComposite in2='hardAlpha' operator='out'/%3e%3cfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0'/%3e%3cfeBlend mode='normal' in2='BackgroundImageFix' result='effect1_dropShadow_10641_218397'/%3e%3cfeBlend mode='normal' in='SourceGraphic' in2='effect1_dropShadow_10641_218397' result='shape'/%3e%3c/filter%3e%3cfilter id='filter1_d_10641_218397' x='3' y='6' width='11' height='11' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3e%3cfeFlood flood-opacity='0' result='BackgroundImageFix'/%3e%3cfeColorMatrix in='SourceAlpha' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3e%3cfeOffset/%3e%3cfeGaussianBlur stdDeviation='0.5'/%3e%3cfeComposite in2='hardAlpha' operator='out'/%3e%3cfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0'/%3e%3cfeBlend mode='normal' in2='BackgroundImageFix' result='effect1_dropShadow_10641_218397'/%3e%3cfeBlend mode='normal' in='SourceGraphic' in2='effect1_dropShadow_10641_218397' result='shape'/%3e%3c/filter%3e%3c/defs%3e%3c/svg%3e";
+
+var img$2 = "data:image/svg+xml,%3csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M7.10924 12.5624C7.31678 13.273 7.60733 13.9418 7.93939 14.6106C8.06391 14.9032 8.27145 15.154 8.52049 15.3629L8.68652 15.4465C9.1016 15.5301 9.30914 15.1958 9.47517 14.9032C9.6827 14.4016 9.84873 13.9 9.97326 13.3984C10.0148 13.3148 10.0148 13.2312 10.0563 13.1058C10.0978 12.9386 10.1393 12.7296 10.1808 12.5624L12.0071 7.67195C12.3807 7.17037 12.8788 6.75238 13.4599 6.45979C13.9995 6.1672 14.6221 6 15.2447 6C16.1579 6 17.0295 6.33439 17.7352 6.87778C18.9389 7.79735 19.6445 9.5947 19.6445 9.5947C19.7275 9.8455 19.8105 10.0963 19.8105 10.3471C19.8105 10.5979 19.769 10.8069 19.686 11.0577C19.5615 11.2667 19.437 11.4757 19.3124 11.6428C19.1464 11.81 18.9389 11.9354 18.7313 12.019C18.5238 12.1026 18.2748 12.1444 18.0257 12.1444C17.7767 12.1444 17.5276 12.1026 17.2786 11.9772C17.0295 11.8518 16.822 11.6846 16.656 11.5175C16.656 11.5175 16.656 11.4757 16.6145 11.4757C16.4899 11.3085 16.4069 11.1413 16.3239 10.9741C16.2409 10.7651 16.1164 10.5561 15.9918 10.3471C15.9088 10.2635 15.8673 10.1381 15.7843 10.0545C15.7428 9.97089 15.6598 9.8455 15.5353 9.8037C15.3692 9.6783 15.1617 9.6365 14.9957 9.7201L14.9542 9.6783C14.7466 9.8455 14.6221 10.0545 14.5391 10.3053C14.29 10.9323 14.0825 11.5592 13.9165 12.228L13.8335 12.6042L13.0863 15.0704L12.0486 17.4111C11.6751 17.9127 11.177 18.2889 10.5959 18.5815C10.0563 18.8323 9.43366 18.9994 8.81105 18.9994C6.23758 19.0412 5.03387 16.7005 5.03387 16.7005C3.5811 14.2762 3.16603 11.0995 3.04151 10.0545C3 9.92909 3 9.8037 3 9.6783C3 9.34391 3.08301 9.05132 3.24904 8.75873C3.41507 8.46613 3.62261 8.25714 3.91316 8.08994C4.20372 7.96455 4.53578 7.88095 4.86784 7.88095C5.40743 7.92275 5.90552 8.17354 6.23758 8.63333C6.44512 9.00952 6.56964 9.38571 6.56964 9.8037C6.65266 10.7651 6.8602 11.6846 7.10924 12.5624Z' fill='url(%23paint0_linear_10641_218557)'/%3e%3cpath d='M7.10924 12.5624C7.31678 13.273 7.60733 13.9418 7.93939 14.6106C8.06391 14.9032 8.27145 15.154 8.52049 15.3629L8.68652 15.4465C9.1016 15.5301 9.30914 15.1958 9.47517 14.9032C9.6827 14.4016 9.84873 13.9 9.97326 13.3984C10.0148 13.3148 10.0148 13.2312 10.0563 13.1058C10.0978 12.9386 10.1393 12.7296 10.1808 12.5624L12.0071 7.67195C12.3807 7.17037 12.8788 6.75238 13.4599 6.45979C13.9995 6.1672 14.6221 6 15.2447 6C16.1579 6 17.0295 6.33439 17.7352 6.87778C18.9389 7.79735 19.6445 9.5947 19.6445 9.5947C19.7275 9.8455 19.8105 10.0963 19.8105 10.3471C19.8105 10.5979 19.769 10.8069 19.686 11.0577C19.5615 11.2667 19.437 11.4757 19.3124 11.6428C19.1464 11.81 18.9389 11.9354 18.7313 12.019C18.5238 12.1026 18.2748 12.1444 18.0257 12.1444C17.7767 12.1444 17.5276 12.1026 17.2786 11.9772C17.0295 11.8518 16.822 11.6846 16.656 11.5175C16.656 11.5175 16.656 11.4757 16.6145 11.4757C16.4899 11.3085 16.4069 11.1413 16.3239 10.9741C16.2409 10.7651 16.1164 10.5561 15.9918 10.3471C15.9088 10.2635 15.8673 10.1381 15.7843 10.0545C15.7428 9.97089 15.6598 9.8455 15.5353 9.8037C15.3692 9.6783 15.1617 9.6365 14.9957 9.7201L14.9542 9.6783C14.7466 9.8455 14.6221 10.0545 14.5391 10.3053C14.29 10.9323 14.0825 11.5592 13.9165 12.228L13.8335 12.6042L13.0863 15.0704L12.0486 17.4111C11.6751 17.9127 11.177 18.2889 10.5959 18.5815C10.0563 18.8323 9.43366 18.9994 8.81105 18.9994C6.23758 19.0412 5.03387 16.7005 5.03387 16.7005C3.5811 14.2762 3.16603 11.0995 3.04151 10.0545C3 9.92909 3 9.8037 3 9.6783C3 9.34391 3.08301 9.05132 3.24904 8.75873C3.41507 8.46613 3.62261 8.25714 3.91316 8.08994C4.20372 7.96455 4.53578 7.88095 4.86784 7.88095C5.40743 7.92275 5.90552 8.17354 6.23758 8.63333C6.44512 9.00952 6.56964 9.38571 6.56964 9.8037C6.65266 10.7651 6.8602 11.6846 7.10924 12.5624Z' fill='url(%23paint1_radial_10641_218557)'/%3e%3cpath d='M7.10924 12.5624C7.31678 13.273 7.60733 13.9418 7.93939 14.6106C8.06391 14.9032 8.27145 15.154 8.52049 15.3629L8.68652 15.4465C9.1016 15.5301 9.30914 15.1958 9.47517 14.9032C9.6827 14.4016 9.84873 13.9 9.97326 13.3984C10.0148 13.3148 10.0148 13.2312 10.0563 13.1058C10.0978 12.9386 10.1393 12.7296 10.1808 12.5624L12.0071 7.67195C12.3807 7.17037 12.8788 6.75238 13.4599 6.45979C13.9995 6.1672 14.6221 6 15.2447 6C16.1579 6 17.0295 6.33439 17.7352 6.87778C18.9389 7.79735 19.6445 9.5947 19.6445 9.5947C19.7275 9.8455 19.8105 10.0963 19.8105 10.3471C19.8105 10.5979 19.769 10.8069 19.686 11.0577C19.5615 11.2667 19.437 11.4757 19.3124 11.6428C19.1464 11.81 18.9389 11.9354 18.7313 12.019C18.5238 12.1026 18.2748 12.1444 18.0257 12.1444C17.7767 12.1444 17.5276 12.1026 17.2786 11.9772C17.0295 11.8518 16.822 11.6846 16.656 11.5175C16.656 11.5175 16.656 11.4757 16.6145 11.4757C16.4899 11.3085 16.4069 11.1413 16.3239 10.9741C16.2409 10.7651 16.1164 10.5561 15.9918 10.3471C15.9088 10.2635 15.8673 10.1381 15.7843 10.0545C15.7428 9.97089 15.6598 9.8455 15.5353 9.8037C15.3692 9.6783 15.1617 9.6365 14.9957 9.7201L14.9542 9.6783C14.7466 9.8455 14.6221 10.0545 14.5391 10.3053C14.29 10.9323 14.0825 11.5592 13.9165 12.228L13.8335 12.6042L13.0863 15.0704L12.0486 17.4111C11.6751 17.9127 11.177 18.2889 10.5959 18.5815C10.0563 18.8323 9.43366 18.9994 8.81105 18.9994C6.23758 19.0412 5.03387 16.7005 5.03387 16.7005C3.5811 14.2762 3.16603 11.0995 3.04151 10.0545C3 9.92909 3 9.8037 3 9.6783C3 9.34391 3.08301 9.05132 3.24904 8.75873C3.41507 8.46613 3.62261 8.25714 3.91316 8.08994C4.20372 7.96455 4.53578 7.88095 4.86784 7.88095C5.40743 7.92275 5.90552 8.17354 6.23758 8.63333C6.44512 9.00952 6.56964 9.38571 6.56964 9.8037C6.65266 10.7651 6.8602 11.6846 7.10924 12.5624Z' fill='url(%23paint2_radial_10641_218557)'/%3e%3cpath d='M7.10924 12.5624C7.31678 13.273 7.60733 13.9418 7.93939 14.6106C8.06391 14.9032 8.27145 15.154 8.52049 15.3629L8.68652 15.4465C9.1016 15.5301 9.30914 15.1958 9.47517 14.9032C9.6827 14.4016 9.84873 13.9 9.97326 13.3984C10.0148 13.3148 10.0148 13.2312 10.0563 13.1058C10.0978 12.9386 10.1393 12.7296 10.1808 12.5624L12.0071 7.67195C12.3807 7.17037 12.8788 6.75238 13.4599 6.45979C13.9995 6.1672 14.6221 6 15.2447 6C16.1579 6 17.0295 6.33439 17.7352 6.87778C18.9389 7.79735 19.6445 9.5947 19.6445 9.5947C19.7275 9.8455 19.8105 10.0963 19.8105 10.3471C19.8105 10.5979 19.769 10.8069 19.686 11.0577C19.5615 11.2667 19.437 11.4757 19.3124 11.6428C19.1464 11.81 18.9389 11.9354 18.7313 12.019C18.5238 12.1026 18.2748 12.1444 18.0257 12.1444C17.7767 12.1444 17.5276 12.1026 17.2786 11.9772C17.0295 11.8518 16.822 11.6846 16.656 11.5175C16.656 11.5175 16.656 11.4757 16.6145 11.4757C16.4899 11.3085 16.4069 11.1413 16.3239 10.9741C16.2409 10.7651 16.1164 10.5561 15.9918 10.3471C15.9088 10.2635 15.8673 10.1381 15.7843 10.0545C15.7428 9.97089 15.6598 9.8455 15.5353 9.8037C15.3692 9.6783 15.1617 9.6365 14.9957 9.7201L14.9542 9.6783C14.7466 9.8455 14.6221 10.0545 14.5391 10.3053C14.29 10.9323 14.0825 11.5592 13.9165 12.228L13.8335 12.6042L13.0863 15.0704L12.0486 17.4111C11.6751 17.9127 11.177 18.2889 10.5959 18.5815C10.0563 18.8323 9.43366 18.9994 8.81105 18.9994C6.23758 19.0412 5.03387 16.7005 5.03387 16.7005C3.5811 14.2762 3.16603 11.0995 3.04151 10.0545C3 9.92909 3 9.8037 3 9.6783C3 9.34391 3.08301 9.05132 3.24904 8.75873C3.41507 8.46613 3.62261 8.25714 3.91316 8.08994C4.20372 7.96455 4.53578 7.88095 4.86784 7.88095C5.40743 7.92275 5.90552 8.17354 6.23758 8.63333C6.44512 9.00952 6.56964 9.38571 6.56964 9.8037C6.65266 10.7651 6.8602 11.6846 7.10924 12.5624Z' fill='url(%23paint3_radial_10641_218557)'/%3e%3cpath d='M7.10924 12.5624C7.31678 13.273 7.60733 13.9418 7.93939 14.6106C8.06391 14.9032 8.27145 15.154 8.52049 15.3629L8.68652 15.4465C9.1016 15.5301 9.30914 15.1958 9.47517 14.9032C9.6827 14.4016 9.84873 13.9 9.97326 13.3984C10.0148 13.3148 10.0148 13.2312 10.0563 13.1058C10.0978 12.9386 10.1393 12.7296 10.1808 12.5624L12.0071 7.67195C12.3807 7.17037 12.8788 6.75238 13.4599 6.45979C13.9995 6.1672 14.6221 6 15.2447 6C16.1579 6 17.0295 6.33439 17.7352 6.87778C18.9389 7.79735 19.6445 9.5947 19.6445 9.5947C19.7275 9.8455 19.8105 10.0963 19.8105 10.3471C19.8105 10.5979 19.769 10.8069 19.686 11.0577C19.5615 11.2667 19.437 11.4757 19.3124 11.6428C19.1464 11.81 18.9389 11.9354 18.7313 12.019C18.5238 12.1026 18.2748 12.1444 18.0257 12.1444C17.7767 12.1444 17.5276 12.1026 17.2786 11.9772C17.0295 11.8518 16.822 11.6846 16.656 11.5175C16.656 11.5175 16.656 11.4757 16.6145 11.4757C16.4899 11.3085 16.4069 11.1413 16.3239 10.9741C16.2409 10.7651 16.1164 10.5561 15.9918 10.3471C15.9088 10.2635 15.8673 10.1381 15.7843 10.0545C15.7428 9.97089 15.6598 9.8455 15.5353 9.8037C15.3692 9.6783 15.1617 9.6365 14.9957 9.7201L14.9542 9.6783C14.7466 9.8455 14.6221 10.0545 14.5391 10.3053C14.29 10.9323 14.0825 11.5592 13.9165 12.228L13.8335 12.6042L13.0863 15.0704L12.0486 17.4111C11.6751 17.9127 11.177 18.2889 10.5959 18.5815C10.0563 18.8323 9.43366 18.9994 8.81105 18.9994C6.23758 19.0412 5.03387 16.7005 5.03387 16.7005C3.5811 14.2762 3.16603 11.0995 3.04151 10.0545C3 9.92909 3 9.8037 3 9.6783C3 9.34391 3.08301 9.05132 3.24904 8.75873C3.41507 8.46613 3.62261 8.25714 3.91316 8.08994C4.20372 7.96455 4.53578 7.88095 4.86784 7.88095C5.40743 7.92275 5.90552 8.17354 6.23758 8.63333C6.44512 9.00952 6.56964 9.38571 6.56964 9.8037C6.65266 10.7651 6.8602 11.6846 7.10924 12.5624Z' fill='url(%23paint4_radial_10641_218557)'/%3e%3cpath d='M7.10924 12.5624C7.31678 13.273 7.60733 13.9418 7.93939 14.6106C8.06391 14.9032 8.27145 15.154 8.52049 15.3629L8.68652 15.4465C9.1016 15.5301 9.30914 15.1958 9.47517 14.9032C9.6827 14.4016 9.84873 13.9 9.97326 13.3984C10.0148 13.3148 10.0148 13.2312 10.0563 13.1058C10.0978 12.9386 10.1393 12.7296 10.1808 12.5624L12.0071 7.67195C12.3807 7.17037 12.8788 6.75238 13.4599 6.45979C13.9995 6.1672 14.6221 6 15.2447 6C16.1579 6 17.0295 6.33439 17.7352 6.87778C18.9389 7.79735 19.6445 9.5947 19.6445 9.5947C19.7275 9.8455 19.8105 10.0963 19.8105 10.3471C19.8105 10.5979 19.769 10.8069 19.686 11.0577C19.5615 11.2667 19.437 11.4757 19.3124 11.6428C19.1464 11.81 18.9389 11.9354 18.7313 12.019C18.5238 12.1026 18.2748 12.1444 18.0257 12.1444C17.7767 12.1444 17.5276 12.1026 17.2786 11.9772C17.0295 11.8518 16.822 11.6846 16.656 11.5175C16.656 11.5175 16.656 11.4757 16.6145 11.4757C16.4899 11.3085 16.4069 11.1413 16.3239 10.9741C16.2409 10.7651 16.1164 10.5561 15.9918 10.3471C15.9088 10.2635 15.8673 10.1381 15.7843 10.0545C15.7428 9.97089 15.6598 9.8455 15.5353 9.8037C15.3692 9.6783 15.1617 9.6365 14.9957 9.7201L14.9542 9.6783C14.7466 9.8455 14.6221 10.0545 14.5391 10.3053C14.29 10.9323 14.0825 11.5592 13.9165 12.228L13.8335 12.6042L13.0863 15.0704L12.0486 17.4111C11.6751 17.9127 11.177 18.2889 10.5959 18.5815C10.0563 18.8323 9.43366 18.9994 8.81105 18.9994C6.23758 19.0412 5.03387 16.7005 5.03387 16.7005C3.5811 14.2762 3.16603 11.0995 3.04151 10.0545C3 9.92909 3 9.8037 3 9.6783C3 9.34391 3.08301 9.05132 3.24904 8.75873C3.41507 8.46613 3.62261 8.25714 3.91316 8.08994C4.20372 7.96455 4.53578 7.88095 4.86784 7.88095C5.40743 7.92275 5.90552 8.17354 6.23758 8.63333C6.44512 9.00952 6.56964 9.38571 6.56964 9.8037C6.65266 10.7651 6.8602 11.6846 7.10924 12.5624Z' fill='url(%23paint5_radial_10641_218557)'/%3e%3cpath d='M7.10924 12.5624C7.31678 13.273 7.60733 13.9418 7.93939 14.6106C8.06391 14.9032 8.27145 15.154 8.52049 15.3629L8.68652 15.4465C9.1016 15.5301 9.30914 15.1958 9.47517 14.9032C9.6827 14.4016 9.84873 13.9 9.97326 13.3984C10.0148 13.3148 10.0148 13.2312 10.0563 13.1058C10.0978 12.9386 10.1393 12.7296 10.1808 12.5624L12.0071 7.67195C12.3807 7.17037 12.8788 6.75238 13.4599 6.45979C13.9995 6.1672 14.6221 6 15.2447 6C16.1579 6 17.0295 6.33439 17.7352 6.87778C18.9389 7.79735 19.6445 9.5947 19.6445 9.5947C19.7275 9.8455 19.8105 10.0963 19.8105 10.3471C19.8105 10.5979 19.769 10.8069 19.686 11.0577C19.5615 11.2667 19.437 11.4757 19.3124 11.6428C19.1464 11.81 18.9389 11.9354 18.7313 12.019C18.5238 12.1026 18.2748 12.1444 18.0257 12.1444C17.7767 12.1444 17.5276 12.1026 17.2786 11.9772C17.0295 11.8518 16.822 11.6846 16.656 11.5175C16.656 11.5175 16.656 11.4757 16.6145 11.4757C16.4899 11.3085 16.4069 11.1413 16.3239 10.9741C16.2409 10.7651 16.1164 10.5561 15.9918 10.3471C15.9088 10.2635 15.8673 10.1381 15.7843 10.0545C15.7428 9.97089 15.6598 9.8455 15.5353 9.8037C15.3692 9.6783 15.1617 9.6365 14.9957 9.7201L14.9542 9.6783C14.7466 9.8455 14.6221 10.0545 14.5391 10.3053C14.29 10.9323 14.0825 11.5592 13.9165 12.228L13.8335 12.6042L13.0863 15.0704L12.0486 17.4111C11.6751 17.9127 11.177 18.2889 10.5959 18.5815C10.0563 18.8323 9.43366 18.9994 8.81105 18.9994C6.23758 19.0412 5.03387 16.7005 5.03387 16.7005C3.5811 14.2762 3.16603 11.0995 3.04151 10.0545C3 9.92909 3 9.8037 3 9.6783C3 9.34391 3.08301 9.05132 3.24904 8.75873C3.41507 8.46613 3.62261 8.25714 3.91316 8.08994C4.20372 7.96455 4.53578 7.88095 4.86784 7.88095C5.40743 7.92275 5.90552 8.17354 6.23758 8.63333C6.44512 9.00952 6.56964 9.38571 6.56964 9.8037C6.65266 10.7651 6.8602 11.6846 7.10924 12.5624Z' fill='url(%23paint6_radial_10641_218557)'/%3e%3cpath d='M7.10924 12.5624C7.31678 13.273 7.60733 13.9418 7.93939 14.6106C8.06391 14.9032 8.27145 15.154 8.52049 15.3629L8.68652 15.4465C9.1016 15.5301 9.30914 15.1958 9.47517 14.9032C9.6827 14.4016 9.84873 13.9 9.97326 13.3984C10.0148 13.3148 10.0148 13.2312 10.0563 13.1058C10.0978 12.9386 10.1393 12.7296 10.1808 12.5624L12.0071 7.67195C12.3807 7.17037 12.8788 6.75238 13.4599 6.45979C13.9995 6.1672 14.6221 6 15.2447 6C16.1579 6 17.0295 6.33439 17.7352 6.87778C18.9389 7.79735 19.6445 9.5947 19.6445 9.5947C19.7275 9.8455 19.8105 10.0963 19.8105 10.3471C19.8105 10.5979 19.769 10.8069 19.686 11.0577C19.5615 11.2667 19.437 11.4757 19.3124 11.6428C19.1464 11.81 18.9389 11.9354 18.7313 12.019C18.5238 12.1026 18.2748 12.1444 18.0257 12.1444C17.7767 12.1444 17.5276 12.1026 17.2786 11.9772C17.0295 11.8518 16.822 11.6846 16.656 11.5175C16.656 11.5175 16.656 11.4757 16.6145 11.4757C16.4899 11.3085 16.4069 11.1413 16.3239 10.9741C16.2409 10.7651 16.1164 10.5561 15.9918 10.3471C15.9088 10.2635 15.8673 10.1381 15.7843 10.0545C15.7428 9.97089 15.6598 9.8455 15.5353 9.8037C15.3692 9.6783 15.1617 9.6365 14.9957 9.7201L14.9542 9.6783C14.7466 9.8455 14.6221 10.0545 14.5391 10.3053C14.29 10.9323 14.0825 11.5592 13.9165 12.228L13.8335 12.6042L13.0863 15.0704L12.0486 17.4111C11.6751 17.9127 11.177 18.2889 10.5959 18.5815C10.0563 18.8323 9.43366 18.9994 8.81105 18.9994C6.23758 19.0412 5.03387 16.7005 5.03387 16.7005C3.5811 14.2762 3.16603 11.0995 3.04151 10.0545C3 9.92909 3 9.8037 3 9.6783C3 9.34391 3.08301 9.05132 3.24904 8.75873C3.41507 8.46613 3.62261 8.25714 3.91316 8.08994C4.20372 7.96455 4.53578 7.88095 4.86784 7.88095C5.40743 7.92275 5.90552 8.17354 6.23758 8.63333C6.44512 9.00952 6.56964 9.38571 6.56964 9.8037C6.65266 10.7651 6.8602 11.6846 7.10924 12.5624Z' fill='url(%23paint7_radial_10641_218557)'/%3e%3cpath d='M7.10924 12.5624C7.31678 13.273 7.60733 13.9418 7.93939 14.6106C8.06391 14.9032 8.27145 15.154 8.52049 15.3629L8.68652 15.4465C9.1016 15.5301 9.30914 15.1958 9.47517 14.9032C9.6827 14.4016 9.84873 13.9 9.97326 13.3984C10.0148 13.3148 10.0148 13.2312 10.0563 13.1058C10.0978 12.9386 10.1393 12.7296 10.1808 12.5624L12.0071 7.67195C12.3807 7.17037 12.8788 6.75238 13.4599 6.45979C13.9995 6.1672 14.6221 6 15.2447 6C16.1579 6 17.0295 6.33439 17.7352 6.87778C18.9389 7.79735 19.6445 9.5947 19.6445 9.5947C19.7275 9.8455 19.8105 10.0963 19.8105 10.3471C19.8105 10.5979 19.769 10.8069 19.686 11.0577C19.5615 11.2667 19.437 11.4757 19.3124 11.6428C19.1464 11.81 18.9389 11.9354 18.7313 12.019C18.5238 12.1026 18.2748 12.1444 18.0257 12.1444C17.7767 12.1444 17.5276 12.1026 17.2786 11.9772C17.0295 11.8518 16.822 11.6846 16.656 11.5175C16.656 11.5175 16.656 11.4757 16.6145 11.4757C16.4899 11.3085 16.4069 11.1413 16.3239 10.9741C16.2409 10.7651 16.1164 10.5561 15.9918 10.3471C15.9088 10.2635 15.8673 10.1381 15.7843 10.0545C15.7428 9.97089 15.6598 9.8455 15.5353 9.8037C15.3692 9.6783 15.1617 9.6365 14.9957 9.7201L14.9542 9.6783C14.7466 9.8455 14.6221 10.0545 14.5391 10.3053C14.29 10.9323 14.0825 11.5592 13.9165 12.228L13.8335 12.6042L13.0863 15.0704L12.0486 17.4111C11.6751 17.9127 11.177 18.2889 10.5959 18.5815C10.0563 18.8323 9.43366 18.9994 8.81105 18.9994C6.23758 19.0412 5.03387 16.7005 5.03387 16.7005C3.5811 14.2762 3.16603 11.0995 3.04151 10.0545C3 9.92909 3 9.8037 3 9.6783C3 9.34391 3.08301 9.05132 3.24904 8.75873C3.41507 8.46613 3.62261 8.25714 3.91316 8.08994C4.20372 7.96455 4.53578 7.88095 4.86784 7.88095C5.40743 7.92275 5.90552 8.17354 6.23758 8.63333C6.44512 9.00952 6.56964 9.38571 6.56964 9.8037C6.65266 10.7651 6.8602 11.6846 7.10924 12.5624Z' fill='url(%23paint8_radial_10641_218557)'/%3e%3cpath d='M7.10924 12.5624C7.31678 13.273 7.60733 13.9418 7.93939 14.6106C8.06391 14.9032 8.27145 15.154 8.52049 15.3629L8.68652 15.4465C9.1016 15.5301 9.30914 15.1958 9.47517 14.9032C9.6827 14.4016 9.84873 13.9 9.97326 13.3984C10.0148 13.3148 10.0148 13.2312 10.0563 13.1058C10.0978 12.9386 10.1393 12.7296 10.1808 12.5624L12.0071 7.67195C12.3807 7.17037 12.8788 6.75238 13.4599 6.45979C13.9995 6.1672 14.6221 6 15.2447 6C16.1579 6 17.0295 6.33439 17.7352 6.87778C18.9389 7.79735 19.6445 9.5947 19.6445 9.5947C19.7275 9.8455 19.8105 10.0963 19.8105 10.3471C19.8105 10.5979 19.769 10.8069 19.686 11.0577C19.5615 11.2667 19.437 11.4757 19.3124 11.6428C19.1464 11.81 18.9389 11.9354 18.7313 12.019C18.5238 12.1026 18.2748 12.1444 18.0257 12.1444C17.7767 12.1444 17.5276 12.1026 17.2786 11.9772C17.0295 11.8518 16.822 11.6846 16.656 11.5175C16.656 11.5175 16.656 11.4757 16.6145 11.4757C16.4899 11.3085 16.4069 11.1413 16.3239 10.9741C16.2409 10.7651 16.1164 10.5561 15.9918 10.3471C15.9088 10.2635 15.8673 10.1381 15.7843 10.0545C15.7428 9.97089 15.6598 9.8455 15.5353 9.8037C15.3692 9.6783 15.1617 9.6365 14.9957 9.7201L14.9542 9.6783C14.7466 9.8455 14.6221 10.0545 14.5391 10.3053C14.29 10.9323 14.0825 11.5592 13.9165 12.228L13.8335 12.6042L13.0863 15.0704L12.0486 17.4111C11.6751 17.9127 11.177 18.2889 10.5959 18.5815C10.0563 18.8323 9.43366 18.9994 8.81105 18.9994C6.23758 19.0412 5.03387 16.7005 5.03387 16.7005C3.5811 14.2762 3.16603 11.0995 3.04151 10.0545C3 9.92909 3 9.8037 3 9.6783C3 9.34391 3.08301 9.05132 3.24904 8.75873C3.41507 8.46613 3.62261 8.25714 3.91316 8.08994C4.20372 7.96455 4.53578 7.88095 4.86784 7.88095C5.40743 7.92275 5.90552 8.17354 6.23758 8.63333C6.44512 9.00952 6.56964 9.38571 6.56964 9.8037C6.65266 10.7651 6.8602 11.6846 7.10924 12.5624Z' fill='url(%23paint9_radial_10641_218557)'/%3e%3cpath d='M7.10924 12.5624C7.31678 13.273 7.60733 13.9418 7.93939 14.6106C8.06391 14.9032 8.27145 15.154 8.52049 15.3629L8.68652 15.4465C9.1016 15.5301 9.30914 15.1958 9.47517 14.9032C9.6827 14.4016 9.84873 13.9 9.97326 13.3984C10.0148 13.3148 10.0148 13.2312 10.0563 13.1058C10.0978 12.9386 10.1393 12.7296 10.1808 12.5624L12.0071 7.67195C12.3807 7.17037 12.8788 6.75238 13.4599 6.45979C13.9995 6.1672 14.6221 6 15.2447 6C16.1579 6 17.0295 6.33439 17.7352 6.87778C18.9389 7.79735 19.6445 9.5947 19.6445 9.5947C19.7275 9.8455 19.8105 10.0963 19.8105 10.3471C19.8105 10.5979 19.769 10.8069 19.686 11.0577C19.5615 11.2667 19.437 11.4757 19.3124 11.6428C19.1464 11.81 18.9389 11.9354 18.7313 12.019C18.5238 12.1026 18.2748 12.1444 18.0257 12.1444C17.7767 12.1444 17.5276 12.1026 17.2786 11.9772C17.0295 11.8518 16.822 11.6846 16.656 11.5175C16.656 11.5175 16.656 11.4757 16.6145 11.4757C16.4899 11.3085 16.4069 11.1413 16.3239 10.9741C16.2409 10.7651 16.1164 10.5561 15.9918 10.3471C15.9088 10.2635 15.8673 10.1381 15.7843 10.0545C15.7428 9.97089 15.6598 9.8455 15.5353 9.8037C15.3692 9.6783 15.1617 9.6365 14.9957 9.7201L14.9542 9.6783C14.7466 9.8455 14.6221 10.0545 14.5391 10.3053C14.29 10.9323 14.0825 11.5592 13.9165 12.228L13.8335 12.6042L13.0863 15.0704L12.0486 17.4111C11.6751 17.9127 11.177 18.2889 10.5959 18.5815C10.0563 18.8323 9.43366 18.9994 8.81105 18.9994C6.23758 19.0412 5.03387 16.7005 5.03387 16.7005C3.5811 14.2762 3.16603 11.0995 3.04151 10.0545C3 9.92909 3 9.8037 3 9.6783C3 9.34391 3.08301 9.05132 3.24904 8.75873C3.41507 8.46613 3.62261 8.25714 3.91316 8.08994C4.20372 7.96455 4.53578 7.88095 4.86784 7.88095C5.40743 7.92275 5.90552 8.17354 6.23758 8.63333C6.44512 9.00952 6.56964 9.38571 6.56964 9.8037C6.65266 10.7651 6.8602 11.6846 7.10924 12.5624Z' fill='url(%23paint10_radial_10641_218557)'/%3e%3cpath d='M7.10924 12.5624C7.31678 13.273 7.60733 13.9418 7.93939 14.6106C8.06391 14.9032 8.27145 15.154 8.52049 15.3629L8.68652 15.4465C9.1016 15.5301 9.30914 15.1958 9.47517 14.9032C9.6827 14.4016 9.84873 13.9 9.97326 13.3984C10.0148 13.3148 10.0148 13.2312 10.0563 13.1058C10.0978 12.9386 10.1393 12.7296 10.1808 12.5624L12.0071 7.67195C12.3807 7.17037 12.8788 6.75238 13.4599 6.45979C13.9995 6.1672 14.6221 6 15.2447 6C16.1579 6 17.0295 6.33439 17.7352 6.87778C18.9389 7.79735 19.6445 9.5947 19.6445 9.5947C19.7275 9.8455 19.8105 10.0963 19.8105 10.3471C19.8105 10.5979 19.769 10.8069 19.686 11.0577C19.5615 11.2667 19.437 11.4757 19.3124 11.6428C19.1464 11.81 18.9389 11.9354 18.7313 12.019C18.5238 12.1026 18.2748 12.1444 18.0257 12.1444C17.7767 12.1444 17.5276 12.1026 17.2786 11.9772C17.0295 11.8518 16.822 11.6846 16.656 11.5175C16.656 11.5175 16.656 11.4757 16.6145 11.4757C16.4899 11.3085 16.4069 11.1413 16.3239 10.9741C16.2409 10.7651 16.1164 10.5561 15.9918 10.3471C15.9088 10.2635 15.8673 10.1381 15.7843 10.0545C15.7428 9.97089 15.6598 9.8455 15.5353 9.8037C15.3692 9.6783 15.1617 9.6365 14.9957 9.7201L14.9542 9.6783C14.7466 9.8455 14.6221 10.0545 14.5391 10.3053C14.29 10.9323 14.0825 11.5592 13.9165 12.228L13.8335 12.6042L13.0863 15.0704L12.0486 17.4111C11.6751 17.9127 11.177 18.2889 10.5959 18.5815C10.0563 18.8323 9.43366 18.9994 8.81105 18.9994C6.23758 19.0412 5.03387 16.7005 5.03387 16.7005C3.5811 14.2762 3.16603 11.0995 3.04151 10.0545C3 9.92909 3 9.8037 3 9.6783C3 9.34391 3.08301 9.05132 3.24904 8.75873C3.41507 8.46613 3.62261 8.25714 3.91316 8.08994C4.20372 7.96455 4.53578 7.88095 4.86784 7.88095C5.40743 7.92275 5.90552 8.17354 6.23758 8.63333C6.44512 9.00952 6.56964 9.38571 6.56964 9.8037C6.65266 10.7651 6.8602 11.6846 7.10924 12.5624Z' fill='url(%23paint11_radial_10641_218557)'/%3e%3cpath d='M7.10924 12.5624C7.31678 13.273 7.60733 13.9418 7.93939 14.6106C8.06391 14.9032 8.27145 15.154 8.52049 15.3629L8.68652 15.4465C9.1016 15.5301 9.30914 15.1958 9.47517 14.9032C9.6827 14.4016 9.84873 13.9 9.97326 13.3984C10.0148 13.3148 10.0148 13.2312 10.0563 13.1058C10.0978 12.9386 10.1393 12.7296 10.1808 12.5624L12.0071 7.67195C12.3807 7.17037 12.8788 6.75238 13.4599 6.45979C13.9995 6.1672 14.6221 6 15.2447 6C16.1579 6 17.0295 6.33439 17.7352 6.87778C18.9389 7.79735 19.6445 9.5947 19.6445 9.5947C19.7275 9.8455 19.8105 10.0963 19.8105 10.3471C19.8105 10.5979 19.769 10.8069 19.686 11.0577C19.5615 11.2667 19.437 11.4757 19.3124 11.6428C19.1464 11.81 18.9389 11.9354 18.7313 12.019C18.5238 12.1026 18.2748 12.1444 18.0257 12.1444C17.7767 12.1444 17.5276 12.1026 17.2786 11.9772C17.0295 11.8518 16.822 11.6846 16.656 11.5175C16.656 11.5175 16.656 11.4757 16.6145 11.4757C16.4899 11.3085 16.4069 11.1413 16.3239 10.9741C16.2409 10.7651 16.1164 10.5561 15.9918 10.3471C15.9088 10.2635 15.8673 10.1381 15.7843 10.0545C15.7428 9.97089 15.6598 9.8455 15.5353 9.8037C15.3692 9.6783 15.1617 9.6365 14.9957 9.7201L14.9542 9.6783C14.7466 9.8455 14.6221 10.0545 14.5391 10.3053C14.29 10.9323 14.0825 11.5592 13.9165 12.228L13.8335 12.6042L13.0863 15.0704L12.0486 17.4111C11.6751 17.9127 11.177 18.2889 10.5959 18.5815C10.0563 18.8323 9.43366 18.9994 8.81105 18.9994C6.23758 19.0412 5.03387 16.7005 5.03387 16.7005C3.5811 14.2762 3.16603 11.0995 3.04151 10.0545C3 9.92909 3 9.8037 3 9.6783C3 9.34391 3.08301 9.05132 3.24904 8.75873C3.41507 8.46613 3.62261 8.25714 3.91316 8.08994C4.20372 7.96455 4.53578 7.88095 4.86784 7.88095C5.40743 7.92275 5.90552 8.17354 6.23758 8.63333C6.44512 9.00952 6.56964 9.38571 6.56964 9.8037C6.65266 10.7651 6.8602 11.6846 7.10924 12.5624Z' fill='url(%23paint12_radial_10641_218557)'/%3e%3cpath d='M7.10924 12.5624C7.31678 13.273 7.60733 13.9418 7.93939 14.6106C8.06391 14.9032 8.27145 15.154 8.52049 15.3629L8.68652 15.4465C9.1016 15.5301 9.30914 15.1958 9.47517 14.9032C9.6827 14.4016 9.84873 13.9 9.97326 13.3984C10.0148 13.3148 10.0148 13.2312 10.0563 13.1058C10.0978 12.9386 10.1393 12.7296 10.1808 12.5624L12.0071 7.67195C12.3807 7.17037 12.8788 6.75238 13.4599 6.45979C13.9995 6.1672 14.6221 6 15.2447 6C16.1579 6 17.0295 6.33439 17.7352 6.87778C18.9389 7.79735 19.6445 9.5947 19.6445 9.5947C19.7275 9.8455 19.8105 10.0963 19.8105 10.3471C19.8105 10.5979 19.769 10.8069 19.686 11.0577C19.5615 11.2667 19.437 11.4757 19.3124 11.6428C19.1464 11.81 18.9389 11.9354 18.7313 12.019C18.5238 12.1026 18.2748 12.1444 18.0257 12.1444C17.7767 12.1444 17.5276 12.1026 17.2786 11.9772C17.0295 11.8518 16.822 11.6846 16.656 11.5175C16.656 11.5175 16.656 11.4757 16.6145 11.4757C16.4899 11.3085 16.4069 11.1413 16.3239 10.9741C16.2409 10.7651 16.1164 10.5561 15.9918 10.3471C15.9088 10.2635 15.8673 10.1381 15.7843 10.0545C15.7428 9.97089 15.6598 9.8455 15.5353 9.8037C15.3692 9.6783 15.1617 9.6365 14.9957 9.7201L14.9542 9.6783C14.7466 9.8455 14.6221 10.0545 14.5391 10.3053C14.29 10.9323 14.0825 11.5592 13.9165 12.228L13.8335 12.6042L13.0863 15.0704L12.0486 17.4111C11.6751 17.9127 11.177 18.2889 10.5959 18.5815C10.0563 18.8323 9.43366 18.9994 8.81105 18.9994C6.23758 19.0412 5.03387 16.7005 5.03387 16.7005C3.5811 14.2762 3.16603 11.0995 3.04151 10.0545C3 9.92909 3 9.8037 3 9.6783C3 9.34391 3.08301 9.05132 3.24904 8.75873C3.41507 8.46613 3.62261 8.25714 3.91316 8.08994C4.20372 7.96455 4.53578 7.88095 4.86784 7.88095C5.40743 7.92275 5.90552 8.17354 6.23758 8.63333C6.44512 9.00952 6.56964 9.38571 6.56964 9.8037C6.65266 10.7651 6.8602 11.6846 7.10924 12.5624Z' fill='url(%23paint13_radial_10641_218557)'/%3e%3cpath d='M7.10924 12.5624C7.31678 13.273 7.60733 13.9418 7.93939 14.6106C8.06391 14.9032 8.27145 15.154 8.52049 15.3629L8.68652 15.4465C9.1016 15.5301 9.30914 15.1958 9.47517 14.9032C9.6827 14.4016 9.84873 13.9 9.97326 13.3984C10.0148 13.3148 10.0148 13.2312 10.0563 13.1058C10.0978 12.9386 10.1393 12.7296 10.1808 12.5624L12.0071 7.67195C12.3807 7.17037 12.8788 6.75238 13.4599 6.45979C13.9995 6.1672 14.6221 6 15.2447 6C16.1579 6 17.0295 6.33439 17.7352 6.87778C18.9389 7.79735 19.6445 9.5947 19.6445 9.5947C19.7275 9.8455 19.8105 10.0963 19.8105 10.3471C19.8105 10.5979 19.769 10.8069 19.686 11.0577C19.5615 11.2667 19.437 11.4757 19.3124 11.6428C19.1464 11.81 18.9389 11.9354 18.7313 12.019C18.5238 12.1026 18.2748 12.1444 18.0257 12.1444C17.7767 12.1444 17.5276 12.1026 17.2786 11.9772C17.0295 11.8518 16.822 11.6846 16.656 11.5175C16.656 11.5175 16.656 11.4757 16.6145 11.4757C16.4899 11.3085 16.4069 11.1413 16.3239 10.9741C16.2409 10.7651 16.1164 10.5561 15.9918 10.3471C15.9088 10.2635 15.8673 10.1381 15.7843 10.0545C15.7428 9.97089 15.6598 9.8455 15.5353 9.8037C15.3692 9.6783 15.1617 9.6365 14.9957 9.7201L14.9542 9.6783C14.7466 9.8455 14.6221 10.0545 14.5391 10.3053C14.29 10.9323 14.0825 11.5592 13.9165 12.228L13.8335 12.6042L13.0863 15.0704L12.0486 17.4111C11.6751 17.9127 11.177 18.2889 10.5959 18.5815C10.0563 18.8323 9.43366 18.9994 8.81105 18.9994C6.23758 19.0412 5.03387 16.7005 5.03387 16.7005C3.5811 14.2762 3.16603 11.0995 3.04151 10.0545C3 9.92909 3 9.8037 3 9.6783C3 9.34391 3.08301 9.05132 3.24904 8.75873C3.41507 8.46613 3.62261 8.25714 3.91316 8.08994C4.20372 7.96455 4.53578 7.88095 4.86784 7.88095C5.40743 7.92275 5.90552 8.17354 6.23758 8.63333C6.44512 9.00952 6.56964 9.38571 6.56964 9.8037C6.65266 10.7651 6.8602 11.6846 7.10924 12.5624Z' fill='url(%23paint14_radial_10641_218557)'/%3e%3cpath d='M7.10924 12.5624C7.31678 13.273 7.60733 13.9418 7.93939 14.6106C8.06391 14.9032 8.27145 15.154 8.52049 15.3629L8.68652 15.4465C9.1016 15.5301 9.30914 15.1958 9.47517 14.9032C9.6827 14.4016 9.84873 13.9 9.97326 13.3984C10.0148 13.3148 10.0148 13.2312 10.0563 13.1058C10.0978 12.9386 10.1393 12.7296 10.1808 12.5624L12.0071 7.67195C12.3807 7.17037 12.8788 6.75238 13.4599 6.45979C13.9995 6.1672 14.6221 6 15.2447 6C16.1579 6 17.0295 6.33439 17.7352 6.87778C18.9389 7.79735 19.6445 9.5947 19.6445 9.5947C19.7275 9.8455 19.8105 10.0963 19.8105 10.3471C19.8105 10.5979 19.769 10.8069 19.686 11.0577C19.5615 11.2667 19.437 11.4757 19.3124 11.6428C19.1464 11.81 18.9389 11.9354 18.7313 12.019C18.5238 12.1026 18.2748 12.1444 18.0257 12.1444C17.7767 12.1444 17.5276 12.1026 17.2786 11.9772C17.0295 11.8518 16.822 11.6846 16.656 11.5175C16.656 11.5175 16.656 11.4757 16.6145 11.4757C16.4899 11.3085 16.4069 11.1413 16.3239 10.9741C16.2409 10.7651 16.1164 10.5561 15.9918 10.3471C15.9088 10.2635 15.8673 10.1381 15.7843 10.0545C15.7428 9.97089 15.6598 9.8455 15.5353 9.8037C15.3692 9.6783 15.1617 9.6365 14.9957 9.7201L14.9542 9.6783C14.7466 9.8455 14.6221 10.0545 14.5391 10.3053C14.29 10.9323 14.0825 11.5592 13.9165 12.228L13.8335 12.6042L13.0863 15.0704L12.0486 17.4111C11.6751 17.9127 11.177 18.2889 10.5959 18.5815C10.0563 18.8323 9.43366 18.9994 8.81105 18.9994C6.23758 19.0412 5.03387 16.7005 5.03387 16.7005C3.5811 14.2762 3.16603 11.0995 3.04151 10.0545C3 9.92909 3 9.8037 3 9.6783C3 9.34391 3.08301 9.05132 3.24904 8.75873C3.41507 8.46613 3.62261 8.25714 3.91316 8.08994C4.20372 7.96455 4.53578 7.88095 4.86784 7.88095C5.40743 7.92275 5.90552 8.17354 6.23758 8.63333C6.44512 9.00952 6.56964 9.38571 6.56964 9.8037C6.65266 10.7651 6.8602 11.6846 7.10924 12.5624Z' fill='url(%23paint15_radial_10641_218557)'/%3e%3cpath d='M7.10924 12.5624C7.31678 13.273 7.60733 13.9418 7.93939 14.6106C8.06391 14.9032 8.27145 15.154 8.52049 15.3629L8.68652 15.4465C9.1016 15.5301 9.30914 15.1958 9.47517 14.9032C9.6827 14.4016 9.84873 13.9 9.97326 13.3984C10.0148 13.3148 10.0148 13.2312 10.0563 13.1058C10.0978 12.9386 10.1393 12.7296 10.1808 12.5624L12.0071 7.67195C12.3807 7.17037 12.8788 6.75238 13.4599 6.45979C13.9995 6.1672 14.6221 6 15.2447 6C16.1579 6 17.0295 6.33439 17.7352 6.87778C18.9389 7.79735 19.6445 9.5947 19.6445 9.5947C19.7275 9.8455 19.8105 10.0963 19.8105 10.3471C19.8105 10.5979 19.769 10.8069 19.686 11.0577C19.5615 11.2667 19.437 11.4757 19.3124 11.6428C19.1464 11.81 18.9389 11.9354 18.7313 12.019C18.5238 12.1026 18.2748 12.1444 18.0257 12.1444C17.7767 12.1444 17.5276 12.1026 17.2786 11.9772C17.0295 11.8518 16.822 11.6846 16.656 11.5175C16.656 11.5175 16.656 11.4757 16.6145 11.4757C16.4899 11.3085 16.4069 11.1413 16.3239 10.9741C16.2409 10.7651 16.1164 10.5561 15.9918 10.3471C15.9088 10.2635 15.8673 10.1381 15.7843 10.0545C15.7428 9.97089 15.6598 9.8455 15.5353 9.8037C15.3692 9.6783 15.1617 9.6365 14.9957 9.7201L14.9542 9.6783C14.7466 9.8455 14.6221 10.0545 14.5391 10.3053C14.29 10.9323 14.0825 11.5592 13.9165 12.228L13.8335 12.6042L13.0863 15.0704L12.0486 17.4111C11.6751 17.9127 11.177 18.2889 10.5959 18.5815C10.0563 18.8323 9.43366 18.9994 8.81105 18.9994C6.23758 19.0412 5.03387 16.7005 5.03387 16.7005C3.5811 14.2762 3.16603 11.0995 3.04151 10.0545C3 9.92909 3 9.8037 3 9.6783C3 9.34391 3.08301 9.05132 3.24904 8.75873C3.41507 8.46613 3.62261 8.25714 3.91316 8.08994C4.20372 7.96455 4.53578 7.88095 4.86784 7.88095C5.40743 7.92275 5.90552 8.17354 6.23758 8.63333C6.44512 9.00952 6.56964 9.38571 6.56964 9.8037C6.65266 10.7651 6.8602 11.6846 7.10924 12.5624Z' fill='url(%23paint16_linear_10641_218557)'/%3e%3cpath d='M7.10924 12.5624C7.31678 13.273 7.60733 13.9418 7.93939 14.6106C8.06391 14.9032 8.27145 15.154 8.52049 15.3629L8.68652 15.4465C9.1016 15.5301 9.30914 15.1958 9.47517 14.9032C9.6827 14.4016 9.84873 13.9 9.97326 13.3984C10.0148 13.3148 10.0148 13.2312 10.0563 13.1058C10.0978 12.9386 10.1393 12.7296 10.1808 12.5624L12.0071 7.67195C12.3807 7.17037 12.8788 6.75238 13.4599 6.45979C13.9995 6.1672 14.6221 6 15.2447 6C16.1579 6 17.0295 6.33439 17.7352 6.87778C18.9389 7.79735 19.6445 9.5947 19.6445 9.5947C19.7275 9.8455 19.8105 10.0963 19.8105 10.3471C19.8105 10.5979 19.769 10.8069 19.686 11.0577C19.5615 11.2667 19.437 11.4757 19.3124 11.6428C19.1464 11.81 18.9389 11.9354 18.7313 12.019C18.5238 12.1026 18.2748 12.1444 18.0257 12.1444C17.7767 12.1444 17.5276 12.1026 17.2786 11.9772C17.0295 11.8518 16.822 11.6846 16.656 11.5175C16.656 11.5175 16.656 11.4757 16.6145 11.4757C16.4899 11.3085 16.4069 11.1413 16.3239 10.9741C16.2409 10.7651 16.1164 10.5561 15.9918 10.3471C15.9088 10.2635 15.8673 10.1381 15.7843 10.0545C15.7428 9.97089 15.6598 9.8455 15.5353 9.8037C15.3692 9.6783 15.1617 9.6365 14.9957 9.7201L14.9542 9.6783C14.7466 9.8455 14.6221 10.0545 14.5391 10.3053C14.29 10.9323 14.0825 11.5592 13.9165 12.228L13.8335 12.6042L13.0863 15.0704L12.0486 17.4111C11.6751 17.9127 11.177 18.2889 10.5959 18.5815C10.0563 18.8323 9.43366 18.9994 8.81105 18.9994C6.23758 19.0412 5.03387 16.7005 5.03387 16.7005C3.5811 14.2762 3.16603 11.0995 3.04151 10.0545C3 9.92909 3 9.8037 3 9.6783C3 9.34391 3.08301 9.05132 3.24904 8.75873C3.41507 8.46613 3.62261 8.25714 3.91316 8.08994C4.20372 7.96455 4.53578 7.88095 4.86784 7.88095C5.40743 7.92275 5.90552 8.17354 6.23758 8.63333C6.44512 9.00952 6.56964 9.38571 6.56964 9.8037C6.65266 10.7651 6.8602 11.6846 7.10924 12.5624Z' fill='url(%23paint17_linear_10641_218557)'/%3e%3cpath d='M7.10924 12.5624C7.31678 13.273 7.60733 13.9418 7.93939 14.6106C8.06391 14.9032 8.27145 15.154 8.52049 15.3629L8.68652 15.4465C9.1016 15.5301 9.30914 15.1958 9.47517 14.9032C9.6827 14.4016 9.84873 13.9 9.97326 13.3984C10.0148 13.3148 10.0148 13.2312 10.0563 13.1058C10.0978 12.9386 10.1393 12.7296 10.1808 12.5624L12.0071 7.67195C12.3807 7.17037 12.8788 6.75238 13.4599 6.45979C13.9995 6.1672 14.6221 6 15.2447 6C16.1579 6 17.0295 6.33439 17.7352 6.87778C18.9389 7.79735 19.6445 9.5947 19.6445 9.5947C19.7275 9.8455 19.8105 10.0963 19.8105 10.3471C19.8105 10.5979 19.769 10.8069 19.686 11.0577C19.5615 11.2667 19.437 11.4757 19.3124 11.6428C19.1464 11.81 18.9389 11.9354 18.7313 12.019C18.5238 12.1026 18.2748 12.1444 18.0257 12.1444C17.7767 12.1444 17.5276 12.1026 17.2786 11.9772C17.0295 11.8518 16.822 11.6846 16.656 11.5175C16.656 11.5175 16.656 11.4757 16.6145 11.4757C16.4899 11.3085 16.4069 11.1413 16.3239 10.9741C16.2409 10.7651 16.1164 10.5561 15.9918 10.3471C15.9088 10.2635 15.8673 10.1381 15.7843 10.0545C15.7428 9.97089 15.6598 9.8455 15.5353 9.8037C15.3692 9.6783 15.1617 9.6365 14.9957 9.7201L14.9542 9.6783C14.7466 9.8455 14.6221 10.0545 14.5391 10.3053C14.29 10.9323 14.0825 11.5592 13.9165 12.228L13.8335 12.6042L13.0863 15.0704L12.0486 17.4111C11.6751 17.9127 11.177 18.2889 10.5959 18.5815C10.0563 18.8323 9.43366 18.9994 8.81105 18.9994C6.23758 19.0412 5.03387 16.7005 5.03387 16.7005C3.5811 14.2762 3.16603 11.0995 3.04151 10.0545C3 9.92909 3 9.8037 3 9.6783C3 9.34391 3.08301 9.05132 3.24904 8.75873C3.41507 8.46613 3.62261 8.25714 3.91316 8.08994C4.20372 7.96455 4.53578 7.88095 4.86784 7.88095C5.40743 7.92275 5.90552 8.17354 6.23758 8.63333C6.44512 9.00952 6.56964 9.38571 6.56964 9.8037C6.65266 10.7651 6.8602 11.6846 7.10924 12.5624Z' fill='url(%23paint18_linear_10641_218557)'/%3e%3cpath d='M7.10924 12.5624C7.31678 13.273 7.60733 13.9418 7.93939 14.6106C8.06391 14.9032 8.27145 15.154 8.52049 15.3629L8.68652 15.4465C9.1016 15.5301 9.30914 15.1958 9.47517 14.9032C9.6827 14.4016 9.84873 13.9 9.97326 13.3984C10.0148 13.3148 10.0148 13.2312 10.0563 13.1058C10.0978 12.9386 10.1393 12.7296 10.1808 12.5624L12.0071 7.67195C12.3807 7.17037 12.8788 6.75238 13.4599 6.45979C13.9995 6.1672 14.6221 6 15.2447 6C16.1579 6 17.0295 6.33439 17.7352 6.87778C18.9389 7.79735 19.6445 9.5947 19.6445 9.5947C19.7275 9.8455 19.8105 10.0963 19.8105 10.3471C19.8105 10.5979 19.769 10.8069 19.686 11.0577C19.5615 11.2667 19.437 11.4757 19.3124 11.6428C19.1464 11.81 18.9389 11.9354 18.7313 12.019C18.5238 12.1026 18.2748 12.1444 18.0257 12.1444C17.7767 12.1444 17.5276 12.1026 17.2786 11.9772C17.0295 11.8518 16.822 11.6846 16.656 11.5175C16.656 11.5175 16.656 11.4757 16.6145 11.4757C16.4899 11.3085 16.4069 11.1413 16.3239 10.9741C16.2409 10.7651 16.1164 10.5561 15.9918 10.3471C15.9088 10.2635 15.8673 10.1381 15.7843 10.0545C15.7428 9.97089 15.6598 9.8455 15.5353 9.8037C15.3692 9.6783 15.1617 9.6365 14.9957 9.7201L14.9542 9.6783C14.7466 9.8455 14.6221 10.0545 14.5391 10.3053C14.29 10.9323 14.0825 11.5592 13.9165 12.228L13.8335 12.6042L13.0863 15.0704L12.0486 17.4111C11.6751 17.9127 11.177 18.2889 10.5959 18.5815C10.0563 18.8323 9.43366 18.9994 8.81105 18.9994C6.23758 19.0412 5.03387 16.7005 5.03387 16.7005C3.5811 14.2762 3.16603 11.0995 3.04151 10.0545C3 9.92909 3 9.8037 3 9.6783C3 9.34391 3.08301 9.05132 3.24904 8.75873C3.41507 8.46613 3.62261 8.25714 3.91316 8.08994C4.20372 7.96455 4.53578 7.88095 4.86784 7.88095C5.40743 7.92275 5.90552 8.17354 6.23758 8.63333C6.44512 9.00952 6.56964 9.38571 6.56964 9.8037C6.65266 10.7651 6.8602 11.6846 7.10924 12.5624Z' fill='url(%23paint19_linear_10641_218557)'/%3e%3cpath d='M10.8452 10.7233L12.0074 7.63016C12.381 7.12857 12.8791 6.71058 13.4602 6.41799C14.0413 6.1672 14.6639 6 15.2865 6C16.1997 6 17.0713 6.33439 17.777 6.87778C18.9807 7.79735 19.6863 9.5947 19.6863 9.5947C19.7693 9.8455 19.8523 10.0963 19.8523 10.3471C19.8523 10.5979 19.8108 10.8069 19.7278 11.0577C19.6033 11.2667 19.4788 11.4757 19.3542 11.6428C19.1882 11.81 18.9807 11.9354 18.7731 12.019C18.5656 12.1026 18.3166 12.1444 18.0675 12.1444C17.8185 12.1444 17.5694 12.1026 17.3204 11.9772C17.0713 11.8518 16.8638 11.6846 16.6978 11.5174C16.6978 11.5174 16.6978 11.4757 16.6563 11.4757C16.5317 11.3085 16.4487 11.1413 16.3657 10.9741C16.2827 10.7651 16.1582 10.5561 16.0336 10.3471C15.9506 10.2635 15.9091 10.1381 15.8261 10.0545C15.7846 9.97089 15.7016 9.8455 15.5771 9.8037C15.411 9.6783 15.2035 9.6365 15.0375 9.7201L14.9545 9.6783C14.7469 9.8455 14.6224 10.0545 14.5394 10.3053C14.2903 10.9323 14.0828 11.5592 13.9168 12.228L13.8338 12.6042L13.0866 15.0704L10.8452 10.7233Z' fill='url(%23paint20_linear_10641_218557)'/%3e%3cpath d='M19.2297 7.96467C19.1052 7.96467 18.9392 8.00647 18.8146 8.00647C19.1467 8.50806 19.4373 9.00964 19.6448 9.55303C19.7278 9.80382 19.8108 10.0546 19.8108 10.3054C19.8108 10.5562 19.7693 10.7652 19.6863 11.016C19.5618 11.225 19.4373 11.434 19.3127 11.6012C19.1467 11.7684 18.9392 11.9356 18.7316 11.9774C18.5241 12.061 18.275 12.1028 18.026 12.1028C17.6939 12.1028 17.4034 12.0192 17.1128 11.852L16.9468 12.5625C16.8223 13.1059 16.6147 13.6075 16.3657 14.1091C16.2412 14.4017 16.0751 14.6943 15.9091 14.9869C15.7846 15.1541 15.6186 15.3213 15.411 15.4049C15.328 15.4049 15.245 15.4467 15.2035 15.4467C15.1205 15.4467 15.0375 15.4049 14.9544 15.3631C14.8299 15.2377 14.7054 15.1123 14.6224 14.9451C14.5394 14.7779 14.4564 14.6107 14.3733 14.4017C14.2073 14.0255 13.9583 13.0641 13.9583 13.0641L13.7092 12.061L13.4602 11.0578L13.2941 10.389C13.0866 9.46943 12.713 8.59165 12.1734 7.79748C11.6754 7.0451 10.9282 6.50171 10.0981 6.20912C9.47546 6.00012 8.76983 5.95833 8.10571 6.04192C6.9435 6.29272 5.94732 7.0033 5.2832 8.00647C5.44923 8.04827 5.61526 8.13187 5.78129 8.21546C5.98883 8.34086 6.15486 8.50806 6.27938 8.67525C6.48692 9.05144 6.61144 9.42763 6.61144 9.84562C6.69446 10.7234 6.86049 11.643 7.10953 12.4789C7.35858 11.5176 7.77365 10.6398 8.31325 9.80382C8.39626 9.72022 8.47928 9.63662 8.56229 9.55303C8.6038 9.51123 8.68682 9.51123 8.72832 9.51123C8.85285 9.51123 8.93586 9.55303 9.01888 9.59483C9.06038 9.59483 9.06038 9.63663 9.06038 9.63663C9.1434 9.72022 9.22641 9.80382 9.30943 9.88742C9.43395 10.1382 9.55847 10.389 9.68299 10.6398C9.89053 11.225 10.0566 11.9356 10.0566 11.9356L10.5547 13.9837C10.7207 14.6943 10.9697 15.4049 11.2603 16.0736C12.0489 17.9128 13.2526 18.4144 13.2526 18.4144C13.8337 18.707 14.4979 18.916 15.162 18.916C15.7846 18.9578 16.4487 18.7906 16.9883 18.5398C17.6109 18.2054 18.1505 17.7874 18.6071 17.244C18.8561 16.8678 19.1052 16.4916 19.3127 16.0736C19.8108 15.1123 20.1429 14.1091 20.4334 13.0641C20.5995 12.4371 20.7655 11.7684 20.8485 11.0996C20.89 10.7652 20.9315 10.4726 20.973 10.1382C21.0145 9.84562 21.0145 9.51123 20.9315 9.21864C20.89 9.17684 20.89 9.13504 20.89 9.05144C20.724 8.67525 20.4749 8.34086 20.1014 8.13187C19.8523 8.04827 19.5203 7.96467 19.2297 7.96467Z' fill='url(%23paint21_linear_10641_218557)'/%3e%3cpath d='M19.2297 7.96467C19.1052 7.96467 18.9392 8.00647 18.8146 8.00647C19.1467 8.50806 19.4373 9.00964 19.6448 9.55303C19.7278 9.80382 19.8108 10.0546 19.8108 10.3054C19.8108 10.5562 19.7693 10.7652 19.6863 11.016C19.5618 11.225 19.4373 11.434 19.3127 11.6012C19.1467 11.7684 18.9392 11.9356 18.7316 11.9774C18.5241 12.061 18.275 12.1028 18.026 12.1028C17.6939 12.1028 17.4034 12.0192 17.1128 11.852L16.9468 12.5625C16.8223 13.1059 16.6147 13.6075 16.3657 14.1091C16.2412 14.4017 16.0751 14.6943 15.9091 14.9869C15.7846 15.1541 15.6186 15.3213 15.411 15.4049C15.328 15.4049 15.245 15.4467 15.2035 15.4467C15.1205 15.4467 15.0375 15.4049 14.9544 15.3631C14.8299 15.2377 14.7054 15.1123 14.6224 14.9451C14.5394 14.7779 14.4564 14.6107 14.3733 14.4017C14.2073 14.0255 13.9583 13.0641 13.9583 13.0641L13.7092 12.061L13.4602 11.0578L13.2941 10.389C13.0866 9.46943 12.713 8.59165 12.1734 7.79748C11.6754 7.0451 10.9282 6.50171 10.0981 6.20912C9.47546 6.00012 8.76983 5.95833 8.10571 6.04192C6.9435 6.29272 5.94732 7.0033 5.2832 8.00647C5.44923 8.04827 5.61526 8.13187 5.78129 8.21546C5.98883 8.34086 6.15486 8.50806 6.27938 8.67525C6.48692 9.05144 6.61144 9.42763 6.61144 9.84562C6.69446 10.7234 6.86049 11.643 7.10953 12.4789C7.35858 11.5176 7.77365 10.6398 8.31325 9.80382C8.39626 9.72022 8.47928 9.63662 8.56229 9.55303C8.6038 9.51123 8.68682 9.51123 8.72832 9.51123C8.85285 9.51123 8.93586 9.55303 9.01888 9.59483C9.06038 9.59483 9.06038 9.63663 9.06038 9.63663C9.1434 9.72022 9.22641 9.80382 9.30943 9.88742C9.43395 10.1382 9.55847 10.389 9.68299 10.6398C9.89053 11.225 10.0566 11.9356 10.0566 11.9356L10.5547 13.9837C10.7207 14.6943 10.9697 15.4049 11.2603 16.0736C12.0489 17.9128 13.2526 18.4144 13.2526 18.4144C13.8337 18.707 14.4979 18.916 15.162 18.916C15.7846 18.9578 16.4487 18.7906 16.9883 18.5398C17.6109 18.2054 18.1505 17.7874 18.6071 17.244C18.8561 16.8678 19.1052 16.4916 19.3127 16.0736C19.8108 15.1123 20.1429 14.1091 20.4334 13.0641C20.5995 12.4371 20.7655 11.7684 20.8485 11.0996C20.89 10.7652 20.9315 10.4726 20.973 10.1382C21.0145 9.84562 21.0145 9.51123 20.9315 9.21864C20.89 9.17684 20.89 9.13504 20.89 9.05144C20.724 8.67525 20.4749 8.34086 20.1014 8.13187C19.8523 8.04827 19.5203 7.96467 19.2297 7.96467Z' fill='url(%23paint22_radial_10641_218557)'/%3e%3cpath d='M19.2297 7.96467C19.1052 7.96467 18.9392 8.00647 18.8146 8.00647C19.1467 8.50806 19.4373 9.00964 19.6448 9.55303C19.7278 9.80382 19.8108 10.0546 19.8108 10.3054C19.8108 10.5562 19.7693 10.7652 19.6863 11.016C19.5618 11.225 19.4373 11.434 19.3127 11.6012C19.1467 11.7684 18.9392 11.9356 18.7316 11.9774C18.5241 12.061 18.275 12.1028 18.026 12.1028C17.6939 12.1028 17.4034 12.0192 17.1128 11.852L16.9468 12.5625C16.8223 13.1059 16.6147 13.6075 16.3657 14.1091C16.2412 14.4017 16.0751 14.6943 15.9091 14.9869C15.7846 15.1541 15.6186 15.3213 15.411 15.4049C15.328 15.4049 15.245 15.4467 15.2035 15.4467C15.1205 15.4467 15.0375 15.4049 14.9544 15.3631C14.8299 15.2377 14.7054 15.1123 14.6224 14.9451C14.5394 14.7779 14.4564 14.6107 14.3733 14.4017C14.2073 14.0255 13.9583 13.0641 13.9583 13.0641L13.7092 12.061L13.4602 11.0578L13.2941 10.389C13.0866 9.46943 12.713 8.59165 12.1734 7.79748C11.6754 7.0451 10.9282 6.50171 10.0981 6.20912C9.47546 6.00012 8.76983 5.95833 8.10571 6.04192C6.9435 6.29272 5.94732 7.0033 5.2832 8.00647C5.44923 8.04827 5.61526 8.13187 5.78129 8.21546C5.98883 8.34086 6.15486 8.50806 6.27938 8.67525C6.48692 9.05144 6.61144 9.42763 6.61144 9.84562C6.69446 10.7234 6.86049 11.643 7.10953 12.4789C7.35858 11.5176 7.77365 10.6398 8.31325 9.80382C8.39626 9.72022 8.47928 9.63662 8.56229 9.55303C8.6038 9.51123 8.68682 9.51123 8.72832 9.51123C8.85285 9.51123 8.93586 9.55303 9.01888 9.59483C9.06038 9.59483 9.06038 9.63663 9.06038 9.63663C9.1434 9.72022 9.22641 9.80382 9.30943 9.88742C9.43395 10.1382 9.55847 10.389 9.68299 10.6398C9.89053 11.225 10.0566 11.9356 10.0566 11.9356L10.5547 13.9837C10.7207 14.6943 10.9697 15.4049 11.2603 16.0736C12.0489 17.9128 13.2526 18.4144 13.2526 18.4144C13.8337 18.707 14.4979 18.916 15.162 18.916C15.7846 18.9578 16.4487 18.7906 16.9883 18.5398C17.6109 18.2054 18.1505 17.7874 18.6071 17.244C18.8561 16.8678 19.1052 16.4916 19.3127 16.0736C19.8108 15.1123 20.1429 14.1091 20.4334 13.0641C20.5995 12.4371 20.7655 11.7684 20.8485 11.0996C20.89 10.7652 20.9315 10.4726 20.973 10.1382C21.0145 9.84562 21.0145 9.51123 20.9315 9.21864C20.89 9.17684 20.89 9.13504 20.89 9.05144C20.724 8.67525 20.4749 8.34086 20.1014 8.13187C19.8523 8.04827 19.5203 7.96467 19.2297 7.96467Z' fill='url(%23paint23_radial_10641_218557)'/%3e%3cpath d='M19.2297 7.96467C19.1052 7.96467 18.9392 8.00647 18.8146 8.00647C19.1467 8.50806 19.4373 9.00964 19.6448 9.55303C19.7278 9.80382 19.8108 10.0546 19.8108 10.3054C19.8108 10.5562 19.7693 10.7652 19.6863 11.016C19.5618 11.225 19.4373 11.434 19.3127 11.6012C19.1467 11.7684 18.9392 11.9356 18.7316 11.9774C18.5241 12.061 18.275 12.1028 18.026 12.1028C17.6939 12.1028 17.4034 12.0192 17.1128 11.852L16.9468 12.5625C16.8223 13.1059 16.6147 13.6075 16.3657 14.1091C16.2412 14.4017 16.0751 14.6943 15.9091 14.9869C15.7846 15.1541 15.6186 15.3213 15.411 15.4049C15.328 15.4049 15.245 15.4467 15.2035 15.4467C15.1205 15.4467 15.0375 15.4049 14.9544 15.3631C14.8299 15.2377 14.7054 15.1123 14.6224 14.9451C14.5394 14.7779 14.4564 14.6107 14.3733 14.4017C14.2073 14.0255 13.9583 13.0641 13.9583 13.0641L13.7092 12.061L13.4602 11.0578L13.2941 10.389C13.0866 9.46943 12.713 8.59165 12.1734 7.79748C11.6754 7.0451 10.9282 6.50171 10.0981 6.20912C9.47546 6.00012 8.76983 5.95833 8.10571 6.04192C6.9435 6.29272 5.94732 7.0033 5.2832 8.00647C5.44923 8.04827 5.61526 8.13187 5.78129 8.21546C5.98883 8.34086 6.15486 8.50806 6.27938 8.67525C6.48692 9.05144 6.61144 9.42763 6.61144 9.84562C6.69446 10.7234 6.86049 11.643 7.10953 12.4789C7.35858 11.5176 7.77365 10.6398 8.31325 9.80382C8.39626 9.72022 8.47928 9.63662 8.56229 9.55303C8.6038 9.51123 8.68682 9.51123 8.72832 9.51123C8.85285 9.51123 8.93586 9.55303 9.01888 9.59483C9.06038 9.59483 9.06038 9.63663 9.06038 9.63663C9.1434 9.72022 9.22641 9.80382 9.30943 9.88742C9.43395 10.1382 9.55847 10.389 9.68299 10.6398C9.89053 11.225 10.0566 11.9356 10.0566 11.9356L10.5547 13.9837C10.7207 14.6943 10.9697 15.4049 11.2603 16.0736C12.0489 17.9128 13.2526 18.4144 13.2526 18.4144C13.8337 18.707 14.4979 18.916 15.162 18.916C15.7846 18.9578 16.4487 18.7906 16.9883 18.5398C17.6109 18.2054 18.1505 17.7874 18.6071 17.244C18.8561 16.8678 19.1052 16.4916 19.3127 16.0736C19.8108 15.1123 20.1429 14.1091 20.4334 13.0641C20.5995 12.4371 20.7655 11.7684 20.8485 11.0996C20.89 10.7652 20.9315 10.4726 20.973 10.1382C21.0145 9.84562 21.0145 9.51123 20.9315 9.21864C20.89 9.17684 20.89 9.13504 20.89 9.05144C20.724 8.67525 20.4749 8.34086 20.1014 8.13187C19.8523 8.04827 19.5203 7.96467 19.2297 7.96467Z' fill='url(%23paint24_radial_10641_218557)'/%3e%3cpath d='M19.2297 7.96467C19.1052 7.96467 18.9392 8.00647 18.8146 8.00647C19.1467 8.50806 19.4373 9.00964 19.6448 9.55303C19.7278 9.80382 19.8108 10.0546 19.8108 10.3054C19.8108 10.5562 19.7693 10.7652 19.6863 11.016C19.5618 11.225 19.4373 11.434 19.3127 11.6012C19.1467 11.7684 18.9392 11.9356 18.7316 11.9774C18.5241 12.061 18.275 12.1028 18.026 12.1028C17.6939 12.1028 17.4034 12.0192 17.1128 11.852L16.9468 12.5625C16.8223 13.1059 16.6147 13.6075 16.3657 14.1091C16.2412 14.4017 16.0751 14.6943 15.9091 14.9869C15.7846 15.1541 15.6186 15.3213 15.411 15.4049C15.328 15.4049 15.245 15.4467 15.2035 15.4467C15.1205 15.4467 15.0375 15.4049 14.9544 15.3631C14.8299 15.2377 14.7054 15.1123 14.6224 14.9451C14.5394 14.7779 14.4564 14.6107 14.3733 14.4017C14.2073 14.0255 13.9583 13.0641 13.9583 13.0641L13.7092 12.061L13.4602 11.0578L13.2941 10.389C13.0866 9.46943 12.713 8.59165 12.1734 7.79748C11.6754 7.0451 10.9282 6.50171 10.0981 6.20912C9.47546 6.00012 8.76983 5.95833 8.10571 6.04192C6.9435 6.29272 5.94732 7.0033 5.2832 8.00647C5.44923 8.04827 5.61526 8.13187 5.78129 8.21546C5.98883 8.34086 6.15486 8.50806 6.27938 8.67525C6.48692 9.05144 6.61144 9.42763 6.61144 9.84562C6.69446 10.7234 6.86049 11.643 7.10953 12.4789C7.35858 11.5176 7.77365 10.6398 8.31325 9.80382C8.39626 9.72022 8.47928 9.63662 8.56229 9.55303C8.6038 9.51123 8.68682 9.51123 8.72832 9.51123C8.85285 9.51123 8.93586 9.55303 9.01888 9.59483C9.06038 9.59483 9.06038 9.63663 9.06038 9.63663C9.1434 9.72022 9.22641 9.80382 9.30943 9.88742C9.43395 10.1382 9.55847 10.389 9.68299 10.6398C9.89053 11.225 10.0566 11.9356 10.0566 11.9356L10.5547 13.9837C10.7207 14.6943 10.9697 15.4049 11.2603 16.0736C12.0489 17.9128 13.2526 18.4144 13.2526 18.4144C13.8337 18.707 14.4979 18.916 15.162 18.916C15.7846 18.9578 16.4487 18.7906 16.9883 18.5398C17.6109 18.2054 18.1505 17.7874 18.6071 17.244C18.8561 16.8678 19.1052 16.4916 19.3127 16.0736C19.8108 15.1123 20.1429 14.1091 20.4334 13.0641C20.5995 12.4371 20.7655 11.7684 20.8485 11.0996C20.89 10.7652 20.9315 10.4726 20.973 10.1382C21.0145 9.84562 21.0145 9.51123 20.9315 9.21864C20.89 9.17684 20.89 9.13504 20.89 9.05144C20.724 8.67525 20.4749 8.34086 20.1014 8.13187C19.8523 8.04827 19.5203 7.96467 19.2297 7.96467Z' fill='url(%23paint25_radial_10641_218557)'/%3e%3cpath d='M19.2297 7.96467C19.1052 7.96467 18.9392 8.00647 18.8146 8.00647C19.1467 8.50806 19.4373 9.00964 19.6448 9.55303C19.7278 9.80382 19.8108 10.0546 19.8108 10.3054C19.8108 10.5562 19.7693 10.7652 19.6863 11.016C19.5618 11.225 19.4373 11.434 19.3127 11.6012C19.1467 11.7684 18.9392 11.9356 18.7316 11.9774C18.5241 12.061 18.275 12.1028 18.026 12.1028C17.6939 12.1028 17.4034 12.0192 17.1128 11.852L16.9468 12.5625C16.8223 13.1059 16.6147 13.6075 16.3657 14.1091C16.2412 14.4017 16.0751 14.6943 15.9091 14.9869C15.7846 15.1541 15.6186 15.3213 15.411 15.4049C15.328 15.4049 15.245 15.4467 15.2035 15.4467C15.1205 15.4467 15.0375 15.4049 14.9544 15.3631C14.8299 15.2377 14.7054 15.1123 14.6224 14.9451C14.5394 14.7779 14.4564 14.6107 14.3733 14.4017C14.2073 14.0255 13.9583 13.0641 13.9583 13.0641L13.7092 12.061L13.4602 11.0578L13.2941 10.389C13.0866 9.46943 12.713 8.59165 12.1734 7.79748C11.6754 7.0451 10.9282 6.50171 10.0981 6.20912C9.47546 6.00012 8.76983 5.95833 8.10571 6.04192C6.9435 6.29272 5.94732 7.0033 5.2832 8.00647C5.44923 8.04827 5.61526 8.13187 5.78129 8.21546C5.98883 8.34086 6.15486 8.50806 6.27938 8.67525C6.48692 9.05144 6.61144 9.42763 6.61144 9.84562C6.69446 10.7234 6.86049 11.643 7.10953 12.4789C7.35858 11.5176 7.77365 10.6398 8.31325 9.80382C8.39626 9.72022 8.47928 9.63662 8.56229 9.55303C8.6038 9.51123 8.68682 9.51123 8.72832 9.51123C8.85285 9.51123 8.93586 9.55303 9.01888 9.59483C9.06038 9.59483 9.06038 9.63663 9.06038 9.63663C9.1434 9.72022 9.22641 9.80382 9.30943 9.88742C9.43395 10.1382 9.55847 10.389 9.68299 10.6398C9.89053 11.225 10.0566 11.9356 10.0566 11.9356L10.5547 13.9837C10.7207 14.6943 10.9697 15.4049 11.2603 16.0736C12.0489 17.9128 13.2526 18.4144 13.2526 18.4144C13.8337 18.707 14.4979 18.916 15.162 18.916C15.7846 18.9578 16.4487 18.7906 16.9883 18.5398C17.6109 18.2054 18.1505 17.7874 18.6071 17.244C18.8561 16.8678 19.1052 16.4916 19.3127 16.0736C19.8108 15.1123 20.1429 14.1091 20.4334 13.0641C20.5995 12.4371 20.7655 11.7684 20.8485 11.0996C20.89 10.7652 20.9315 10.4726 20.973 10.1382C21.0145 9.84562 21.0145 9.51123 20.9315 9.21864C20.89 9.17684 20.89 9.13504 20.89 9.05144C20.724 8.67525 20.4749 8.34086 20.1014 8.13187C19.8523 8.04827 19.5203 7.96467 19.2297 7.96467Z' fill='url(%23paint26_radial_10641_218557)'/%3e%3cpath d='M19.2297 7.96467C19.1052 7.96467 18.9392 8.00647 18.8146 8.00647C19.1467 8.50806 19.4373 9.00964 19.6448 9.55303C19.7278 9.80382 19.8108 10.0546 19.8108 10.3054C19.8108 10.5562 19.7693 10.7652 19.6863 11.016C19.5618 11.225 19.4373 11.434 19.3127 11.6012C19.1467 11.7684 18.9392 11.9356 18.7316 11.9774C18.5241 12.061 18.275 12.1028 18.026 12.1028C17.6939 12.1028 17.4034 12.0192 17.1128 11.852L16.9468 12.5625C16.8223 13.1059 16.6147 13.6075 16.3657 14.1091C16.2412 14.4017 16.0751 14.6943 15.9091 14.9869C15.7846 15.1541 15.6186 15.3213 15.411 15.4049C15.328 15.4049 15.245 15.4467 15.2035 15.4467C15.1205 15.4467 15.0375 15.4049 14.9544 15.3631C14.8299 15.2377 14.7054 15.1123 14.6224 14.9451C14.5394 14.7779 14.4564 14.6107 14.3733 14.4017C14.2073 14.0255 13.9583 13.0641 13.9583 13.0641L13.7092 12.061L13.4602 11.0578L13.2941 10.389C13.0866 9.46943 12.713 8.59165 12.1734 7.79748C11.6754 7.0451 10.9282 6.50171 10.0981 6.20912C9.47546 6.00012 8.76983 5.95833 8.10571 6.04192C6.9435 6.29272 5.94732 7.0033 5.2832 8.00647C5.44923 8.04827 5.61526 8.13187 5.78129 8.21546C5.98883 8.34086 6.15486 8.50806 6.27938 8.67525C6.48692 9.05144 6.61144 9.42763 6.61144 9.84562C6.69446 10.7234 6.86049 11.643 7.10953 12.4789C7.35858 11.5176 7.77365 10.6398 8.31325 9.80382C8.39626 9.72022 8.47928 9.63662 8.56229 9.55303C8.6038 9.51123 8.68682 9.51123 8.72832 9.51123C8.85285 9.51123 8.93586 9.55303 9.01888 9.59483C9.06038 9.59483 9.06038 9.63663 9.06038 9.63663C9.1434 9.72022 9.22641 9.80382 9.30943 9.88742C9.43395 10.1382 9.55847 10.389 9.68299 10.6398C9.89053 11.225 10.0566 11.9356 10.0566 11.9356L10.5547 13.9837C10.7207 14.6943 10.9697 15.4049 11.2603 16.0736C12.0489 17.9128 13.2526 18.4144 13.2526 18.4144C13.8337 18.707 14.4979 18.916 15.162 18.916C15.7846 18.9578 16.4487 18.7906 16.9883 18.5398C17.6109 18.2054 18.1505 17.7874 18.6071 17.244C18.8561 16.8678 19.1052 16.4916 19.3127 16.0736C19.8108 15.1123 20.1429 14.1091 20.4334 13.0641C20.5995 12.4371 20.7655 11.7684 20.8485 11.0996C20.89 10.7652 20.9315 10.4726 20.973 10.1382C21.0145 9.84562 21.0145 9.51123 20.9315 9.21864C20.89 9.17684 20.89 9.13504 20.89 9.05144C20.724 8.67525 20.4749 8.34086 20.1014 8.13187C19.8523 8.04827 19.5203 7.96467 19.2297 7.96467Z' fill='url(%23paint27_radial_10641_218557)'/%3e%3cpath d='M19.2297 7.96467C19.1052 7.96467 18.9392 8.00647 18.8146 8.00647C19.1467 8.50806 19.4373 9.00964 19.6448 9.55303C19.7278 9.80382 19.8108 10.0546 19.8108 10.3054C19.8108 10.5562 19.7693 10.7652 19.6863 11.016C19.5618 11.225 19.4373 11.434 19.3127 11.6012C19.1467 11.7684 18.9392 11.9356 18.7316 11.9774C18.5241 12.061 18.275 12.1028 18.026 12.1028C17.6939 12.1028 17.4034 12.0192 17.1128 11.852L16.9468 12.5625C16.8223 13.1059 16.6147 13.6075 16.3657 14.1091C16.2412 14.4017 16.0751 14.6943 15.9091 14.9869C15.7846 15.1541 15.6186 15.3213 15.411 15.4049C15.328 15.4049 15.245 15.4467 15.2035 15.4467C15.1205 15.4467 15.0375 15.4049 14.9544 15.3631C14.8299 15.2377 14.7054 15.1123 14.6224 14.9451C14.5394 14.7779 14.4564 14.6107 14.3733 14.4017C14.2073 14.0255 13.9583 13.0641 13.9583 13.0641L13.7092 12.061L13.4602 11.0578L13.2941 10.389C13.0866 9.46943 12.713 8.59165 12.1734 7.79748C11.6754 7.0451 10.9282 6.50171 10.0981 6.20912C9.47546 6.00012 8.76983 5.95833 8.10571 6.04192C6.9435 6.29272 5.94732 7.0033 5.2832 8.00647C5.44923 8.04827 5.61526 8.13187 5.78129 8.21546C5.98883 8.34086 6.15486 8.50806 6.27938 8.67525C6.48692 9.05144 6.61144 9.42763 6.61144 9.84562C6.69446 10.7234 6.86049 11.643 7.10953 12.4789C7.35858 11.5176 7.77365 10.6398 8.31325 9.80382C8.39626 9.72022 8.47928 9.63662 8.56229 9.55303C8.6038 9.51123 8.68682 9.51123 8.72832 9.51123C8.85285 9.51123 8.93586 9.55303 9.01888 9.59483C9.06038 9.59483 9.06038 9.63663 9.06038 9.63663C9.1434 9.72022 9.22641 9.80382 9.30943 9.88742C9.43395 10.1382 9.55847 10.389 9.68299 10.6398C9.89053 11.225 10.0566 11.9356 10.0566 11.9356L10.5547 13.9837C10.7207 14.6943 10.9697 15.4049 11.2603 16.0736C12.0489 17.9128 13.2526 18.4144 13.2526 18.4144C13.8337 18.707 14.4979 18.916 15.162 18.916C15.7846 18.9578 16.4487 18.7906 16.9883 18.5398C17.6109 18.2054 18.1505 17.7874 18.6071 17.244C18.8561 16.8678 19.1052 16.4916 19.3127 16.0736C19.8108 15.1123 20.1429 14.1091 20.4334 13.0641C20.5995 12.4371 20.7655 11.7684 20.8485 11.0996C20.89 10.7652 20.9315 10.4726 20.973 10.1382C21.0145 9.84562 21.0145 9.51123 20.9315 9.21864C20.89 9.17684 20.89 9.13504 20.89 9.05144C20.724 8.67525 20.4749 8.34086 20.1014 8.13187C19.8523 8.04827 19.5203 7.96467 19.2297 7.96467Z' fill='url(%23paint28_radial_10641_218557)'/%3e%3cpath d='M19.2297 7.96467C19.1052 7.96467 18.9392 8.00647 18.8146 8.00647C19.1467 8.50806 19.4373 9.00964 19.6448 9.55303C19.7278 9.80382 19.8108 10.0546 19.8108 10.3054C19.8108 10.5562 19.7693 10.7652 19.6863 11.016C19.5618 11.225 19.4373 11.434 19.3127 11.6012C19.1467 11.7684 18.9392 11.9356 18.7316 11.9774C18.5241 12.061 18.275 12.1028 18.026 12.1028C17.6939 12.1028 17.4034 12.0192 17.1128 11.852L16.9468 12.5625C16.8223 13.1059 16.6147 13.6075 16.3657 14.1091C16.2412 14.4017 16.0751 14.6943 15.9091 14.9869C15.7846 15.1541 15.6186 15.3213 15.411 15.4049C15.328 15.4049 15.245 15.4467 15.2035 15.4467C15.1205 15.4467 15.0375 15.4049 14.9544 15.3631C14.8299 15.2377 14.7054 15.1123 14.6224 14.9451C14.5394 14.7779 14.4564 14.6107 14.3733 14.4017C14.2073 14.0255 13.9583 13.0641 13.9583 13.0641L13.7092 12.061L13.4602 11.0578L13.2941 10.389C13.0866 9.46943 12.713 8.59165 12.1734 7.79748C11.6754 7.0451 10.9282 6.50171 10.0981 6.20912C9.47546 6.00012 8.76983 5.95833 8.10571 6.04192C6.9435 6.29272 5.94732 7.0033 5.2832 8.00647C5.44923 8.04827 5.61526 8.13187 5.78129 8.21546C5.98883 8.34086 6.15486 8.50806 6.27938 8.67525C6.48692 9.05144 6.61144 9.42763 6.61144 9.84562C6.69446 10.7234 6.86049 11.643 7.10953 12.4789C7.35858 11.5176 7.77365 10.6398 8.31325 9.80382C8.39626 9.72022 8.47928 9.63662 8.56229 9.55303C8.6038 9.51123 8.68682 9.51123 8.72832 9.51123C8.85285 9.51123 8.93586 9.55303 9.01888 9.59483C9.06038 9.59483 9.06038 9.63663 9.06038 9.63663C9.1434 9.72022 9.22641 9.80382 9.30943 9.88742C9.43395 10.1382 9.55847 10.389 9.68299 10.6398C9.89053 11.225 10.0566 11.9356 10.0566 11.9356L10.5547 13.9837C10.7207 14.6943 10.9697 15.4049 11.2603 16.0736C12.0489 17.9128 13.2526 18.4144 13.2526 18.4144C13.8337 18.707 14.4979 18.916 15.162 18.916C15.7846 18.9578 16.4487 18.7906 16.9883 18.5398C17.6109 18.2054 18.1505 17.7874 18.6071 17.244C18.8561 16.8678 19.1052 16.4916 19.3127 16.0736C19.8108 15.1123 20.1429 14.1091 20.4334 13.0641C20.5995 12.4371 20.7655 11.7684 20.8485 11.0996C20.89 10.7652 20.9315 10.4726 20.973 10.1382C21.0145 9.84562 21.0145 9.51123 20.9315 9.21864C20.89 9.17684 20.89 9.13504 20.89 9.05144C20.724 8.67525 20.4749 8.34086 20.1014 8.13187C19.8523 8.04827 19.5203 7.96467 19.2297 7.96467Z' fill='url(%23paint29_radial_10641_218557)'/%3e%3cpath d='M19.2297 7.96467C19.1052 7.96467 18.9392 8.00647 18.8146 8.00647C19.1467 8.50806 19.4373 9.00964 19.6448 9.55303C19.7278 9.80382 19.8108 10.0546 19.8108 10.3054C19.8108 10.5562 19.7693 10.7652 19.6863 11.016C19.5618 11.225 19.4373 11.434 19.3127 11.6012C19.1467 11.7684 18.9392 11.9356 18.7316 11.9774C18.5241 12.061 18.275 12.1028 18.026 12.1028C17.6939 12.1028 17.4034 12.0192 17.1128 11.852L16.9468 12.5625C16.8223 13.1059 16.6147 13.6075 16.3657 14.1091C16.2412 14.4017 16.0751 14.6943 15.9091 14.9869C15.7846 15.1541 15.6186 15.3213 15.411 15.4049C15.328 15.4049 15.245 15.4467 15.2035 15.4467C15.1205 15.4467 15.0375 15.4049 14.9544 15.3631C14.8299 15.2377 14.7054 15.1123 14.6224 14.9451C14.5394 14.7779 14.4564 14.6107 14.3733 14.4017C14.2073 14.0255 13.9583 13.0641 13.9583 13.0641L13.7092 12.061L13.4602 11.0578L13.2941 10.389C13.0866 9.46943 12.713 8.59165 12.1734 7.79748C11.6754 7.0451 10.9282 6.50171 10.0981 6.20912C9.47546 6.00012 8.76983 5.95833 8.10571 6.04192C6.9435 6.29272 5.94732 7.0033 5.2832 8.00647C5.44923 8.04827 5.61526 8.13187 5.78129 8.21546C5.98883 8.34086 6.15486 8.50806 6.27938 8.67525C6.48692 9.05144 6.61144 9.42763 6.61144 9.84562C6.69446 10.7234 6.86049 11.643 7.10953 12.4789C7.35858 11.5176 7.77365 10.6398 8.31325 9.80382C8.39626 9.72022 8.47928 9.63662 8.56229 9.55303C8.6038 9.51123 8.68682 9.51123 8.72832 9.51123C8.85285 9.51123 8.93586 9.55303 9.01888 9.59483C9.06038 9.59483 9.06038 9.63663 9.06038 9.63663C9.1434 9.72022 9.22641 9.80382 9.30943 9.88742C9.43395 10.1382 9.55847 10.389 9.68299 10.6398C9.89053 11.225 10.0566 11.9356 10.0566 11.9356L10.5547 13.9837C10.7207 14.6943 10.9697 15.4049 11.2603 16.0736C12.0489 17.9128 13.2526 18.4144 13.2526 18.4144C13.8337 18.707 14.4979 18.916 15.162 18.916C15.7846 18.9578 16.4487 18.7906 16.9883 18.5398C17.6109 18.2054 18.1505 17.7874 18.6071 17.244C18.8561 16.8678 19.1052 16.4916 19.3127 16.0736C19.8108 15.1123 20.1429 14.1091 20.4334 13.0641C20.5995 12.4371 20.7655 11.7684 20.8485 11.0996C20.89 10.7652 20.9315 10.4726 20.973 10.1382C21.0145 9.84562 21.0145 9.51123 20.9315 9.21864C20.89 9.17684 20.89 9.13504 20.89 9.05144C20.724 8.67525 20.4749 8.34086 20.1014 8.13187C19.8523 8.04827 19.5203 7.96467 19.2297 7.96467Z' fill='url(%23paint30_radial_10641_218557)'/%3e%3cpath d='M19.2297 7.96467C19.1052 7.96467 18.9392 8.00647 18.8146 8.00647C19.1467 8.50806 19.4373 9.00964 19.6448 9.55303C19.7278 9.80382 19.8108 10.0546 19.8108 10.3054C19.8108 10.5562 19.7693 10.7652 19.6863 11.016C19.5618 11.225 19.4373 11.434 19.3127 11.6012C19.1467 11.7684 18.9392 11.9356 18.7316 11.9774C18.5241 12.061 18.275 12.1028 18.026 12.1028C17.6939 12.1028 17.4034 12.0192 17.1128 11.852L16.9468 12.5625C16.8223 13.1059 16.6147 13.6075 16.3657 14.1091C16.2412 14.4017 16.0751 14.6943 15.9091 14.9869C15.7846 15.1541 15.6186 15.3213 15.411 15.4049C15.328 15.4049 15.245 15.4467 15.2035 15.4467C15.1205 15.4467 15.0375 15.4049 14.9544 15.3631C14.8299 15.2377 14.7054 15.1123 14.6224 14.9451C14.5394 14.7779 14.4564 14.6107 14.3733 14.4017C14.2073 14.0255 13.9583 13.0641 13.9583 13.0641L13.7092 12.061L13.4602 11.0578L13.2941 10.389C13.0866 9.46943 12.713 8.59165 12.1734 7.79748C11.6754 7.0451 10.9282 6.50171 10.0981 6.20912C9.47546 6.00012 8.76983 5.95833 8.10571 6.04192C6.9435 6.29272 5.94732 7.0033 5.2832 8.00647C5.44923 8.04827 5.61526 8.13187 5.78129 8.21546C5.98883 8.34086 6.15486 8.50806 6.27938 8.67525C6.48692 9.05144 6.61144 9.42763 6.61144 9.84562C6.69446 10.7234 6.86049 11.643 7.10953 12.4789C7.35858 11.5176 7.77365 10.6398 8.31325 9.80382C8.39626 9.72022 8.47928 9.63662 8.56229 9.55303C8.6038 9.51123 8.68682 9.51123 8.72832 9.51123C8.85285 9.51123 8.93586 9.55303 9.01888 9.59483C9.06038 9.59483 9.06038 9.63663 9.06038 9.63663C9.1434 9.72022 9.22641 9.80382 9.30943 9.88742C9.43395 10.1382 9.55847 10.389 9.68299 10.6398C9.89053 11.225 10.0566 11.9356 10.0566 11.9356L10.5547 13.9837C10.7207 14.6943 10.9697 15.4049 11.2603 16.0736C12.0489 17.9128 13.2526 18.4144 13.2526 18.4144C13.8337 18.707 14.4979 18.916 15.162 18.916C15.7846 18.9578 16.4487 18.7906 16.9883 18.5398C17.6109 18.2054 18.1505 17.7874 18.6071 17.244C18.8561 16.8678 19.1052 16.4916 19.3127 16.0736C19.8108 15.1123 20.1429 14.1091 20.4334 13.0641C20.5995 12.4371 20.7655 11.7684 20.8485 11.0996C20.89 10.7652 20.9315 10.4726 20.973 10.1382C21.0145 9.84562 21.0145 9.51123 20.9315 9.21864C20.89 9.17684 20.89 9.13504 20.89 9.05144C20.724 8.67525 20.4749 8.34086 20.1014 8.13187C19.8523 8.04827 19.5203 7.96467 19.2297 7.96467Z' fill='url(%23paint31_radial_10641_218557)'/%3e%3cpath d='M19.2297 7.96467C19.1052 7.96467 18.9392 8.00647 18.8146 8.00647C19.1467 8.50806 19.4373 9.00964 19.6448 9.55303C19.7278 9.80382 19.8108 10.0546 19.8108 10.3054C19.8108 10.5562 19.7693 10.7652 19.6863 11.016C19.5618 11.225 19.4373 11.434 19.3127 11.6012C19.1467 11.7684 18.9392 11.9356 18.7316 11.9774C18.5241 12.061 18.275 12.1028 18.026 12.1028C17.6939 12.1028 17.4034 12.0192 17.1128 11.852L16.9468 12.5625C16.8223 13.1059 16.6147 13.6075 16.3657 14.1091C16.2412 14.4017 16.0751 14.6943 15.9091 14.9869C15.7846 15.1541 15.6186 15.3213 15.411 15.4049C15.328 15.4049 15.245 15.4467 15.2035 15.4467C15.1205 15.4467 15.0375 15.4049 14.9544 15.3631C14.8299 15.2377 14.7054 15.1123 14.6224 14.9451C14.5394 14.7779 14.4564 14.6107 14.3733 14.4017C14.2073 14.0255 13.9583 13.0641 13.9583 13.0641L13.7092 12.061L13.4602 11.0578L13.2941 10.389C13.0866 9.46943 12.713 8.59165 12.1734 7.79748C11.6754 7.0451 10.9282 6.50171 10.0981 6.20912C9.47546 6.00012 8.76983 5.95833 8.10571 6.04192C6.9435 6.29272 5.94732 7.0033 5.2832 8.00647C5.44923 8.04827 5.61526 8.13187 5.78129 8.21546C5.98883 8.34086 6.15486 8.50806 6.27938 8.67525C6.48692 9.05144 6.61144 9.42763 6.61144 9.84562C6.69446 10.7234 6.86049 11.643 7.10953 12.4789C7.35858 11.5176 7.77365 10.6398 8.31325 9.80382C8.39626 9.72022 8.47928 9.63662 8.56229 9.55303C8.6038 9.51123 8.68682 9.51123 8.72832 9.51123C8.85285 9.51123 8.93586 9.55303 9.01888 9.59483C9.06038 9.59483 9.06038 9.63663 9.06038 9.63663C9.1434 9.72022 9.22641 9.80382 9.30943 9.88742C9.43395 10.1382 9.55847 10.389 9.68299 10.6398C9.89053 11.225 10.0566 11.9356 10.0566 11.9356L10.5547 13.9837C10.7207 14.6943 10.9697 15.4049 11.2603 16.0736C12.0489 17.9128 13.2526 18.4144 13.2526 18.4144C13.8337 18.707 14.4979 18.916 15.162 18.916C15.7846 18.9578 16.4487 18.7906 16.9883 18.5398C17.6109 18.2054 18.1505 17.7874 18.6071 17.244C18.8561 16.8678 19.1052 16.4916 19.3127 16.0736C19.8108 15.1123 20.1429 14.1091 20.4334 13.0641C20.5995 12.4371 20.7655 11.7684 20.8485 11.0996C20.89 10.7652 20.9315 10.4726 20.973 10.1382C21.0145 9.84562 21.0145 9.51123 20.9315 9.21864C20.89 9.17684 20.89 9.13504 20.89 9.05144C20.724 8.67525 20.4749 8.34086 20.1014 8.13187C19.8523 8.04827 19.5203 7.96467 19.2297 7.96467Z' fill='url(%23paint32_radial_10641_218557)'/%3e%3cpath d='M19.2297 7.96467C19.1052 7.96467 18.9392 8.00647 18.8146 8.00647C19.1467 8.50806 19.4373 9.00964 19.6448 9.55303C19.7278 9.80382 19.8108 10.0546 19.8108 10.3054C19.8108 10.5562 19.7693 10.7652 19.6863 11.016C19.5618 11.225 19.4373 11.434 19.3127 11.6012C19.1467 11.7684 18.9392 11.9356 18.7316 11.9774C18.5241 12.061 18.275 12.1028 18.026 12.1028C17.6939 12.1028 17.4034 12.0192 17.1128 11.852L16.9468 12.5625C16.8223 13.1059 16.6147 13.6075 16.3657 14.1091C16.2412 14.4017 16.0751 14.6943 15.9091 14.9869C15.7846 15.1541 15.6186 15.3213 15.411 15.4049C15.328 15.4049 15.245 15.4467 15.2035 15.4467C15.1205 15.4467 15.0375 15.4049 14.9544 15.3631C14.8299 15.2377 14.7054 15.1123 14.6224 14.9451C14.5394 14.7779 14.4564 14.6107 14.3733 14.4017C14.2073 14.0255 13.9583 13.0641 13.9583 13.0641L13.7092 12.061L13.4602 11.0578L13.2941 10.389C13.0866 9.46943 12.713 8.59165 12.1734 7.79748C11.6754 7.0451 10.9282 6.50171 10.0981 6.20912C9.47546 6.00012 8.76983 5.95833 8.10571 6.04192C6.9435 6.29272 5.94732 7.0033 5.2832 8.00647C5.44923 8.04827 5.61526 8.13187 5.78129 8.21546C5.98883 8.34086 6.15486 8.50806 6.27938 8.67525C6.48692 9.05144 6.61144 9.42763 6.61144 9.84562C6.69446 10.7234 6.86049 11.643 7.10953 12.4789C7.35858 11.5176 7.77365 10.6398 8.31325 9.80382C8.39626 9.72022 8.47928 9.63662 8.56229 9.55303C8.6038 9.51123 8.68682 9.51123 8.72832 9.51123C8.85285 9.51123 8.93586 9.55303 9.01888 9.59483C9.06038 9.59483 9.06038 9.63663 9.06038 9.63663C9.1434 9.72022 9.22641 9.80382 9.30943 9.88742C9.43395 10.1382 9.55847 10.389 9.68299 10.6398C9.89053 11.225 10.0566 11.9356 10.0566 11.9356L10.5547 13.9837C10.7207 14.6943 10.9697 15.4049 11.2603 16.0736C12.0489 17.9128 13.2526 18.4144 13.2526 18.4144C13.8337 18.707 14.4979 18.916 15.162 18.916C15.7846 18.9578 16.4487 18.7906 16.9883 18.5398C17.6109 18.2054 18.1505 17.7874 18.6071 17.244C18.8561 16.8678 19.1052 16.4916 19.3127 16.0736C19.8108 15.1123 20.1429 14.1091 20.4334 13.0641C20.5995 12.4371 20.7655 11.7684 20.8485 11.0996C20.89 10.7652 20.9315 10.4726 20.973 10.1382C21.0145 9.84562 21.0145 9.51123 20.9315 9.21864C20.89 9.17684 20.89 9.13504 20.89 9.05144C20.724 8.67525 20.4749 8.34086 20.1014 8.13187C19.8523 8.04827 19.5203 7.96467 19.2297 7.96467Z' fill='url(%23paint33_radial_10641_218557)'/%3e%3cpath d='M19.2297 7.96467C19.1052 7.96467 18.9392 8.00647 18.8146 8.00647C19.1467 8.50806 19.4373 9.00964 19.6448 9.55303C19.7278 9.80382 19.8108 10.0546 19.8108 10.3054C19.8108 10.5562 19.7693 10.7652 19.6863 11.016C19.5618 11.225 19.4373 11.434 19.3127 11.6012C19.1467 11.7684 18.9392 11.9356 18.7316 11.9774C18.5241 12.061 18.275 12.1028 18.026 12.1028C17.6939 12.1028 17.4034 12.0192 17.1128 11.852L16.9468 12.5625C16.8223 13.1059 16.6147 13.6075 16.3657 14.1091C16.2412 14.4017 16.0751 14.6943 15.9091 14.9869C15.7846 15.1541 15.6186 15.3213 15.411 15.4049C15.328 15.4049 15.245 15.4467 15.2035 15.4467C15.1205 15.4467 15.0375 15.4049 14.9544 15.3631C14.8299 15.2377 14.7054 15.1123 14.6224 14.9451C14.5394 14.7779 14.4564 14.6107 14.3733 14.4017C14.2073 14.0255 13.9583 13.0641 13.9583 13.0641L13.7092 12.061L13.4602 11.0578L13.2941 10.389C13.0866 9.46943 12.713 8.59165 12.1734 7.79748C11.6754 7.0451 10.9282 6.50171 10.0981 6.20912C9.47546 6.00012 8.76983 5.95833 8.10571 6.04192C6.9435 6.29272 5.94732 7.0033 5.2832 8.00647C5.44923 8.04827 5.61526 8.13187 5.78129 8.21546C5.98883 8.34086 6.15486 8.50806 6.27938 8.67525C6.48692 9.05144 6.61144 9.42763 6.61144 9.84562C6.69446 10.7234 6.86049 11.643 7.10953 12.4789C7.35858 11.5176 7.77365 10.6398 8.31325 9.80382C8.39626 9.72022 8.47928 9.63662 8.56229 9.55303C8.6038 9.51123 8.68682 9.51123 8.72832 9.51123C8.85285 9.51123 8.93586 9.55303 9.01888 9.59483C9.06038 9.59483 9.06038 9.63663 9.06038 9.63663C9.1434 9.72022 9.22641 9.80382 9.30943 9.88742C9.43395 10.1382 9.55847 10.389 9.68299 10.6398C9.89053 11.225 10.0566 11.9356 10.0566 11.9356L10.5547 13.9837C10.7207 14.6943 10.9697 15.4049 11.2603 16.0736C12.0489 17.9128 13.2526 18.4144 13.2526 18.4144C13.8337 18.707 14.4979 18.916 15.162 18.916C15.7846 18.9578 16.4487 18.7906 16.9883 18.5398C17.6109 18.2054 18.1505 17.7874 18.6071 17.244C18.8561 16.8678 19.1052 16.4916 19.3127 16.0736C19.8108 15.1123 20.1429 14.1091 20.4334 13.0641C20.5995 12.4371 20.7655 11.7684 20.8485 11.0996C20.89 10.7652 20.9315 10.4726 20.973 10.1382C21.0145 9.84562 21.0145 9.51123 20.9315 9.21864C20.89 9.17684 20.89 9.13504 20.89 9.05144C20.724 8.67525 20.4749 8.34086 20.1014 8.13187C19.8523 8.04827 19.5203 7.96467 19.2297 7.96467Z' fill='url(%23paint34_linear_10641_218557)'/%3e%3cdefs%3e%3clinearGradient id='paint0_linear_10641_218557' x1='3.7908' y1='14.7812' x2='17.8353' y2='9.14392' gradientUnits='userSpaceOnUse'%3e%3cstop offset='0.13' stop-color='%231CBBF3'/%3e%3cstop offset='0.34' stop-color='%231F99A5'/%3e%3cstop offset='0.45' stop-color='%23209CA6'/%3e%3cstop offset='0.51' stop-color='%2324A4AA'/%3e%3cstop offset='0.57' stop-color='%232BB3B0'/%3e%3cstop offset='0.6' stop-color='%2330BDB4'/%3e%3cstop offset='0.79' stop-color='%2338BA90'/%3e%3cstop offset='1' stop-color='%2360F05A'/%3e%3c/linearGradient%3e%3cradialGradient id='paint1_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(13.0853 11.3165) rotate(74.4289) scale(6.78755 5.12653)'%3e%3cstop stop-color='%23227B60'/%3e%3cstop offset='0.14' stop-color='%23227B60' stop-opacity='0.81'/%3e%3cstop offset='0.58' stop-color='%23227B60' stop-opacity='0.23'/%3e%3cstop offset='0.78' stop-color='%23227B60' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint2_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(13.9575 11.0829) rotate(91.1243) scale(4.59048 3.46459)'%3e%3cstop stop-color='%23227B60'/%3e%3cstop offset='0.25' stop-color='%23227B60' stop-opacity='0.7'/%3e%3cstop offset='0.71' stop-color='%23227B60' stop-opacity='0.2'/%3e%3cstop offset='0.92' stop-color='%23227B60' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint3_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(13.8628 10.9051) rotate(88.6218) scale(4.27985 3.01703)'%3e%3cstop stop-color='%23227B60'/%3e%3cstop offset='0.07' stop-color='%23227B60' stop-opacity='0.9'/%3e%3cstop offset='0.34' stop-color='%23227B60' stop-opacity='0.51'/%3e%3cstop offset='0.59' stop-color='%23227B60' stop-opacity='0.23'/%3e%3cstop offset='0.79' stop-color='%23227B60' stop-opacity='0.06'/%3e%3cstop offset='0.92' stop-color='%23227B60' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint4_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(14.1612 11.0583) rotate(88.5917) scale(3.45555 2.4378)'%3e%3cstop stop-color='%23227B60'/%3e%3cstop offset='0.36' stop-color='%23227B60' stop-opacity='0.63'/%3e%3cstop offset='0.92' stop-color='%23227B60' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint5_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(13.8202 10.939) rotate(88.6086) scale(2.75561 1.75051)'%3e%3cstop stop-color='%2320735A'/%3e%3cstop offset='0.15' stop-color='%2320745A' stop-opacity='0.93'/%3e%3cstop offset='0.38' stop-color='%2321755C' stop-opacity='0.74'/%3e%3cstop offset='0.67' stop-color='%2321785D' stop-opacity='0.43'/%3e%3cstop offset='1' stop-color='%23227B60' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint6_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(14.4644 11.6204) rotate(23.9579) scale(4.40999 3.32164)'%3e%3cstop stop-color='%23227A61'/%3e%3cstop offset='0.36' stop-color='%23227A61' stop-opacity='0.56'/%3e%3cstop offset='0.72' stop-color='%23227A61' stop-opacity='0.16'/%3e%3cstop offset='0.9' stop-color='%23227A61' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint7_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(13.1081 4.30936) rotate(35.4671) scale(5.88664 5.3959)'%3e%3cstop stop-color='%233CD9C3'/%3e%3cstop offset='0.07' stop-color='%233BD7C1' stop-opacity='0.9'/%3e%3cstop offset='0.41' stop-color='%2338CEB9' stop-opacity='0.42'/%3e%3cstop offset='0.65' stop-color='%2336C8B4' stop-opacity='0.12'/%3e%3cstop offset='0.76' stop-color='%2335C6B2' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint8_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(-9558.17 -13089.1) rotate(35.4616) scale(1045.98 735.715)'%3e%3cstop stop-color='%233CD9C3'/%3e%3cstop offset='0.07' stop-color='%233BD7C1' stop-opacity='0.9'/%3e%3cstop offset='0.41' stop-color='%2338CEB9' stop-opacity='0.42'/%3e%3cstop offset='0.65' stop-color='%2336C8B4' stop-opacity='0.12'/%3e%3cstop offset='0.76' stop-color='%2335C6B2' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint9_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(15.235 12.4549) rotate(100.895) scale(5.21485 6.40281)'%3e%3cstop stop-color='%23237F66' stop-opacity='0.8'/%3e%3cstop offset='0.06' stop-color='%232C8C70' stop-opacity='0.65'/%3e%3cstop offset='0.21' stop-color='%233DA785' stop-opacity='0.37'/%3e%3cstop offset='0.35' stop-color='%234ABA93' stop-opacity='0.17'/%3e%3cstop offset='0.47' stop-color='%2351C59C' stop-opacity='0.04'/%3e%3cstop offset='0.56' stop-color='%2354C99F' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint10_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(12.4373 12.8275) rotate(-51.0125) scale(6.7982 7.33136)'%3e%3cstop stop-color='%23167C8A'/%3e%3cstop offset='0.04' stop-color='%23167C8A' stop-opacity='0.93'/%3e%3cstop offset='0.33' stop-color='%23177F8D' stop-opacity='0.43'/%3e%3cstop offset='0.54' stop-color='%2317818F' stop-opacity='0.12'/%3e%3cstop offset='0.65' stop-color='%23178290' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint11_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(12.1828 13.4243) rotate(-31.8439) scale(6.61627 5.24442)'%3e%3cstop offset='0.05' stop-color='%23177D87'/%3e%3cstop offset='0.11' stop-color='%23177E89' stop-opacity='0.8'/%3e%3cstop offset='0.21' stop-color='%23177F8B' stop-opacity='0.52'/%3e%3cstop offset='0.32' stop-color='%2317818D' stop-opacity='0.29'/%3e%3cstop offset='0.42' stop-color='%2317818F' stop-opacity='0.13'/%3e%3cstop offset='0.51' stop-color='%23178290' stop-opacity='0.03'/%3e%3cstop offset='0.6' stop-color='%23178290' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint12_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(10.8053 13.3167) rotate(-130.347) scale(3.95117 3.10666)'%3e%3cstop offset='0.26' stop-color='%23177F8A'/%3e%3cstop offset='0.27' stop-color='%23177F8A' stop-opacity='0.98'/%3e%3cstop offset='0.38' stop-color='%2317808C' stop-opacity='0.68'/%3e%3cstop offset='0.5' stop-color='%2317818D' stop-opacity='0.43'/%3e%3cstop offset='0.62' stop-color='%2317818F' stop-opacity='0.24'/%3e%3cstop offset='0.74' stop-color='%2317828F' stop-opacity='0.11'/%3e%3cstop offset='0.86' stop-color='%23178290' stop-opacity='0.03'/%3e%3cstop offset='1' stop-color='%23178290' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint13_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(9.70868 14.6394) rotate(-173.062) scale(3.69071 3.71587)'%3e%3cstop stop-color='%2313656E'/%3e%3cstop offset='0.11' stop-color='%2313646E' stop-opacity='0.73'/%3e%3cstop offset='0.27' stop-color='%2312646E' stop-opacity='0.41'/%3e%3cstop offset='0.42' stop-color='%2312636E' stop-opacity='0.18'/%3e%3cstop offset='0.55' stop-color='%2312636E' stop-opacity='0.05'/%3e%3cstop offset='0.66' stop-color='%2312636E' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint14_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(9.30636 15.269) rotate(-119.156) scale(2.59361 2.17328)'%3e%3cstop offset='0.13' stop-color='%23146A73'/%3e%3cstop offset='0.24' stop-color='%23156F79' stop-opacity='0.79'/%3e%3cstop offset='0.45' stop-color='%23167783' stop-opacity='0.45'/%3e%3cstop offset='0.65' stop-color='%23167D8A' stop-opacity='0.2'/%3e%3cstop offset='0.82' stop-color='%2317818E' stop-opacity='0.05'/%3e%3cstop offset='0.95' stop-color='%23178290' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint15_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(8.72468 14.0637) rotate(-56.1587) scale(2.43994 1.9285)'%3e%3cstop stop-color='%23198E9C'/%3e%3cstop offset='0.1' stop-color='%23198E9C' stop-opacity='0.87'/%3e%3cstop offset='0.41' stop-color='%23198E9C' stop-opacity='0.5'/%3e%3cstop offset='0.67' stop-color='%23198E9C' stop-opacity='0.23'/%3e%3cstop offset='0.88' stop-color='%23198E9C' stop-opacity='0.06'/%3e%3cstop offset='1' stop-color='%23198E9C' stop-opacity='0'/%3e%3c/radialGradient%3e%3clinearGradient id='paint16_linear_10641_218557' x1='4.69326' y1='5.70281' x2='10.9178' y2='11.4235' gradientUnits='userSpaceOnUse'%3e%3cstop offset='0.13' stop-color='%232BF9FF'/%3e%3cstop offset='0.27' stop-color='%2329F9FF' stop-opacity='0.64'/%3e%3cstop offset='0.4' stop-color='%2327FAFF' stop-opacity='0.3'/%3e%3cstop offset='0.49' stop-color='%2326FAFF' stop-opacity='0.08'/%3e%3cstop offset='0.54' stop-color='%2326FAFF' stop-opacity='0'/%3e%3c/linearGradient%3e%3clinearGradient id='paint17_linear_10641_218557' x1='1.1911' y1='15.1129' x2='8.42087' y2='13.0788' gradientUnits='userSpaceOnUse'%3e%3cstop stop-color='%2326FAFF'/%3e%3cstop offset='0.06' stop-color='%2326FAFF' stop-opacity='0.88'/%3e%3cstop offset='0.24' stop-color='%2326FAFF' stop-opacity='0.51'/%3e%3cstop offset='0.39' stop-color='%2326FAFF' stop-opacity='0.23'/%3e%3cstop offset='0.5' stop-color='%2326FAFF' stop-opacity='0.06'/%3e%3cstop offset='0.55' stop-color='%2326FAFF' stop-opacity='0'/%3e%3c/linearGradient%3e%3clinearGradient id='paint18_linear_10641_218557' x1='3.10501' y1='14.8657' x2='11.2574' y2='11.9759' gradientUnits='userSpaceOnUse'%3e%3cstop stop-color='%2321DEFF'/%3e%3cstop offset='0.04' stop-color='%2321DEFF' stop-opacity='0.88'/%3e%3cstop offset='0.17' stop-color='%2321DEFF' stop-opacity='0.51'/%3e%3cstop offset='0.27' stop-color='%2321DEFF' stop-opacity='0.23'/%3e%3cstop offset='0.34' stop-color='%2321DEFF' stop-opacity='0.06'/%3e%3cstop offset='0.38' stop-color='%2321DEFF' stop-opacity='0'/%3e%3c/linearGradient%3e%3clinearGradient id='paint19_linear_10641_218557' x1='10.8472' y1='10.6232' x2='15.447' y2='18.0723' gradientUnits='userSpaceOnUse'%3e%3cstop offset='0.62' stop-color='%2321DEFF' stop-opacity='0'/%3e%3cstop offset='0.66' stop-color='%2321DEFF' stop-opacity='0.06'/%3e%3cstop offset='0.73' stop-color='%2321DEFF' stop-opacity='0.23'/%3e%3cstop offset='0.83' stop-color='%2321DEFF' stop-opacity='0.51'/%3e%3cstop offset='0.96' stop-color='%2321DEFF' stop-opacity='0.88'/%3e%3cstop offset='1' stop-color='%2321DEFF'/%3e%3c/linearGradient%3e%3clinearGradient id='paint20_linear_10641_218557' x1='15.9007' y1='13.4252' x2='15.1771' y2='9.90776' gradientUnits='userSpaceOnUse'%3e%3cstop stop-color='%2344B044'/%3e%3cstop offset='0.11' stop-color='%2344B044' stop-opacity='0.8'/%3e%3cstop offset='0.27' stop-color='%2344B044' stop-opacity='0.52'/%3e%3cstop offset='0.43' stop-color='%2344B044' stop-opacity='0.29'/%3e%3cstop offset='0.58' stop-color='%2344B044' stop-opacity='0.13'/%3e%3cstop offset='0.7' stop-color='%2344B044' stop-opacity='0.03'/%3e%3cstop offset='0.8' stop-color='%2344B044' stop-opacity='0'/%3e%3c/linearGradient%3e%3clinearGradient id='paint21_linear_10641_218557' x1='5.91827' y1='9.76206' x2='21.0145' y2='14.7233' gradientUnits='userSpaceOnUse'%3e%3cstop stop-color='%233066FB'/%3e%3cstop offset='0.38' stop-color='%232F64F7'/%3e%3cstop offset='0.74' stop-color='%232857D9'/%3e%3cstop offset='1' stop-color='%233C7EFF'/%3e%3c/linearGradient%3e%3cradialGradient id='paint22_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(16.352 11.6705) rotate(98.623) scale(8.17015 5.35578)'%3e%3cstop stop-color='%231A3D9C'/%3e%3cstop offset='0.4' stop-color='%231A3D9C' stop-opacity='0.42'/%3e%3cstop offset='0.7' stop-color='%231A3D9C' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint23_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(4906.14 -12747.9) rotate(98.6303) scale(1005.04 538.302)'%3e%3cstop stop-color='%231A3D9C'/%3e%3cstop offset='0.4' stop-color='%231A3D9C' stop-opacity='0.42'/%3e%3cstop offset='0.7' stop-color='%231A3D9C' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint24_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(4307.56 -12940.8) rotate(98.5564) scale(1196.95 491.195)'%3e%3cstop stop-color='%231A3D9C'/%3e%3cstop offset='0.4' stop-color='%231A3D9C' stop-opacity='0.42'/%3e%3cstop offset='0.7' stop-color='%231A3D9C' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint25_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(15.4326 11.9615) rotate(83.129) scale(7.14172 4.94908)'%3e%3cstop stop-color='%231A3D9C'/%3e%3cstop offset='0.16' stop-color='%231A3D9C' stop-opacity='0.69'/%3e%3cstop offset='0.33' stop-color='%231A3D9C' stop-opacity='0.4'/%3e%3cstop offset='0.49' stop-color='%231A3D9C' stop-opacity='0.18'/%3e%3cstop offset='0.61' stop-color='%231A3D9C' stop-opacity='0.05'/%3e%3cstop offset='0.7' stop-color='%231A3D9C' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint26_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(16.8381 12.8785) rotate(74.7332) scale(6.86089 4.63785)'%3e%3cstop stop-color='%2318388F'/%3e%3cstop offset='0.37' stop-color='%23193B96' stop-opacity='0.45'/%3e%3cstop offset='0.7' stop-color='%231A3D9C' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint27_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(16.147 14.7558) rotate(74.7449) scale(3.1885 3.01196)'%3e%3cstop stop-color='%2318388F'/%3e%3cstop offset='0.09' stop-color='%23183992' stop-opacity='0.78'/%3e%3cstop offset='0.22' stop-color='%23193B96' stop-opacity='0.5'/%3e%3cstop offset='0.35' stop-color='%23193C98' stop-opacity='0.28'/%3e%3cstop offset='0.47' stop-color='%231A3C9A' stop-opacity='0.13'/%3e%3cstop offset='0.59' stop-color='%231A3D9C' stop-opacity='0.03'/%3e%3cstop offset='0.7' stop-color='%231A3D9C' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint28_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(16.2235 15.2733) rotate(74.7449) scale(3.1885 3.01196)'%3e%3cstop stop-color='%231A3D9C' stop-opacity='0.8'/%3e%3cstop offset='0.01' stop-color='%231A3D9C' stop-opacity='0.78'/%3e%3cstop offset='0.24' stop-color='%231A3D9C' stop-opacity='0.45'/%3e%3cstop offset='0.44' stop-color='%231A3D9C' stop-opacity='0.2'/%3e%3cstop offset='0.6' stop-color='%231A3D9C' stop-opacity='0.05'/%3e%3cstop offset='0.7' stop-color='%231A3D9C' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint29_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(8.67823 13.2867) rotate(67.1729) scale(7.60858 5.02505)'%3e%3cstop stop-color='%231A3D9C'/%3e%3cstop offset='0.4' stop-color='%231A3D9C' stop-opacity='0.56'/%3e%3cstop offset='0.48' stop-color='%231A3D9C' stop-opacity='0.43'/%3e%3cstop offset='0.69' stop-color='%231A3D9C' stop-opacity='0.12'/%3e%3cstop offset='0.79' stop-color='%231A3D9C' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint30_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(7.78646 11.3833) rotate(76.1845) scale(5.64705 3.70524)'%3e%3cstop stop-color='%231A3D9C'/%3e%3cstop offset='0.06' stop-color='%231A3D9C' stop-opacity='0.88'/%3e%3cstop offset='0.21' stop-color='%231A3D9C' stop-opacity='0.61'/%3e%3cstop offset='0.36' stop-color='%231A3D9C' stop-opacity='0.39'/%3e%3cstop offset='0.51' stop-color='%231A3D9C' stop-opacity='0.22'/%3e%3cstop offset='0.67' stop-color='%231A3D9C' stop-opacity='0.1'/%3e%3cstop offset='0.83' stop-color='%231A3D9C' stop-opacity='0.02'/%3e%3cstop offset='1' stop-color='%231A3D9C' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint31_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(7.78646 11.3833) rotate(76.1845) scale(5.64705 3.70524)'%3e%3cstop stop-color='%231B3E9E'/%3e%3cstop offset='0.06' stop-color='%231B3E9E' stop-opacity='0.87'/%3e%3cstop offset='0.21' stop-color='%231B3E9D' stop-opacity='0.61'/%3e%3cstop offset='0.36' stop-color='%231A3D9D' stop-opacity='0.39'/%3e%3cstop offset='0.52' stop-color='%231A3D9C' stop-opacity='0.22'/%3e%3cstop offset='0.67' stop-color='%231A3D9C' stop-opacity='0.1'/%3e%3cstop offset='0.83' stop-color='%231A3D9C' stop-opacity='0.02'/%3e%3cstop offset='1' stop-color='%231A3D9C' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint32_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(8.14394 11.2063) rotate(76.182) scale(4.32073 2.83482)'%3e%3cstop stop-color='%23183991'/%3e%3cstop offset='0.03' stop-color='%23183992' stop-opacity='0.95'/%3e%3cstop offset='0.18' stop-color='%23193A95' stop-opacity='0.66'/%3e%3cstop offset='0.34' stop-color='%23193B97' stop-opacity='0.42'/%3e%3cstop offset='0.5' stop-color='%231A3C99' stop-opacity='0.24'/%3e%3cstop offset='0.66' stop-color='%231A3D9B' stop-opacity='0.1'/%3e%3cstop offset='0.82' stop-color='%231A3D9C' stop-opacity='0.03'/%3e%3cstop offset='1' stop-color='%231A3D9C' stop-opacity='0'/%3e%3c/radialGradient%3e%3cradialGradient id='paint33_radial_10641_218557' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(9.09797 11.4761) rotate(87.1489) scale(3.41468 2.98643)'%3e%3cstop offset='0.04' stop-color='%232453D6' stop-opacity='0.6'/%3e%3cstop offset='0.2' stop-color='%232453D6' stop-opacity='0.49'/%3e%3cstop offset='0.52' stop-color='%232453D6' stop-opacity='0.2'/%3e%3cstop offset='0.73' stop-color='%232453D6' stop-opacity='0'/%3e%3c/radialGradient%3e%3clinearGradient id='paint34_linear_10641_218557' x1='15.7186' y1='3.58357' x2='11.8622' y2='13.0406' gradientUnits='userSpaceOnUse'%3e%3cstop stop-color='%233774FF'/%3e%3cstop offset='0.05' stop-color='%233774FF' stop-opacity='0.91'/%3e%3cstop offset='0.16' stop-color='%233774FF' stop-opacity='0.66'/%3e%3cstop offset='0.32' stop-color='%233774FF' stop-opacity='0.28'/%3e%3cstop offset='0.43' stop-color='%233774FF' stop-opacity='0'/%3e%3c/linearGradient%3e%3c/defs%3e%3c/svg%3e";
+
+var img$1 = "data:image/svg+xml,%3csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M3 7.45384V13.527C3.00346 14.1857 3.29063 14.8161 3.79842 15.2799C4.3062 15.7436 4.99305 16.0026 5.70802 16H15.3167C15.4466 16.0006 15.5715 15.9537 15.6639 15.8696C15.7563 15.7854 15.8087 15.671 15.8096 15.5513V9.47821C15.8062 8.81951 15.519 8.18903 15.0112 7.72531C14.5034 7.26159 13.8166 7.00258 13.1016 7.00519H3.49588C3.43131 7.00454 3.36724 7.01565 3.30734 7.03786C3.24744 7.06008 3.19289 7.09297 3.14682 7.13465C3.10075 7.17633 3.06406 7.22599 3.03887 7.28076C3.01367 7.33553 3.00047 7.39435 3 7.45384ZM16.4213 9.8229L20.3883 7.15292C20.7328 6.88975 21 6.95595 21 7.43195V15.5732C21 16.1149 20.6734 16.0492 20.3883 15.8517L16.4213 13.1877V9.8229Z' fill='%231991FF'/%3e%3c/svg%3e";
+
+var img = "data:image/svg+xml,%3csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cpath fill-rule='evenodd' clip-rule='evenodd' d='M5.33333 9C5.33333 8.63181 5.63181 8.33333 6 8.33333H13.3333C13.7015 8.33333 14 8.63181 14 9V12.3328C14 12.3331 14 12.3335 14 12.3339V15.6667C14 16.0349 13.7015 16.3333 13.3333 16.3333H6C5.63181 16.3333 5.33333 16.0349 5.33333 15.6667V9ZM15.3333 13.6288V15.6667C15.3333 16.7712 14.4379 17.6667 13.3333 17.6667H6C4.89543 17.6667 4 16.7712 4 15.6667V9C4 7.89543 4.89543 7 6 7H13.3333C14.4379 7 15.3333 7.89543 15.3333 9V11.0379L18.9458 8.45751C19.3871 8.14233 20 8.45775 20 9V15.6667C20 16.2089 19.3871 16.5243 18.9458 16.2092L15.3333 13.6288ZM15.8138 12.3333L18.6668 10.2955V14.3712L15.8138 12.3333Z' fill='%231991FF'/%3e%3c/svg%3e";
+
+var css_248z$a = "\n.inviteeCard-module_invitees_container__euiVt {\n  display: flex;\n  flex-wrap: wrap;\n  width: 100%;\n}\n\n.inviteeCard-module_invitees__UpD6i {\n  display: flex;\n  width: 100%;\n}\n\n.inviteeCard-module__invitee_card__7EAJk {\n  display: flex;\n  align-items: center;\n  margin: 6px 0;\n  width: 100%;\n}\n\n.inviteeCard-module__invitee_info__19zs- {\n  flex-grow: 1;\n  display: flex;\n  flex-direction: column;\n  justify-content: space-between;\n  margin-left: 12px;\n}\n\n.inviteeCard-module__invitee_info__19zs- > p {\n  width: 95%;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  white-space: nowrap;\n}\n\n.inviteeCard-module_showMore__LhjVk {\n  margin-top: 8px;\n  cursor: pointer;\n}\n";
+var styles$a = {"invitees_container":"inviteeCard-module_invitees_container__euiVt","invitees":"inviteeCard-module_invitees__UpD6i","_invitee_card":"inviteeCard-module__invitee_card__7EAJk","_invitee_info":"inviteeCard-module__invitee_info__19zs-","showMore":"inviteeCard-module_showMore__LhjVk"};
+styleInject(css_248z$a);
+
+function _slicedToArray$d(arr, i) { return _arrayWithHoles$d(arr) || _iterableToArrayLimit$d(arr, i) || _unsupportedIterableToArray$d(arr, i) || _nonIterableRest$d(); }
+function _nonIterableRest$d() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$d(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$d(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$d(o, minLen); }
+function _arrayLikeToArray$d(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$d(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$d(arr) { if (Array.isArray(arr)) return arr; }
+var randomColors = ['bloobirds', 'softPeanut', 'verySoftTangerine', 'softTangerine', 'verySoftTomato', 'softTomato', 'softBanana', 'verySoftBanana', 'verySoftMelon', 'softMelon', 'lightBloobirds', 'verySoftBloobirds', 'verySoftPurple', 'lightPurple', 'verySoftPeanut', 'lightPeanut', 'lighterGray', 'gray'];
+
+/**
+ * This component is duplicated in meeting component in components folder
+ * so we should copy for now from one place to another
+ * @param invitee
+ * @param handleRemoveInvitee
+ * @param readOnly
+ * @param width
+ * @param shouldShowStatus
+ * @constructor
+ */
+function InviteeCard(_ref) {
+  var _invitee$email, _invitee$name;
+  var invitee = _ref.invitee,
+    handleRemoveInvitee = _ref.handleRemoveInvitee,
+    readOnly = _ref.readOnly,
+    width = _ref.width,
+    shouldShowStatus = _ref.shouldShowStatus;
+  var _useState = useState(randomColors[Math.floor(Math.random() * (randomColors.length + 1))]),
+    _useState2 = _slicedToArray$d(_useState, 1),
+    randomColor = _useState2[0];
+  function getColorFromType(type) {
+    switch (type) {
+      case 'Organizer':
+        return 'purple';
+      case 'AE':
+      case 'User':
+        return 'grape';
+      case 'Company':
+        return 'extraMeeting';
+      case 'Lead':
+        return 'extraMeeting';
+      default:
+        return 'random';
+    }
+  }
+  function getStatusAvatar(status) {
+    switch (status) {
+      case 'yes':
+        return {
+          bagdeColor: 'lightestCall',
+          icon: 'check',
+          iconColor: 'extraCall'
+        };
+      case 'no':
+        return {
+          bagdeColor: 'lightestMeeting',
+          icon: 'cross',
+          iconColor: 'extraMeeting'
+        };
+      default:
+        return {
+          bagdeColor: 'verySoftPeanut',
+          icon: 'arrowRight',
+          iconColor: 'softPeanut'
+        };
+    }
+  }
+  var calculatedColor = getColorFromType(invitee === null || invitee === void 0 ? void 0 : invitee.type);
+  var colorToUse = calculatedColor === 'random' ? randomColor : calculatedColor;
+  var statusAvatar = getStatusAvatar(invitee === null || invitee === void 0 ? void 0 : invitee.status);
+  var parentRef = useRef();
+  return /*#__PURE__*/jsx(Fragment, {
+    children: ((invitee === null || invitee === void 0 ? void 0 : invitee.email) || (invitee === null || invitee === void 0 ? void 0 : invitee.name)) && /*#__PURE__*/jsxs("div", {
+      className: styles$a._invitee_card,
+      style: {
+        width: width || null
+      },
+      children: [/*#__PURE__*/jsx(CompoundIcon, {
+        parent: /*#__PURE__*/jsx(Avatar, {
+          size: "tiny",
+          color: colorToUse,
+          ref: parentRef,
+          children: (invitee === null || invitee === void 0 ? void 0 : (_invitee$email = invitee.email) === null || _invitee$email === void 0 ? void 0 : _invitee$email.slice(0, 2).toUpperCase()) || (invitee === null || invitee === void 0 ? void 0 : (_invitee$name = invitee.name) === null || _invitee$name === void 0 ? void 0 : _invitee$name.slice(0, 2).toUpperCase())
+        }),
+        parentRef: parentRef,
+        children: shouldShowStatus && /*#__PURE__*/jsx(Avatar, {
+          size: "supertiny",
+          color: statusAvatar.bagdeColor,
+          children: /*#__PURE__*/jsx(Icon, {
+            name: statusAvatar.icon,
+            color: statusAvatar.iconColor,
+            size: 10
+          })
+        })
+      }), /*#__PURE__*/jsxs("div", {
+        className: styles$a._invitee_info,
+        children: [(invitee === null || invitee === void 0 ? void 0 : invitee.name) && /*#__PURE__*/jsx(Text, {
+          size: "xs",
+          children: invitee === null || invitee === void 0 ? void 0 : invitee.name
+        }), (invitee === null || invitee === void 0 ? void 0 : invitee.type) === 'Lead' && !(invitee !== null && invitee !== void 0 && invitee.email) && /*#__PURE__*/jsx(Text, {
+          size: "xs",
+          color: "tomato",
+          decoration: "underscore",
+          children: "Lead has no email, it won't be invited"
+        }), /*#__PURE__*/jsx(Text, {
+          size: "xxs",
+          color: invitee !== null && invitee !== void 0 && invitee.name ? 'softPeanut' : 'peanut',
+          decoration: "underscore",
+          children: invitee === null || invitee === void 0 ? void 0 : invitee.email
+        })]
+      }), (invitee === null || invitee === void 0 ? void 0 : invitee.type) && /*#__PURE__*/jsx(Label, {
+        size: "small",
+        uppercase: false,
+        children: invitee === null || invitee === void 0 ? void 0 : invitee.type
+      }), !readOnly && /*#__PURE__*/jsx(IconButton, {
+        name: "cross",
+        size: 24,
+        color: "softPeanut",
+        onClick: function onClick() {
+          return handleRemoveInvitee(invitee === null || invitee === void 0 ? void 0 : invitee.email);
+        }
+      })]
+    })
+  });
+}
+
+var css_248z$9 = ".meetingDetail-module_container__ulcXy {\n  padding-top: 4px;\n  height: 100%;\n  display: flex;\n  flex-direction: column;\n  justify-content: space-between;\n}\n\n.meetingDetail-module_htmlBody__BfK-4 > * {\n  font-size: 10px;\n}\n.meetingDetail-module_htmlBody__BfK-4 {\n  overflow: auto;\n  flex: 1;\n}\n\n.meetingDetail-module_header__-uklX {\n  display: flex;\n  align-items: center;\n  margin-bottom: 8px;\n  justify-content: space-between;\n}\n\n.meetingDetail-module_headerLeft__uPP1W {\n  display: flex;\n  align-items: center;\n  max-width: 240px;\n  overflow: hidden;\n}\n\n.meetingDetail-module_headerLeft__uPP1W > p {\n  margin-right: 0.3em;\n  display: flex;\n}\n\n.meetingDetail-module_time__e4ehg {\n  display: flex;\n  align-items: center;\n}\n\n.meetingDetail-module_badge__uXRsC {\n  width: 30px;\n  height: 30px;\n  border-radius: 30px;\n  box-sizing: border-box;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  margin-right: 8px;\n}\n\n.meetingDetail-module_meetingInfoWrapper__QG5AA {\n  padding: 6px 14px 45px 18px;\n}\n\n.meetingDetail-module_meetingInfo__8cqxK {\n  display: flex;\n  gap: 12px;\n  justify-content: left;\n  align-items: center;\n}\n\n.meetingDetail-module_loading__WLdJI {\n  margin: auto;\n  width: 90%;\n  height: 80%;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n}\n\n.meetingDetail-module_reportResultButton__MpUYR {\n  display: block;\n  color: var(--melon);\n  white-space: nowrap;\n  max-width: 190px;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  border: none;\n}\n\n.meetingDetail-module_disabledButton__qGsK5 {\n  color: var(--softCondition);\n}\n\n.meetingDetail-module_reportResultButton__MpUYR > svg {\n  margin-bottom: 1px;\n}\n\n.meetingDetail-module_conferencing_container__KsjQ1 {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n}\n\n.meetingDetail-module_conferencing__uNMzB {\n  display: flex;\n}\n\n.meetingDetail-module_conferencing_text__yb9Ka {\n  cursor: pointer;\n  margin-left: 8px;\n}\n\n.meetingDetail-module_copy_icon__AiAeA svg {\n  width: 16px;\n}\n\n.meetingDetail-module_conferencing_text__yb9Ka {\n  cursor: pointer;\n  margin-left: 4px;\n}\n\n.meetingDetail-module_img__MxjsV {\n  margin-top: -2px;\n  width: 20px;\n}\n\n.meetingDetail-module_noteTaker__8fiMR {\n  margin: 4px 0;\n  display: flex;\n  padding: 4px 8px;\n  align-items: center;\n  flex: 1 0 0;\n  border-radius: 4px;\n  box-sizing: border-box;\n  border: 1px solid transparent;\n}\n\n.meetingDetail-module_noteTakerHover__hp-1h {\n  border: 1px solid var(--extra-purple-light, #9aa4ff) !important;\n  box-sizing: border-box;\n  cursor: pointer;\n}\n\n.meetingDetail-module_noteTakerHoverStrong__bmFZK {\n  border: 1px solid var(--extra-purple, #1126EA) !important;\n  box-sizing: border-box;\n  cursor: pointer;\n}\n\n.meetingDetail-module_noteTakerInactive__uQLOv{\n  background: var(--Main-lighter-gray, #f6fafd);\n}\n\n.meetingDetail-module_noteTakerSent__f22VH {\n  border: 1px solid var(--extra-purple-light, #9aa4ff);\n  background: var(\n    --gradient-ai-purple-green-light,\n    linear-gradient(270deg, #dcfff1 0%, #e2e5ff 65.49%)\n  );\n  cursor: pointer;\n}\n\n.meetingDetail-module_meetingCompleted__y5Dj3 {\n  background: var(--Main-lighter-gray, #f6fafd);\n}\n\n.meetingDetail-module_noteTaker__8fiMR p {\n  flex: 2;\n}\n\n.meetingDetail-module_bobjectNameDisplayContainer__WgDVq {\n  display: flex;\n  justify-content: left;\n  align-items: center;\n  gap: 2px;\n  cursor: pointer;\n}\n\n.meetingDetail-module_bobjectNameContainer__iQScu {\n  text-decoration: none;\n  color: var(--bloobirds);\n  margin-right: 8px;\n  text-align: justify;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  display: block;\n  white-space: nowrap;\n  font-size: 13px;\n  font-weight: 500;\n}\n\n.meetingDetail-module__separator__WUoB2 {\n  display: flex;\n  align-self: center;\n  margin-right: 4px;\n  width: 1px;\n  height: 8px;\n  background-color: var(--softPeanut);\n}\n\n.meetingDetail-module_separator__kUhWo {\n  margin: 8px 0 12px;\n  display: flex;\n  align-self: center;\n  width: 100%;\n  height: 1px;\n  background-color: var(--verySoftPeanut);\n}\n\n.meetingDetail-module_relatedBobjects__Zxs5Q {\n  display: flex;\n  justify-content: left;\n  gap: 2px;\n  align-items: center;\n}\n\n.meetingDetail-module_meetingTime__vrL4K {\n  display: flex;\n  justify-content: left;\n  gap: 4px;\n  align-items: center;\n}\n\n.meetingDetail-module_ellipsis__xVdQ9 {\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n";
+var styles$9 = {"container":"meetingDetail-module_container__ulcXy","htmlBody":"meetingDetail-module_htmlBody__BfK-4","header":"meetingDetail-module_header__-uklX","headerLeft":"meetingDetail-module_headerLeft__uPP1W","time":"meetingDetail-module_time__e4ehg","badge":"meetingDetail-module_badge__uXRsC","meetingInfoWrapper":"meetingDetail-module_meetingInfoWrapper__QG5AA","meetingInfo":"meetingDetail-module_meetingInfo__8cqxK","loading":"meetingDetail-module_loading__WLdJI","reportResultButton":"meetingDetail-module_reportResultButton__MpUYR","disabledButton":"meetingDetail-module_disabledButton__qGsK5","conferencing_container":"meetingDetail-module_conferencing_container__KsjQ1","conferencing":"meetingDetail-module_conferencing__uNMzB","conferencing_text":"meetingDetail-module_conferencing_text__yb9Ka","copy_icon":"meetingDetail-module_copy_icon__AiAeA","img":"meetingDetail-module_img__MxjsV","noteTaker":"meetingDetail-module_noteTaker__8fiMR","noteTakerHover":"meetingDetail-module_noteTakerHover__hp-1h","noteTakerHoverStrong":"meetingDetail-module_noteTakerHoverStrong__bmFZK","noteTakerInactive":"meetingDetail-module_noteTakerInactive__uQLOv","noteTakerSent":"meetingDetail-module_noteTakerSent__f22VH","meetingCompleted":"meetingDetail-module_meetingCompleted__y5Dj3","bobjectNameDisplayContainer":"meetingDetail-module_bobjectNameDisplayContainer__WgDVq","bobjectNameContainer":"meetingDetail-module_bobjectNameContainer__iQScu","_separator":"meetingDetail-module__separator__WUoB2","separator":"meetingDetail-module_separator__kUhWo","relatedBobjects":"meetingDetail-module_relatedBobjects__Zxs5Q","meetingTime":"meetingDetail-module_meetingTime__vrL4K","ellipsis":"meetingDetail-module_ellipsis__xVdQ9"};
+styleInject(css_248z$9);
+
+function _typeof$b(obj) { "@babel/helpers - typeof"; return _typeof$b = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$b(obj); }
+function ownKeys$5(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$5(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$5(Object(source), !0).forEach(function (key) { _defineProperty$a(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$5(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$a(obj, key, value) { key = _toPropertyKey$a(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$a(arg) { var key = _toPrimitive$a(arg, "string"); return _typeof$b(key) === "symbol" ? key : String(key); }
+function _toPrimitive$a(input, hint) { if (_typeof$b(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$b(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$c(arr, i) { return _arrayWithHoles$c(arr) || _iterableToArrayLimit$c(arr, i) || _unsupportedIterableToArray$c(arr, i) || _nonIterableRest$c(); }
+function _nonIterableRest$c() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$c(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$c(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$c(o, minLen); }
+function _arrayLikeToArray$c(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$c(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$c(arr) { if (Array.isArray(arr)) return arr; }
+function getIcon(provider) {
+  switch (provider) {
+    case 'Google Meet':
+      return img$4;
+    case 'Zoom Meeting':
+      return img$1;
+    case 'Microsoft Teams':
+      return img$3;
+    case 'WebEx':
+      return img$2;
+    case 'GoToMeeting':
+      return img$5;
+    default:
+      return img;
+  }
+}
+var getNoteTakerStatus = function getNoteTakerStatus(botId, isFuture) {
+  var noteTakerNotSent = isFuture && !botId;
+  var noteTakerSent = isFuture && botId;
+  var meetingWithBotCompleted = !isFuture && botId;
+  if (noteTakerNotSent) {
+    return {
+      text: 'activityTimelineItem.item.sendNoteTaker',
+      icon: /*#__PURE__*/jsx(Icon, {
+        name: "plus",
+        size: 16,
+        color: "purple"
+      })
+    };
+  } else if (noteTakerSent) {
+    return {
+      text: 'activityTimelineItem.item.notSendNoteTaker',
+      icon: /*#__PURE__*/jsx(IconButton, {
+        name: "cross",
+        size: 16,
+        color: "purple"
+      })
+    };
+  } else if (meetingWithBotCompleted) {
+    return {
+      text: 'activityTimelineItem.item.noteTakerSent',
+      icon: /*#__PURE__*/jsx(Icon, {
+        name: "check",
+        size: 16,
+        color: "melon"
+      })
+    };
+  } else {
+    return {
+      text: 'activityTimelineItem.item.noteTakerNotSent',
+      icon: undefined
+    };
+  }
+};
+var MeetingBotInfo = function MeetingBotInfo(_ref) {
+  var activity = _ref.activity,
+    onEdit = _ref.onEdit;
+  var botId = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.BOT_ID);
+  var meetingTime = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.TIME);
+  var theMeetingIsToday = isToday(parseUTCDateTimeToLocal(meetingTime), getUserTimeZone());
+  var isFuture = isAfterDate(parseUTCDateTimeToLocal(meetingTime), new Date()) || theMeetingIsToday;
+  var _useToasts = useToasts(),
+    createToast = _useToasts.createToast;
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  var handleSendBot = function handleSendBot() {
+    var _activity$id;
+    api.post('/messaging/recall/bot', {
+      meeting: activity === null || activity === void 0 ? void 0 : (_activity$id = activity.id) === null || _activity$id === void 0 ? void 0 : _activity$id.value
+    }).then(function () {
+      createToast({
+        message: t('activityTimelineItem.item.noteTakerSentOk'),
+        type: 'success'
+      });
+      onEdit();
+    })["catch"](function () {
+      createToast({
+        message: t('activityTimelineItem.item.noteTakerSentError'),
+        type: 'error'
+      });
+    });
+  };
+  var handleRemoveBot = function handleRemoveBot() {
+    var _activity$id2;
+    api["delete"]("/messaging/recall/bot?meeting=".concat(activity === null || activity === void 0 ? void 0 : (_activity$id2 = activity.id) === null || _activity$id2 === void 0 ? void 0 : _activity$id2.value)).then(function () {
+      createToast({
+        message: t('activityTimelineItem.item.noteTakerRemoved'),
+        type: 'success'
+      });
+      onEdit();
+    })["catch"](function () {
+      createToast({
+        message: t('activityTimelineItem.item.noteTakerRemoveError'),
+        type: 'error'
+      });
+    });
+  };
+  var _useHover = useHover(),
+    _useHover2 = _slicedToArray$c(_useHover, 2),
+    ref = _useHover2[0],
+    visible = _useHover2[1];
+  var handleClick = function handleClick() {
+    if (isFuture) {
+      if (botId) {
+        handleRemoveBot();
+      } else {
+        handleSendBot();
+      }
+    }
+  };
+  var _getNoteTakerStatus = getNoteTakerStatus(botId, isFuture),
+    buttonText = _getNoteTakerStatus.text,
+    rightIcon = _getNoteTakerStatus.icon;
+  return /*#__PURE__*/jsxs("div", {
+    className: clsx(styles$9.noteTaker, _defineProperty$a(_defineProperty$a(_defineProperty$a(_defineProperty$a(_defineProperty$a({}, styles$9.meetingCompleted, !isFuture), styles$9.noteTakerSent, isFuture && botId), styles$9.noteTakerHover, isFuture && visible), styles$9.noteTakerHoverStrong, isFuture && visible && botId), styles$9.noteTakerInactive, !isFuture)),
+    ref: ref,
+    onClick: handleClick,
+    children: [/*#__PURE__*/jsx(Icon, {
+      name: "stars",
+      color: "purple",
+      size: 16
+    }), /*#__PURE__*/jsx(Text, {
+      size: "xs",
+      color: isFuture || theMeetingIsToday ? 'purple' : 'lightPurple',
+      align: "center",
+      children: t(buttonText)
+    }), rightIcon]
+  });
+};
+var DetailedActivity = function DetailedActivity(_ref2) {
+  var _activity$id3, _conferencingParsed$d, _conferencingParsed$d4, _conferencingParsed$d5, _conferencingParsed$d6, _conferencingParsed$d7, _conferencingParsed$d8, _conferencingParsed$d9, _conferencingParsed$d10;
+  var activity = _ref2.activity,
+    dataModel = _ref2.dataModel,
+    onGoToBobject = _ref2.onGoToBobject,
+    onEdit = _ref2.onEdit,
+    setIsReported = _ref2.setIsReported,
+    isBubble = _ref2.isBubble;
+  var creationDate = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.CREATION_DATETIME);
+  var scheduledDate = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.TIME);
+  var creationDateTime = creationDate && formatDate$1(new Date(creationDate), 'MMM dd yyyy, HH:mm');
+  var reminder = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.REMINDER_TEMPLATE);
+  var meetingResult = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.MEETING_RESULT);
+  var meetingResultValue = meetingResult === null || meetingResult === void 0 ? void 0 : meetingResult.text;
+  var meetingType = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.MEETING_MAIN_TYPE);
+  var assignedTo = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.MEETING_ASSIGNED_TO);
+  var conferencingJson = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.CONFERENCING);
+  var conferencingParsed = conferencingJson && isStringifiedJSON(conferencingJson) && JSON.parse(conferencingJson);
+  var meetingTitle = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.TITLE);
+  var meetingInvitees = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.MEETING_INVITEES);
+  var _useState = useState(false),
+    _useState2 = _slicedToArray$c(_useState, 2),
+    showMore = _useState2[0],
+    setShowMore = _useState2[1];
+  var parsedInvitees = meetingInvitees ? JSON.parse(meetingInvitees) : null;
+  var isCopilotEnabled = useCopilotEnabled(dataModel === null || dataModel === void 0 ? void 0 : dataModel.getAccountId());
+  var _useTranslation2 = useTranslation(),
+    t = _useTranslation2.t;
+  var isB2CAccount = useIsB2CAccount();
+  var meetingNote = useMemo(function () {
+    return linkify(getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.NOTE));
+  }, [activity]);
+  var meetingCalendarNote = useMemo(function () {
+    return linkify(getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.CALENDAR_NOTE));
+  }, [activity]);
+  var hasNylasID = !!getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.UNIQUE_NYLAS_ID);
+  var company = !isB2CAccount ? getRelatedBobject(activity, 'Company') : null;
+  var lead = getRelatedBobject(activity, 'Lead');
+  useEffect(function () {
+    var _getFieldByLogicRole;
+    resetOverlay();
+    clearAllSubscriptions();
+    setIsReported(((_getFieldByLogicRole = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.REPORTED)) === null || _getFieldByLogicRole === void 0 ? void 0 : _getFieldByLogicRole.valueLogicRole) === REPORTED_VALUES_LOGIC_ROLE.YES);
+  }, [activity === null || activity === void 0 ? void 0 : (_activity$id3 = activity.id) === null || _activity$id3 === void 0 ? void 0 : _activity$id3.objectId]);
+  var _useCopilotActivity = useCopilotActivity(),
+    hasOverlay = _useCopilotActivity.hasOverlay,
+    transcript = _useCopilotActivity.transcript,
+    overlay = _useCopilotActivity.overlay,
+    resetOverlay = _useCopilotActivity.resetOverlay,
+    clearAllSubscriptions = _useCopilotActivity.clearAllSubscriptions;
+  return /*#__PURE__*/jsx("div", {
+    className: styles$9.htmlBody,
+    children: /*#__PURE__*/jsxs("div", {
+      className: styles$9.meetingInfoWrapper,
+      children: [/*#__PURE__*/jsxs("div", {
+        className: styles$9.meetingInfo,
+        children: [/*#__PURE__*/jsx(Avatar, {
+          color: "lightestMeeting",
+          size: "small",
+          children: /*#__PURE__*/jsx(Icon, {
+            name: "calendar",
+            color: "extraMeeting",
+            size: 16
+          })
+        }), /*#__PURE__*/jsx(Text, {
+          weight: "bold",
+          size: "m",
+          children: meetingTitle
+        })]
+      }), /*#__PURE__*/jsxs(ExpandedBoxSection, {
+        children: [/*#__PURE__*/jsxs("div", {
+          className: styles$9.relatedBobjects,
+          children: [lead && /*#__PURE__*/jsx("div", {
+            className: styles$9.ellipsis,
+            children: /*#__PURE__*/jsx(BobjectNameDisplay, {
+              name: getTextFromLogicRole(lead, LEAD_FIELDS_LOGIC_ROLE.FULL_NAME),
+              icon: "person",
+              onClick: function onClick() {
+                return onGoToBobject(lead.id.value);
+              }
+            })
+          }), lead && company && /*#__PURE__*/jsx("div", {
+            className: styles$9._separator
+          }), company && /*#__PURE__*/jsx(BobjectNameDisplay, {
+            name: getTextFromLogicRole(company, COMPANY_FIELDS_LOGIC_ROLE.NAME),
+            icon: "company",
+            onClick: function onClick() {
+              return onGoToBobject(company.id.value);
+            }
+          })]
+        }), /*#__PURE__*/jsxs("div", {
+          className: styles$9.meetingTime,
+          children: [/*#__PURE__*/jsx(Icon, {
+            name: "clock",
+            size: 16,
+            color: "verySoftBloobirds"
+          }), /*#__PURE__*/jsx(Text, {
+            size: "xs",
+            children: scheduledDate && formatDate$1(new Date(scheduledDate), 'iii dd MMM yyyy · HH:mm')
+          })]
+        })]
+      }), overlay === 'transcript' && /*#__PURE__*/jsx(ExpandedBoxSection, {
+        children: /*#__PURE__*/jsx(TranscriptView, {
+          activity: activity
+        })
+      }), overlay === 'analysis' && /*#__PURE__*/jsx(ExpandedBoxSection, {
+        children: /*#__PURE__*/jsx(CopilotAnalysis, {
+          activity: activity,
+          onEdit: onEdit
+        })
+      }), !hasOverlay && /*#__PURE__*/jsxs(Fragment, {
+        children: [isCopilotEnabled && (transcript === null || transcript === void 0 ? void 0 : transcript.status) === 'GENERATED' && /*#__PURE__*/jsxs(Fragment, {
+          children: [/*#__PURE__*/jsx("div", {
+            className: styles$9.separator
+          }), /*#__PURE__*/jsx(CopilotSuggestionsCallout, {
+            isBubble: isBubble
+          })]
+        }), /*#__PURE__*/jsxs(ExpandedBoxSection, {
+          grid: true,
+          children: [/*#__PURE__*/jsx(InfoBox, {
+            icon: "calendar",
+            title: t('activityTimelineItem.item.meetingCreation'),
+            info: creationDateTime || 'Unknown'
+          }), /*#__PURE__*/jsx(InfoBox, {
+            icon: "bell",
+            title: t('activityTimelineItem.item.reminderSet'),
+            info: reminder
+          }), /*#__PURE__*/jsx(InfoBox, {
+            icon: "bookmark",
+            title: t('activityTimelineItem.item.meetingType'),
+            info: /*#__PURE__*/jsx(Fragment, {
+              children: meetingType ? /*#__PURE__*/jsx(MeetingTypeField, {
+                activity: activity,
+                onUpdate: function onUpdate(cb) {
+                  onEdit === null || onEdit === void 0 ? void 0 : onEdit();
+                  cb();
+                }
+              }) : /*#__PURE__*/jsx("div", {
+                style: {
+                  marginTop: '4px'
+                },
+                children: t('common.none')
+              })
+            })
+          }), /*#__PURE__*/jsx(InfoBox, {
+            icon: "gridSquares",
+            title: t('activityTimelineItem.item.meetingResult'),
+            info: /*#__PURE__*/jsx(Fragment, {
+              children: meetingResult && meetingResultValue ? /*#__PURE__*/jsx(MeetingResultField, {
+                activity: activity,
+                onUpdate: function onUpdate(cb) {
+                  onEdit === null || onEdit === void 0 ? void 0 : onEdit();
+                  cb();
+                }
+              }) : /*#__PURE__*/jsx("div", {
+                style: {
+                  marginTop: '4px'
+                },
+                children: t('common.none')
+              })
+            })
+          }), assignedTo && /*#__PURE__*/jsx(InfoBox, {
+            icon: "person",
+            title: t('activityTimelineItem.item.assignedTo'),
+            info: assignedTo
+          }), isCopilotEnabled && transcript && /*#__PURE__*/jsx(ShowTranscriptButton, {
+            activity: activity
+          })]
+        }), conferencingParsed && (conferencingParsed === null || conferencingParsed === void 0 ? void 0 : (_conferencingParsed$d = conferencingParsed.details) === null || _conferencingParsed$d === void 0 ? void 0 : _conferencingParsed$d.url) && /*#__PURE__*/jsx(ExpandedBoxSection, {
+          children: /*#__PURE__*/jsxs(Fragment, {
+            children: [/*#__PURE__*/jsxs("div", {
+              className: styles$9.conferencing_container,
+              children: [/*#__PURE__*/jsxs("span", {
+                onClick: function onClick(e) {
+                  var _conferencingParsed$d2;
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (conferencingParsed !== null && conferencingParsed !== void 0 && (_conferencingParsed$d2 = conferencingParsed.details) !== null && _conferencingParsed$d2 !== void 0 && _conferencingParsed$d2.url) {
+                    var _conferencingParsed$d3;
+                    window.open(conferencingParsed === null || conferencingParsed === void 0 ? void 0 : (_conferencingParsed$d3 = conferencingParsed.details) === null || _conferencingParsed$d3 === void 0 ? void 0 : _conferencingParsed$d3.url, '_blank');
+                  }
+                },
+                className: styles$9.conferencing,
+                children: [/*#__PURE__*/jsx("img", {
+                  src: getIcon(conferencingParsed === null || conferencingParsed === void 0 ? void 0 : conferencingParsed.provider),
+                  alt: "meet-icon",
+                  className: styles$9.img
+                }), /*#__PURE__*/jsx(Text, {
+                  size: "xs",
+                  weight: "bold",
+                  color: "bloobirds",
+                  className: styles$9.conferencing_text,
+                  children: t('activityTimelineItem.item.join') + ' ' + (conferencingParsed === null || conferencingParsed === void 0 ? void 0 : conferencingParsed.provider)
+                })]
+              }), /*#__PURE__*/jsx("span", {
+                className: styles$9.copy_icon,
+                children: /*#__PURE__*/jsx(Clipboard, {
+                  text: conferencingParsed === null || conferencingParsed === void 0 ? void 0 : (_conferencingParsed$d4 = conferencingParsed.details) === null || _conferencingParsed$d4 === void 0 ? void 0 : _conferencingParsed$d4.url
+                })
+              })]
+            }), ((_conferencingParsed$d5 = conferencingParsed === null || conferencingParsed === void 0 ? void 0 : (_conferencingParsed$d6 = conferencingParsed.details) === null || _conferencingParsed$d6 === void 0 ? void 0 : _conferencingParsed$d6.password) !== null && _conferencingParsed$d5 !== void 0 ? _conferencingParsed$d5 : conferencingParsed === null || conferencingParsed === void 0 ? void 0 : (_conferencingParsed$d7 = conferencingParsed.details) === null || _conferencingParsed$d7 === void 0 ? void 0 : _conferencingParsed$d7.pin) ? /*#__PURE__*/jsx(Text, {
+              size: "xxs",
+              children: t('activityTimelineItem.item.join') + ': ' + ((_conferencingParsed$d8 = conferencingParsed === null || conferencingParsed === void 0 ? void 0 : (_conferencingParsed$d9 = conferencingParsed.details) === null || _conferencingParsed$d9 === void 0 ? void 0 : _conferencingParsed$d9.password) !== null && _conferencingParsed$d8 !== void 0 ? _conferencingParsed$d8 : conferencingParsed === null || conferencingParsed === void 0 ? void 0 : (_conferencingParsed$d10 = conferencingParsed.details) === null || _conferencingParsed$d10 === void 0 ? void 0 : _conferencingParsed$d10.pin)
+            }) : /*#__PURE__*/jsx(Fragment, {}), isCopilotEnabled && /*#__PURE__*/jsx(MeetingBotInfo, {
+              activity: activity,
+              onEdit: onEdit
+            })]
+          })
+        }), /*#__PURE__*/jsx(ExpandedBoxSection, {
+          children: /*#__PURE__*/jsx(InfoBox, {
+            icon: "noteAction",
+            title: t('activityTimelineItem.item.noteInternal'),
+            info: meetingNote
+          })
+        }), /*#__PURE__*/jsx(ExpandedBoxSection, {
+          children: /*#__PURE__*/jsx(InfoBox, {
+            icon: "taskAction",
+            title: t('activityTimelineItem.item.noteCalendar'),
+            info: meetingCalendarNote
+          })
+        }), /*#__PURE__*/jsx(ExpandedBoxSection, {
+          children: /*#__PURE__*/jsx(InfoBox, {
+            icon: "people",
+            title: t('activityTimelineItem.item.guests'),
+            info: (parsedInvitees === null || parsedInvitees === void 0 ? void 0 : parsedInvitees.length) > 0 ? /*#__PURE__*/jsxs(Fragment, {
+              children: [/*#__PURE__*/jsx("div", {
+                className: styles$9.invitees_container,
+                children: parsedInvitees === null || parsedInvitees === void 0 ? void 0 : parsedInvitees.map(function (invitee, index) {
+                  if (!showMore && index > 2) {
+                    return null;
+                  }
+                  return /*#__PURE__*/jsx("div", {
+                    className: styles$9.invitees,
+                    children: /*#__PURE__*/jsx(InviteeCard, {
+                      invitee: invitee,
+                      readOnly: true,
+                      shouldShowStatus: hasNylasID
+                    })
+                  }, "".concat(index).concat(invitee.email));
+                })
+              }), (parsedInvitees === null || parsedInvitees === void 0 ? void 0 : parsedInvitees.length) > 3 && /*#__PURE__*/jsx("div", {
+                style: {
+                  cursor: 'pointer'
+                },
+                onClick: function onClick() {
+                  return setShowMore(!showMore);
+                },
+                children: /*#__PURE__*/jsx(Text, {
+                  className: styles$9.showMore,
+                  size: "s",
+                  color: "bloobirds",
+                  align: "center",
+                  children: t('common.show') + ' ' + (showMore ? t('common.less') : t('common.more'))
+                })
+              })]
+            }) : undefined
+          })
+        })]
+      })]
+    })
+  });
+};
+var MeetingDetail = function MeetingDetail(_ref3) {
+  var _getFieldByLogicRole2;
+  var activity = _ref3.activity,
+    dataModel = _ref3.dataModel,
+    _ref3$visibleFooter = _ref3.visibleFooter,
+    visibleFooter = _ref3$visibleFooter === void 0 ? true : _ref3$visibleFooter,
+    _onSave = _ref3.onSave,
+    _ref3$actionsDisabled = _ref3.actionsDisabled,
+    actionsDisabled = _ref3$actionsDisabled === void 0 ? false : _ref3$actionsDisabled,
+    userId = _ref3.userId,
+    mutate = _ref3.mutate,
+    onGoToBobject = _ref3.onGoToBobject,
+    isBubble = _ref3.isBubble;
+  var _useMinimizableModals = useMinimizableModals(),
+    openMinimizableModal = _useMinimizableModals.openMinimizableModal;
+  var _useWizardContext = useWizardContext(),
+    openWizard = _useWizardContext.openWizard;
+  var _useState3 = useState(false),
+    _useState4 = _slicedToArray$c(_useState3, 2),
+    loading = _useState4[0],
+    setIsLoading = _useState4[1];
+  var _useState5 = useState(false),
+    _useState6 = _slicedToArray$c(_useState5, 2),
+    isReported = _useState6[0],
+    setIsReported = _useState6[1];
+  var _useTranslation3 = useTranslation(),
+    t = _useTranslation3.t;
+  function openMeetingModal() {
+    var bobjectFieldsData = {};
+    activity.fields.forEach(function (field) {
+      bobjectFieldsData[field.logicRole || field.name] = field.value;
+    });
+    var company = getRelatedBobject(activity, 'Company');
+    var lead = getRelatedBobject(activity, 'Lead');
+    // @ts-ignore
+    openMinimizableModal({
+      type: 'calendarMeeting',
+      bobject: activity,
+      data: _objectSpread$5({
+        company: company ? {
+          name: getValueFromLogicRole(company, COMPANY_FIELDS_LOGIC_ROLE.NAME),
+          url: companyUrl(company),
+          data: company
+        } : undefined,
+        lead: lead && {
+          name: getValueFromLogicRole(lead, LEAD_FIELDS_LOGIC_ROLE.FULL_NAME),
+          url: leadUrl(lead, null),
+          data: lead
+        }
+      }, bobjectFieldsData),
+      onSave: function onSave() {
+        _onSave === null || _onSave === void 0 ? void 0 : _onSave();
+        mutate === null || mutate === void 0 ? void 0 : mutate();
+        setIsReported(true);
+        window.dispatchEvent(new CustomEvent(MessagesEvents.ActiveBobjectUpdated, {
+          detail: {
+            type: BobjectTypes.Activity
+          }
+        }));
+      },
+      onClose: function onClose() {
+        _onSave === null || _onSave === void 0 ? void 0 : _onSave();
+        mutate === null || mutate === void 0 ? void 0 : mutate();
+      }
+    });
+  }
+  var meetingResultField = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.MEETING_RESULT);
+  var meetingResultLogicRole = meetingResultField === null || meetingResultField === void 0 ? void 0 : meetingResultField.valueLogicRole;
+  var isCancelled = meetingResultLogicRole === 'ACTIVITY__MEETING_RESULT__CANCELLED';
+  var referenceBobject = getReferencedBobject(activity);
+  var assignee = ((_getFieldByLogicRole2 = getFieldByLogicRole(referenceBobject, LEAD_FIELDS_LOGIC_ROLE.ASSIGNED_TO)) === null || _getFieldByLogicRole2 === void 0 ? void 0 : _getFieldByLogicRole2.value) || (referenceBobject === null || referenceBobject === void 0 ? void 0 : referenceBobject.assignedTo);
+  var assignedToActiveUser = assignee === userId;
+  var reportResult = function reportResult() {
+    var _activity$id4, _activity$id5;
+    setIsLoading(true);
+    var accountId = activity === null || activity === void 0 ? void 0 : (_activity$id4 = activity.id) === null || _activity$id4 === void 0 ? void 0 : _activity$id4.accountId;
+    var activityId = activity === null || activity === void 0 ? void 0 : (_activity$id5 = activity.id) === null || _activity$id5 === void 0 ? void 0 : _activity$id5.objectId;
+    var activityData = _defineProperty$a({}, ACTIVITY_FIELDS_LOGIC_ROLE.REPORTED, REPORTED_VALUES_LOGIC_ROLE.YES);
+    api.patch("/bobjects/".concat(accountId, "/Activity/").concat(activityId, "/raw"), activityData).then(function () {
+      if (mutate) {
+        mutate();
+      }
+      window.dispatchEvent(new CustomEvent('ACTIVE_BOBJECT_UPDATED', {
+        detail: {
+          type: BobjectTypes.Activity
+        }
+      }));
+      _onSave === null || _onSave === void 0 ? void 0 : _onSave();
+      setIsReported(true);
+      setIsLoading(false);
+    });
+  };
+  function getText() {
+    if (isReported) {
+      return t('activityTimelineItem.item.reported');
+    } else if (isCancelled) {
+      if (loading) {
+        return /*#__PURE__*/jsx(Spinner, {
+          name: "loadingCircle",
+          size: 12,
+          color: "melon"
+        });
+      } else {
+        return t('activityTimelineItem.item.markAsReported');
+      }
+    } else {
+      return t('activityTimelineItem.item.reportResult');
+    }
+  }
+  function onSaveCallback() {
+    setIsReported(true);
+    if (mutate) {
+      mutate();
+    }
+  }
+  return /*#__PURE__*/jsx("div", {
+    className: styles$9.container,
+    children: !activity ? /*#__PURE__*/jsx("div", {
+      className: styles$9.loading,
+      children: /*#__PURE__*/jsx(Spinner, {
+        name: "loadingCircle"
+      })
+    }) : /*#__PURE__*/jsxs(Fragment, {
+      children: [/*#__PURE__*/jsx(CopilotActivityContextProvider, {
+        activity: activity,
+        children: /*#__PURE__*/jsx(DetailedActivity, {
+          activity: activity,
+          dataModel: dataModel,
+          onEdit: function onEdit() {
+            _onSave === null || _onSave === void 0 ? void 0 : _onSave();
+            mutate === null || mutate === void 0 ? void 0 : mutate();
+          },
+          onGoToBobject: onGoToBobject,
+          setIsReported: setIsReported,
+          isBubble: isBubble
+        })
+      }), visibleFooter && /*#__PURE__*/jsx(DetailsFooter, {
+        children: /*#__PURE__*/jsxs(Fragment, {
+          children: [/*#__PURE__*/jsxs(Button, {
+            size: "medium",
+            variant: isReported || loading ? 'primary' : 'secondary',
+            onClick: function onClick(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              if (isReported) {
+                openWizard(WIZARD_MODALS.MEETING_RESULT, activity, {
+                  referenceBobject: referenceBobject,
+                  onSaveCallback: onSaveCallback
+                });
+              } else {
+                if (isCancelled) {
+                  reportResult();
+                } else {
+                  openWizard(WIZARD_MODALS.MEETING_RESULT, activity, {
+                    referenceBobject: referenceBobject,
+                    onSaveCallback: onSaveCallback
+                  });
+                }
+              }
+              mixpanel.track(MIXPANEL_EVENTS.CLICK_ON_CHANGE_MEETING_RESULT);
+            },
+            color: isReported || loading ? 'verySoftMelon' : 'bloobirds',
+            className: clsx(styles$9.reportResultButton, _defineProperty$a({}, styles$9.disabledButton, actionsDisabled && !assignedToActiveUser)),
+            disabled: actionsDisabled && !assignedToActiveUser,
+            children: [/*#__PURE__*/jsx(Icon, {
+              name: "thumbsUp",
+              size: 14,
+              color: isReported || loading ? 'melon' : 'bloobirds'
+            }), getText()]
+          }), /*#__PURE__*/jsxs(Button, {
+            variant: "secondary",
+            onClick: openMeetingModal,
+            disabled: actionsDisabled && !assignedToActiveUser,
+            children: [/*#__PURE__*/jsx(Icon, {
+              name: "edit",
+              size: 14
+            }), t('common.edit')]
+          })]
+        })
+      })]
+    })
+  });
+};
+var BobjectNameDisplay = function BobjectNameDisplay(_ref4) {
+  var name = _ref4.name,
+    icon = _ref4.icon,
+    onClick = _ref4.onClick;
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$9.bobjectNameDisplayContainer,
+    onClick: onClick,
+    children: [/*#__PURE__*/jsx(Icon, {
+      size: 16,
+      name: icon,
+      color: "verySoftBloobirds"
+    }), /*#__PURE__*/jsx("span", {
+      className: styles$9.bobjectNameContainer,
+      children: name
+    })]
+  });
+};
+
+var css_248z$8 = ".noteDetail-module_container__tXMKA {\n  display: flex;\n  flex-direction: column;\n  height: 100%;\n  box-sizing: border-box;\n}\n\n.noteDetail-module_detail_content_container__KvIAf {\n  display: flex;\n  flex-direction: column;\n  flex: 1;\n}\n\n.noteDetail-module_body_wrapper__8w0qN {\n  flex-grow: 1;\n}\n\n.noteDetail-module_body_wrapper__8w0qN > div > div ul {\n  padding-left: 24px !important;\n}\n\n.noteDetail-module_body_wrapper__8w0qN > div > div ol {\n  padding-left: 24px !important;\n}\n\n.noteDetail-module_bottom_bar__7pK7y {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 12px;\n}\n\n.noteDetail-module_text__Ypj2A {\n  margin-left: 4px;\n}\n\n.noteDetail-module_record_related__39BgJ {\n  display: flex;\n  align-items: center;\n}\n\n.noteDetail-module_editor__ORH-S {\n  display: flex;\n  flex-direction: column;\n  flex-grow: 1;\n  overflow-y: auto;\n  overflow-x: hidden;\n}\n\n.noteDetail-module_divider__h9UsI {\n  width: 90%;\n  text-align: center;\n  border-top: 1px solid var(--verySoftPeanut);\n  align-self: center;\n}\n\n.noteDetail-module_bobject_selector__hss6p {\n  margin-left: 8px;\n}\n\n.noteDetail-module_toolbar__NbY-h {\n  border-top: 1px solid var(--verySoftPeanut);\n  border-bottom: 1px solid var(--verySoftPeanut);\n}\n\n.noteDetail-module_mainNote__NWqKJ {\n  margin-right: 4px;\n}\n";
+var styles$8 = {"container":"noteDetail-module_container__tXMKA","detail_content_container":"noteDetail-module_detail_content_container__KvIAf","body_wrapper":"noteDetail-module_body_wrapper__8w0qN","bottom_bar":"noteDetail-module_bottom_bar__7pK7y","text":"noteDetail-module_text__Ypj2A","record_related":"noteDetail-module_record_related__39BgJ","editor":"noteDetail-module_editor__ORH-S","divider":"noteDetail-module_divider__h9UsI","bobject_selector":"noteDetail-module_bobject_selector__hss6p","toolbar":"noteDetail-module_toolbar__NbY-h","mainNote":"noteDetail-module_mainNote__NWqKJ"};
+styleInject(css_248z$8);
+
+var _excluded = ["related"];
+function _typeof$a(obj) { "@babel/helpers - typeof"; return _typeof$a = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$a(obj); }
+function ownKeys$4(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$4(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$4(Object(source), !0).forEach(function (key) { _defineProperty$9(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$4(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = _objectWithoutPropertiesLoose(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
+function _objectWithoutPropertiesLoose(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
+function _slicedToArray$b(arr, i) { return _arrayWithHoles$b(arr) || _iterableToArrayLimit$b(arr, i) || _unsupportedIterableToArray$b(arr, i) || _nonIterableRest$b(); }
+function _nonIterableRest$b() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$b(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$b(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$b(o, minLen); }
+function _arrayLikeToArray$b(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$b(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$b(arr) { if (Array.isArray(arr)) return arr; }
+function _defineProperty$9(obj, key, value) { key = _toPropertyKey$9(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$9(arg) { var key = _toPrimitive$9(arg, "string"); return _typeof$a(key) === "symbol" ? key : String(key); }
+function _toPrimitive$9(input, hint) { if (_typeof$a(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$a(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var mainNoteField = _defineProperty$9(_defineProperty$9(_defineProperty$9({}, BOBJECT_TYPES.COMPANY, [COMPANY_FIELDS_LOGIC_ROLE.MAIN_NOTE]), BOBJECT_TYPES.LEAD, [LEAD_FIELDS_LOGIC_ROLE.MAIN_NOTE]), BOBJECT_TYPES.OPPORTUNITY, [OPPORTUNITY_FIELDS_LOGIC_ROLE.MAIN_NOTE]);
+var NoteDetail = function NoteDetail(_ref) {
+  var _relatedLead$id, _relatedCompany$id, _relatedOpportunity$i, _activity$id3;
+  var activity = _ref.activity,
+    dataModel = _ref.dataModel,
+    accountId = _ref.accountId,
+    _ref$visibleHeader = _ref.visibleHeader,
+    visibleHeader = _ref$visibleHeader === void 0 ? false : _ref$visibleHeader;
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  var noteTitle = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.TITLE);
+  var noteContent = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.NOTE);
+  var noteMainNoteValue = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.MAIN_NOTE);
+  var relatedCompany = getReferencedBobjectFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.COMPANY);
+  var relatedLead = getReferencedBobjectFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.LEAD);
+  var relatedOpportunity = getReferencedBobjectFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.OPPORTUNITY);
+  var relatedCompanyName = getTextFromLogicRole(relatedCompany, COMPANY_FIELDS_LOGIC_ROLE.NAME);
+  var relatedLeadName = getTextFromLogicRole(relatedLead, LEAD_FIELDS_LOGIC_ROLE.FULL_NAME);
+  var relatedOpportunityName = getTextFromLogicRole(relatedOpportunity, OPPORTUNITY_FIELDS_LOGIC_ROLE.NAME);
+  var defaultNewNoteValueTitle = [{
+    type: 'h2',
+    children: [{
+      text: "".concat(t('notes.newNote'), ": ")
+    }]
+  }];
+  var titlePlugins = useRichTextEditorPlugins({
+    singleLine: true
+  });
+  var plugins = useRichTextEditorPlugins({
+    images: false,
+    replaceParagraphs: true
+  });
+  var defaultValues = {
+    title: noteTitle && typeof noteTitle === 'string' ? deserialize(noteTitle, {
+      format: 'HTML',
+      plugins: titlePlugins
+    }) : defaultNewNoteValueTitle,
+    body: noteContent && typeof noteContent === 'string' ? deserialize(noteContent, {
+      format: 'HTML',
+      plugins: plugins
+    }) : null,
+    mainNote: noteMainNoteValue === 'Main note Yes'
+  };
+  var defaultRelated = relatedLead ? relatedLead === null || relatedLead === void 0 ? void 0 : (_relatedLead$id = relatedLead.id) === null || _relatedLead$id === void 0 ? void 0 : _relatedLead$id.value : relatedCompany ? relatedCompany === null || relatedCompany === void 0 ? void 0 : (_relatedCompany$id = relatedCompany.id) === null || _relatedCompany$id === void 0 ? void 0 : _relatedCompany$id.value : relatedOpportunity ? relatedOpportunity === null || relatedOpportunity === void 0 ? void 0 : (_relatedOpportunity$i = relatedOpportunity.id) === null || _relatedOpportunity$i === void 0 ? void 0 : _relatedOpportunity$i.value : null;
+  var defaultName = relatedLead ?
+  // @ts-ignore
+  (relatedLead === null || relatedLead === void 0 ? void 0 : relatedLead.fullName) || relatedLeadName || t('activityTimelineItem.item.untitledLead') : relatedCompany ?
+  // @ts-ignore
+  (relatedCompany === null || relatedCompany === void 0 ? void 0 : relatedCompany.name) || relatedCompanyName || t('activityTimelineItem.item.untitledCompany') : relatedOpportunity ?
+  // @ts-ignore
+  (relatedOpportunity === null || relatedOpportunity === void 0 ? void 0 : relatedOpportunity.name) || relatedOpportunityName || t('activityTimelineItem.item.untitledOpp') : null;
+  var _useForm = useForm(),
+    control = _useForm.control,
+    getValues = _useForm.getValues,
+    handleSubmit = _useForm.handleSubmit,
+    watch = _useForm.watch;
+  var _useState = useState(defaultName),
+    _useState2 = _slicedToArray$b(_useState, 2),
+    nameSelected = _useState2[0],
+    setNameSelected = _useState2[1];
+  var _useToasts = useToasts(),
+    createToast = _useToasts.createToast;
+  var _useState3 = useState(),
+    _useState4 = _slicedToArray$b(_useState3, 2),
+    isSubmitting = _useState4[0],
+    setIsSubmitting = _useState4[1];
+  var _useController = useController({
+      control: control,
+      name: ACTIVITY_FIELDS_LOGIC_ROLE.TITLE,
+      defaultValue: defaultValues.title
+    }),
+    _useController$field = _useController.field,
+    title = _useController$field.value,
+    titleOnChange = _useController$field.onChange;
+  var _useController2 = useController({
+      control: control,
+      name: ACTIVITY_FIELDS_LOGIC_ROLE.MAIN_NOTE,
+      defaultValue: defaultValues.mainNote
+    }),
+    _useController2$field = _useController2.field,
+    mainNote = _useController2$field.value,
+    mainNoteOnChange = _useController2$field.onChange;
+  var _useController3 = useController({
+      control: control,
+      name: ACTIVITY_FIELDS_LOGIC_ROLE.NOTE,
+      defaultValue: defaultValues.body
+    }),
+    _useController3$field = _useController3.field,
+    note = _useController3$field.value,
+    noteOnChange = _useController3$field.onChange;
+  var _useController4 = useController({
+      control: control,
+      name: 'related',
+      defaultValue: defaultRelated
+    }),
+    relatedOnChange = _useController4.field.onChange;
+  var noteValue = watch(ACTIVITY_FIELDS_LOGIC_ROLE.NOTE);
+  var isDirty = useMemo(function () {
+    return noteValue && (noteValue.length > 1 || !checkEmptyText(noteValue[0]));
+  }, [noteValue]);
+  var onSubmit = function onSubmit() {
+    var _activity$id;
+    setIsSubmitting(true);
+    var _getValues = getValues(),
+      related = _getValues.related,
+      rest = _objectWithoutProperties(_getValues, _excluded);
+    var isMainNote = rest[ACTIVITY_FIELDS_LOGIC_ROLE.MAIN_NOTE];
+    var dataToCreate = _defineProperty$9(_defineProperty$9(_defineProperty$9(_defineProperty$9({}, ACTIVITY_FIELDS_LOGIC_ROLE.TITLE, rest[ACTIVITY_FIELDS_LOGIC_ROLE.TITLE] ? serialize(rest[ACTIVITY_FIELDS_LOGIC_ROLE.TITLE], {
+      format: 'AST',
+      plugins: plugins
+    }) : null), ACTIVITY_FIELDS_LOGIC_ROLE.NOTE, rest[ACTIVITY_FIELDS_LOGIC_ROLE.NOTE] ? serialize(rest[ACTIVITY_FIELDS_LOGIC_ROLE.NOTE], {
+      format: 'AST',
+      plugins: plugins
+    }) : null), ACTIVITY_FIELDS_LOGIC_ROLE.TYPE, ACTIVITY_TYPES_VALUES_LOGIC_ROLE.NOTE), ACTIVITY_FIELDS_LOGIC_ROLE.MAIN_NOTE, isMainNote ? ACTIVITY_MAIN_NOTE_VALUES_LOGIC_ROLE.YES : ACTIVITY_MAIN_NOTE_VALUES_LOGIC_ROLE.NO);
+    var relatedBobjectType;
+    if (related) {
+      if (related !== null && related !== void 0 && related.includes('Lead')) {
+        relatedBobjectType = BOBJECT_TYPES.LEAD;
+        dataToCreate[ACTIVITY_FIELDS_LOGIC_ROLE.LEAD] = related;
+        dataToCreate[ACTIVITY_FIELDS_LOGIC_ROLE.COMPANY] = null;
+        dataToCreate[ACTIVITY_FIELDS_LOGIC_ROLE.OPPORTUNITY] = null;
+      } else if (related !== null && related !== void 0 && related.includes('Company')) {
+        relatedBobjectType = BOBJECT_TYPES.COMPANY;
+        dataToCreate[ACTIVITY_FIELDS_LOGIC_ROLE.COMPANY] = related;
+        dataToCreate[ACTIVITY_FIELDS_LOGIC_ROLE.LEAD] = null;
+        dataToCreate[ACTIVITY_FIELDS_LOGIC_ROLE.OPPORTUNITY] = null;
+      } else if (related !== null && related !== void 0 && related.includes('Opportunity')) {
+        relatedBobjectType = BOBJECT_TYPES.OPPORTUNITY;
+        dataToCreate[ACTIVITY_FIELDS_LOGIC_ROLE.OPPORTUNITY] = related;
+        dataToCreate[ACTIVITY_FIELDS_LOGIC_ROLE.COMPANY] = null;
+        dataToCreate[ACTIVITY_FIELDS_LOGIC_ROLE.LEAD] = null;
+      }
+    }
+    api.patch("/bobjects/".concat(activity === null || activity === void 0 ? void 0 : (_activity$id = activity.id) === null || _activity$id === void 0 ? void 0 : _activity$id.value, "/raw"), {
+      contents: _objectSpread$4({}, dataToCreate),
+      params: {}
+    }).then(function () {
+      setIsSubmitting(false);
+      createToast({
+        message: 'Note updated successfully',
+        type: 'success'
+      });
+      if (isMainNote && related && relatedBobjectType) {
+        var _activity$id2;
+        api.patch("/bobjects/".concat(related, "/raw"), {
+          contents: _defineProperty$9({}, mainNoteField[relatedBobjectType], [activity === null || activity === void 0 ? void 0 : (_activity$id2 = activity.id) === null || _activity$id2 === void 0 ? void 0 : _activity$id2.value])
+        });
+      } else if (!isMainNote && related && relatedBobjectType) {
+        api.patch("/bobjects/".concat(related, "/raw"), {
+          contents: _defineProperty$9({}, mainNoteField[relatedBobjectType], null)
+        });
+      }
+    })["catch"](function () {
+      setIsSubmitting(false);
+    });
+  };
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$8.container,
+    children: [visibleHeader && /*#__PURE__*/jsx(ActivityTimelineItem, {
+      activity: activity,
+      startDisplayDivider: false,
+      endDisplayDivider: false,
+      activeHover: false,
+      extended: true,
+      dataModel: dataModel
+    }), /*#__PURE__*/jsxs("div", {
+      className: styles$8.detail_content_container,
+      children: [/*#__PURE__*/jsxs("div", {
+        className: styles$8.editor,
+        children: [/*#__PURE__*/jsx(RichTextEditor, {
+          id: 'note-detail-title',
+          defaultValue: title,
+          placeholder: t('activityTimelineItem.item.newNote') + ': ',
+          plugins: titlePlugins,
+          onChange: titleOnChange,
+          style: {
+            padding: '0px 24px 4px 24px'
+          }
+        }), /*#__PURE__*/jsx("span", {
+          className: styles$8.divider
+        }), /*#__PURE__*/jsx(RichTextEditor, {
+          id: 'note-detail-body',
+          defaultValue: note,
+          plugins: plugins,
+          placeholder: t('activityTimelineItem.item.startNewNote'),
+          onChange: noteOnChange,
+          style: {
+            padding: '12px 28px 4px 28px'
+          },
+          children: function children(editor) {
+            return /*#__PURE__*/jsxs(Fragment, {
+              children: [/*#__PURE__*/jsx("div", {
+                className: styles$8.body_wrapper,
+                children: editor
+              }), /*#__PURE__*/jsx("div", {
+                className: styles$8.toolbar,
+                children: /*#__PURE__*/jsxs(EditorToolbar, {
+                  backgroundColor: "var(--peanut) !important",
+                  children: [/*#__PURE__*/jsx(EditorToolbarControlsSection, {
+                    color: "peanut"
+                  }), /*#__PURE__*/jsx(EditorToolbarFontStylesSection, {
+                    color: "peanut"
+                  }), /*#__PURE__*/jsx(EditorToolbarTextMarksSection, {
+                    color: "peanut"
+                  }), /*#__PURE__*/jsx(EditorToolbarListsSection, {
+                    color: "peanut"
+                  })]
+                })
+              })]
+            });
+          }
+        })]
+      }), /*#__PURE__*/jsx("div", {
+        children: /*#__PURE__*/jsxs("div", {
+          className: styles$8.bottom_bar,
+          children: [/*#__PURE__*/jsx("span", {
+            className: styles$8.record_related,
+            children: /*#__PURE__*/jsx("div", {
+              className: styles$8.bobject_selector,
+              children: /*#__PURE__*/jsx(BobjectSelector, {
+                accountId: accountId,
+                selected: nameSelected,
+                id: activity === null || activity === void 0 ? void 0 : (_activity$id3 = activity.id) === null || _activity$id3 === void 0 ? void 0 : _activity$id3.value,
+                onBobjectChange: function onBobjectChange(bobject) {
+                  var _bobject$rawBobject;
+                  relatedOnChange(bobject === null || bobject === void 0 ? void 0 : (_bobject$rawBobject = bobject.rawBobject) === null || _bobject$rawBobject === void 0 ? void 0 : _bobject$rawBobject.id);
+                  if ((bobject === null || bobject === void 0 ? void 0 : bobject.bobjectType) === BobjectTypes.Company) {
+                    setNameSelected((bobject === null || bobject === void 0 ? void 0 : bobject.companyName) ||
+                    //@ts-ignore
+                    getTextFromLogicRole(bobject, COMPANY_FIELDS_LOGIC_ROLE.NAME));
+                  } else if ((bobject === null || bobject === void 0 ? void 0 : bobject.bobjectType) === BobjectTypes.Lead) {
+                    setNameSelected((bobject === null || bobject === void 0 ? void 0 : bobject.fullName) ||
+                    //@ts-ignore
+                    getTextFromLogicRole(bobject, LEAD_FIELDS_LOGIC_ROLE.FULL_NAME));
+                  } else if ((bobject === null || bobject === void 0 ? void 0 : bobject.bobjectType) === BobjectTypes.Opportunity) {
+                    setNameSelected((bobject === null || bobject === void 0 ? void 0 : bobject.name) ||
+                    //@ts-ignore
+                    getTextFromLogicRole(bobject, OPPORTUNITY_FIELDS_LOGIC_ROLE.NAME));
+                  }
+                }
+              })
+            })
+          }), /*#__PURE__*/jsxs("span", {
+            children: [/*#__PURE__*/jsx(IconButton, {
+              name: mainNote ? 'starChecked' : 'starUnchecked',
+              onClick: function onClick() {
+                mainNoteOnChange(!mainNote);
+              },
+              color: "bloobirds",
+              size: 24,
+              className: styles$8.mainNote
+            }), /*#__PURE__*/jsx(Button, {
+              size: "small",
+              onClick: function onClick() {
+                handleSubmit(onSubmit)();
+              },
+              disabled: !isDirty || isSubmitting,
+              children: isSubmitting ? /*#__PURE__*/jsx(Spinner, {
+                name: "loadingCircle",
+                size: 12
+              }) : t('common.save')
+            })]
+          })]
+        })
+      })]
+    })]
+  });
+};
+
+var css_248z$7 = ".AutoresizingTextArea-module_box__bPvFE {\n  border-radius: 4px;\n  background: var(--white, #FFF);\n  padding: var(--Spacing-02, 8px);\n  border: none;\n  color: var(--peanut);\n  font-size: 16px;\n  font-style: normal;\n  font-weight: 400;\n  line-height: 24px;\n  box-shadow: none !important;\n  outline: none !important;\n  box-sizing: border-box;\n}\n\n.AutoresizingTextArea-module_empty__8Sq7v {\n  color: var(--softPeanut);\n}\n\n.AutoresizingTextArea-module_disabled__uCxhM {\n  background: var(--superVeryLightBloobirds, #F6FAFD);\n  color: var(--softPeanut);\n  cursor: unset;\n}\n";
+var styles$7 = {"box":"AutoresizingTextArea-module_box__bPvFE","empty":"AutoresizingTextArea-module_empty__8Sq7v","disabled":"AutoresizingTextArea-module_disabled__uCxhM"};
+styleInject(css_248z$7);
+
+function _typeof$9(obj) { "@babel/helpers - typeof"; return _typeof$9 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$9(obj); }
+function _defineProperty$8(obj, key, value) { key = _toPropertyKey$8(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$8(arg) { var key = _toPrimitive$8(arg, "string"); return _typeof$9(key) === "symbol" ? key : String(key); }
+function _toPrimitive$8(input, hint) { if (_typeof$9(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$9(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$a(arr, i) { return _arrayWithHoles$a(arr) || _iterableToArrayLimit$a(arr, i) || _unsupportedIterableToArray$a(arr, i) || _nonIterableRest$a(); }
+function _nonIterableRest$a() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$a(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$a(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$a(o, minLen); }
+function _arrayLikeToArray$a(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$a(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$a(arr) { if (Array.isArray(arr)) return arr; }
+var AutoResizingTextarea = function AutoResizingTextarea(_ref) {
+  var hasPermissionToSend = _ref.hasPermissionToSend,
+    isSending = _ref.isSending,
+    _ref$placeholder = _ref.placeholder,
+    placeholder = _ref$placeholder === void 0 ? 'Write a message...' : _ref$placeholder,
+    _ref$defaultMessage = _ref.defaultMessage,
+    defaultMessage = _ref$defaultMessage === void 0 ? '' : _ref$defaultMessage,
+    setMessage = _ref.setMessage,
+    resetMessageCounter = _ref.resetMessageCounter;
+  var textAreaRef = useRef(null);
+  var _useState = useState(function () {
+      return defaultMessage;
+    }),
+    _useState2 = _slicedToArray$a(_useState, 2),
+    innerDefaultMessage = _useState2[0],
+    setInnerDefaultMessage = _useState2[1];
+  var _useState3 = useState(function () {
+      return defaultMessage;
+    }),
+    _useState4 = _slicedToArray$a(_useState3, 2),
+    innerMessage = _useState4[0],
+    setInnerMessage = _useState4[1];
+  var _useState5 = useState(0),
+    _useState6 = _slicedToArray$a(_useState5, 2),
+    counter = _useState6[0],
+    setCounter = _useState6[1];
+  var adjustHeight = function adjustHeight() {
+    var target = textAreaRef.current;
+    if (target) {
+      // Reset the height to ensure scrollHeight reflects the current text content accurately
+      target.style.height = 'auto';
+
+      // Calculate max height (assuming lineHeight of 20px for each row)
+      var maxHeight = 24 * 5; // This could be adjusted based on your CSS or a more precise calculation
+
+      // Update the textarea's height: either to its scrollHeight if less than maxHeight, or to maxHeight
+      target.style.height = "".concat(Math.min(target.scrollHeight, maxHeight), "px");
+
+      // Enable or disable scrolling based on content height
+      target.style.overflowY = target.scrollHeight > maxHeight ? 'scroll' : 'hidden';
+    }
+  };
+  var handleChange = function handleChange(event) {
+    adjustHeight();
+    setMessage(event.target.value);
+    setInnerMessage(event.target.value);
+  };
+  useEffect(function () {
+    if (defaultMessage !== innerDefaultMessage) {
+      setInnerDefaultMessage(defaultMessage);
+      setMessage(defaultMessage);
+      setInnerMessage(defaultMessage);
+      if (textAreaRef.current) {
+        textAreaRef.current.value = defaultMessage;
+      }
+      adjustHeight();
+      setCounter(function (c) {
+        return c + 1;
+      });
+    }
+  }, [defaultMessage]);
+  useEffect(function () {
+    if (resetMessageCounter > 0 && innerMessage) {
+      setInnerMessage('');
+    }
+  }, [resetMessageCounter]);
+  useEffect(function () {
+    if (counter > 1) {
+      adjustHeight();
+      if (textAreaRef.current) {
+        var textArea = textAreaRef.current;
+        textArea.focus();
+        textArea.setSelectionRange(textArea.value.length, textArea.value.length);
+      }
+    }
+  }, [counter]);
+  var classes = clsx(styles$7.box, _defineProperty$8(_defineProperty$8({}, styles$7.disabled, !hasPermissionToSend || isSending), styles$7.empty, !innerMessage || innerMessage === ''));
+  return /*#__PURE__*/jsx("textarea", {
+    className: classes,
+    ref: textAreaRef,
+    value: innerMessage,
+    onChange: handleChange,
+    disabled: !hasPermissionToSend || isSending,
+    placeholder: placeholder,
+    style: {
+      width: '100%',
+      overflowY: 'hidden',
+      // Initially hide scrollbar until needed
+      resize: 'none'
+    }
+  });
+};
+
+var css_248z$6 = ".whatsappDetail-module_container__-n4Qq {\n  display: flex;\n  position: relative;\n  flex-direction: column;\n  height: 100%;\n  justify-content: space-between;\n  box-sizing: border-box;\n}\n\n.whatsappDetail-module_activity_container__VH8T3 {\n  margin-top: 2px;\n  height: 93%;\n  overflow: auto;\n  box-sizing: border-box;\n  display: flex;\n  flex-direction: column;\n  flex: 1;\n}\n\n.whatsappDetail-module__messages_wrapper__pY7FL {\n  min-height: 0;\n  height: calc(100% - 46px);\n  overflow-y: overlay;\n  display: flex;\n  flex-direction: column-reverse;\n  justify-content: flex-end;\n  background-color: #ECF3E5;\n  width: 100%;\n  padding-top: 4px;\n  padding-bottom: 4px;\n}\n\n.whatsappDetail-module_templateSelectorContainer__1qQYi {\n  background-color: var(--veryLightBloobirds);\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  border-radius: 4px;\n  padding-left: 1px;\n  height: 24px;\n  width: 35px;\n  cursor: pointer;\n}\n\n.whatsappDetail-module_templateSelectorContainer__1qQYi > div:first-child {\n  margin-left: -2px;\n  margin-right: -8px;\n}\n\n.whatsappDetail-module_templateSelectorDropdown__Wl8SU {\n  display: flex;\n}\n\n.whatsappDetail-module_templatesContainer__Y9EKV {\n  margin: 8px 4px 8px 16px;\n}\n\n.whatsappDetail-module_titleSectionContainer__dEsvL {\n  display: flex;\n  align-items: center;\n}\n\n.whatsappDetail-module_titleSectionContainer__dEsvL:last-child {\n  margin-left: 4px;\n}\n\n.whatsappDetail-module_input__tFNkg {\n  margin: 8px 16px 20px 16px;\n  padding: 8px;\n}\n\n.whatsappDetail-module_noResultFound__JHCjZ {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  margin: 8px 16px 20px 16px;\n}\n\n.whatsappDetail-module_noResultFound__JHCjZ > * {\n  margin-right: 4px;\n}\n\n.whatsappDetail-module_resyncButtonContainer__3aKwj {\n  display: flex;\n  align-content: center;\n  justify-content: flex-end;\n  padding: 8px;\n}\n\n.whatsappDetail-module_resyncButton__9KjZr {\n  display: flex;\n  flex-direction: row;\n  align-items: center;\n  justify-content: center;\n  padding: 2px 8px 2px 4px;\n  gap: 4px;\n\n  width: 80px;\n  height: 24px;\n\n  background: #cde2f6;\n  border-radius: 4px;\n\n  cursor: pointer;\n}\n\n.whatsappDetail-module_whatsAppContainer__E5XLl {\n  display: flex;\n  flex-direction: row;\n  align-items: center;\n  justify-content: center;\n\n  width: 24px;\n  height: 24px;\n\n  cursor: pointer;\n}\n\n.whatsappDetail-module_wsRunAnimation__QrLN0 > div {\n  position: relative;\n  animation: whatsappDetail-module_jiggle__9y-4t 30s ease-in-out infinite;\n}\n\n/* Definición de la animación */\n@keyframes whatsappDetail-module_jiggle__9y-4t {\n  0% {\n    transform: rotate(-15deg);\n  }\n  1% {\n    transform: rotate(15deg);\n  }\n  2% {\n    transform: rotate(-15deg);\n  }\n  3% {\n    transform: rotate(15deg);\n  }\n  4% {\n    transform: rotate(-15deg);\n  }\n  5% {\n    transform: rotate(15deg);\n  }\n  6% {\n    transform: rotate(-15deg);\n  }\n  7% {\n    transform: rotate(15deg);\n  }\n  8% {\n    transform: rotate(-15deg);\n  }\n  9% {\n    transform: rotate(15deg);\n  }\n  10% {\n    transform: rotate(0);\n  }\n}\n\n.whatsappDetail-module_whatsAppContainerDisabled__1pQv- {\n  opacity: 0.5;\n}\n\n.whatsappDetail-module_badge__GWKJq {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n\n  width: 14px;\n  height: 14px;\n\n  background: #ff0000;\n  border-radius: 50%;\n  color: white;\n  font-size: 9px;\n  font-weight: bold;\n\n  position: absolute;\n  top: -4px;\n  right: -4px;\n}\n\n.whatsappDetail-module__messages_wrapper__pY7FL > div {\n  height: 100%;\n  display: flex;\n  flex-direction: column-reverse;\n}\n\n.whatsappDetail-module__messages_wrapper__pY7FL > div > div {\n  overflow-y: overlay;\n  overflow-x: unset;\n}\n\n.whatsappDetail-module__reported_separator__9ErYH {\n  background-color: rgba(255, 255, 255, 0.4);\n  padding: 12px;\n  margin-bottom: 10px;\n}\n\n.whatsappDetail-module__date_separator__ZoQVM {\n  padding: 12px;\n}\n\n.whatsappDetail-module__message__SrToo {\n  display: flex;\n  align-items: center;\n  box-sizing: border-box;\n  margin-bottom: 5px;\n  padding: 0 15px;\n}\n.whatsappDetail-module__message_text__AGnAl{\n  word-wrap: break-word;\n}\n\n.whatsappDetail-module__last_message__KsWWw {\n  margin-bottom: 16px;\n}\n\n\n.whatsappDetail-module__message__SrToo > div {\n  position: relative;\n  box-sizing: border-box;\n  max-width: 70%;\n  padding: 8px;\n  border-radius: 4px;\n}\n\n.whatsappDetail-module__message_body__vNkGi {\n  padding-bottom: 18px !important;\n}\n\n.whatsappDetail-module__message_body__vNkGi > p:not(:last-child) {\n    margin-bottom: 4px;\n}\n\n.whatsappDetail-module__message_outgoing__c48wk {\n  justify-content: flex-end;\n}\n\n.whatsappDetail-module__message_outgoing__c48wk > div {\n  background-color: #D9F0C0;\n}\n\n.whatsappDetail-module__message_incoming__wSahg > div {\n  background-color: var(--white);\n}\n\n.whatsappDetail-module__svg_wrapper__OQrqm span {\n  width: 20px;\n  height: 20px;\n}\n\n.whatsappDetail-module__svg_incoming__Jcgoo {\n  transform: translate(45%, -35%);\n  position: absolute;\n  top: 0;\n  right: 0;\n}\n\n.whatsappDetail-module__svg_outgoing__yZY7p {\n  transform: translate(-45%, -35%);\n  position: absolute;\n  top: 0;\n  left: 0;\n}\n\n.whatsappDetail-module_loading__T6S3W {\n  margin: auto;\n  width: 100%;\n  min-height: 30px;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n}\n\n.whatsappDetail-module__conversation_wrapper__ypj2D {\n  display: flex;\n  flex-direction: column-reverse;\n}\n\n.whatsappDetail-module__message_date__54D04 {\n  position: absolute;\n  right: 4px;\n  font-size: 9px;\n  bottom: 4px;\n  color: var(--softPeanut);\n}\n\n.whatsappDetail-module__date_wrapper__Qw-em {\n  width: 100%;\n  display: flex;\n  justify-content: center;\n  align-content: center;\n  margin-bottom: 8px;\n}\n\n.whatsappDetail-module__date_wrapper__Qw-em > p {\n  text-align: center;\n  text-shadow: 0 1px 0 #fff, .4);\n  background-color: #fff;\n  border-radius: 12px;\n  font-size: 12px;\n  padding: 0 8px;\n}\n\n.whatsappDetail-module_label__cQt5s {\n  position: relative;\n  cursor: pointer;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  margin: 0;\n}\n\n.whatsappDetail-module_input__tFNkg {\n  position: absolute;\n  left: 0;\n  top: 0;\n  width: 100%;\n  height: 100%;\n  visibility: hidden;\n}\n\n.whatsappDetail-module__media_wrapper__fMweU {\n  display: flex;\n  padding: var(--Spacing-02, 8px) var(--Spacing-03, 16px);\n  justify-content: space-between;\n  align-items: center;\n  align-self: stretch;\n\n  border-radius: 4px;\n  background: rgba(0, 0, 0, 0.10);\n}\n\n.whatsappDetail-module__audio_player__UkTaf {\n  display: flex;\n  align-items: center;\n  gap: 15px;\n  position: relative;\n}\n\n.whatsappDetail-module_loader__bWnhM {\n  position: absolute;\n  left: 50%;\n}\n\n.whatsappDetail-module__media_title__LEtmG {\n  display: flex;\n  align-items: center;\n  gap: 15px;\n}\n\n.whatsappDetail-module__media_title__LEtmG > svg {\n  flex-shrink: 0;\n}\n\n.whatsappDetail-module__media_text__OXfjB {\n  display: flex;\n  flex-direction: column;\n  align-items: flex-start;\n}\n\n.whatsappDetail-module__media_text__OXfjB > p {\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  max-width: 125px;\n}\n\n.whatsappDetail-module__waveform__n5A5W {\n  width: 240px;\n  height: 42px;\n}\n\n.whatsappDetail-module_chatBox__mVh-t {\n  display: flex;\n  align-items: flex-end;\n  gap: 12px;\n  align-self: stretch;\n  padding: 8px;\n  width: 100%;\n}\n\n.whatsappDetail-module__media_image__I3Xk0 {\n  max-width: 100%;\n  height: auto; /* Ensures the height adjusts based on the width while maintaining aspect ratio */\n  border-radius: 4px;\n}\n\n.whatsappDetail-module_dropzone__Hwgcc {\n  display: none;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  border: 2px dashed var(--melon, #63BA00);\n  background: rgba(217, 240, 192, 0.50);\n  color: var(--melon,  #63BA00);\n  text-align: center;\n  font-size: 20px;\n  font-style: normal;\n  font-weight: 700;\n  line-height: 32px; /* 160% */\n  z-index: 1000;\n  padding: 24px;\n  box-sizing: border-box;\n  border-radius: 0 0 0 10px;\n}\n\n.whatsappDetail-module_dropzoneActive__T5I5u {\n  display: flex;\n}\n\n.whatsappDetail-module_display_transcription__5-KQA {\n  cursor: pointer;\n  display: flex;\n  align-items: center;\n  margin-top: 8px;\n}\n\n.whatsappDetail-module_transcription_box__Wdn-4 {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n\n.whatsappDetail-module_transcription_box__Wdn-4 > .whatsappDetail-module_display_transcription__5-KQA {\n  cursor: unset;\n}\n\n.whatsappDetail-module_case_id_wrapper__0yqeI {\n  width: 100%;\n  display: flex;\n  justify-content: center;\n  align-content: center;\n  margin: 12px 0;\n  gap: 4px;\n}\n\n.whatsappDetail-module_case_id_wrapper__0yqeI > div {\n  display: flex;\n  align-items: center;\n  gap: 4px;\n}\n";
+var styles$6 = {"container":"whatsappDetail-module_container__-n4Qq","activity_container":"whatsappDetail-module_activity_container__VH8T3","_messages_wrapper":"whatsappDetail-module__messages_wrapper__pY7FL","templateSelectorContainer":"whatsappDetail-module_templateSelectorContainer__1qQYi","templateSelectorDropdown":"whatsappDetail-module_templateSelectorDropdown__Wl8SU","templatesContainer":"whatsappDetail-module_templatesContainer__Y9EKV","titleSectionContainer":"whatsappDetail-module_titleSectionContainer__dEsvL","input":"whatsappDetail-module_input__tFNkg","noResultFound":"whatsappDetail-module_noResultFound__JHCjZ","resyncButtonContainer":"whatsappDetail-module_resyncButtonContainer__3aKwj","resyncButton":"whatsappDetail-module_resyncButton__9KjZr","whatsAppContainer":"whatsappDetail-module_whatsAppContainer__E5XLl","wsRunAnimation":"whatsappDetail-module_wsRunAnimation__QrLN0","jiggle":"whatsappDetail-module_jiggle__9y-4t","whatsAppContainerDisabled":"whatsappDetail-module_whatsAppContainerDisabled__1pQv-","badge":"whatsappDetail-module_badge__GWKJq","_reported_separator":"whatsappDetail-module__reported_separator__9ErYH","_date_separator":"whatsappDetail-module__date_separator__ZoQVM","_message":"whatsappDetail-module__message__SrToo","_message_text":"whatsappDetail-module__message_text__AGnAl","_last_message":"whatsappDetail-module__last_message__KsWWw","_message_body":"whatsappDetail-module__message_body__vNkGi","_message_outgoing":"whatsappDetail-module__message_outgoing__c48wk","_message_incoming":"whatsappDetail-module__message_incoming__wSahg","_svg_wrapper":"whatsappDetail-module__svg_wrapper__OQrqm","_svg_incoming":"whatsappDetail-module__svg_incoming__Jcgoo","_svg_outgoing":"whatsappDetail-module__svg_outgoing__yZY7p","loading":"whatsappDetail-module_loading__T6S3W","_conversation_wrapper":"whatsappDetail-module__conversation_wrapper__ypj2D","_message_date":"whatsappDetail-module__message_date__54D04","_date_wrapper":"whatsappDetail-module__date_wrapper__Qw-em","label":"whatsappDetail-module_label__cQt5s","_media_wrapper":"whatsappDetail-module__media_wrapper__fMweU","_audio_player":"whatsappDetail-module__audio_player__UkTaf","loader":"whatsappDetail-module_loader__bWnhM","_media_title":"whatsappDetail-module__media_title__LEtmG","_media_text":"whatsappDetail-module__media_text__OXfjB","_waveform":"whatsappDetail-module__waveform__n5A5W","chatBox":"whatsappDetail-module_chatBox__mVh-t","_media_image":"whatsappDetail-module__media_image__I3Xk0","dropzone":"whatsappDetail-module_dropzone__Hwgcc","dropzoneActive":"whatsappDetail-module_dropzoneActive__T5I5u","display_transcription":"whatsappDetail-module_display_transcription__5-KQA","transcription_box":"whatsappDetail-module_transcription_box__Wdn-4","case_id_wrapper":"whatsappDetail-module_case_id_wrapper__0yqeI"};
+styleInject(css_248z$6);
+
+function _typeof$8(obj) { "@babel/helpers - typeof"; return _typeof$8 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$8(obj); }
+function _regeneratorRuntime$2() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime$2 = function _regeneratorRuntime() { return exports; }; var exports = {}, Op = Object.prototype, hasOwn = Op.hasOwnProperty, defineProperty = Object.defineProperty || function (obj, key, desc) { obj[key] = desc.value; }, $Symbol = "function" == typeof Symbol ? Symbol : {}, iteratorSymbol = $Symbol.iterator || "@@iterator", asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator", toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag"; function define(obj, key, value) { return Object.defineProperty(obj, key, { value: value, enumerable: !0, configurable: !0, writable: !0 }), obj[key]; } try { define({}, ""); } catch (err) { define = function define(obj, key, value) { return obj[key] = value; }; } function wrap(innerFn, outerFn, self, tryLocsList) { var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator, generator = Object.create(protoGenerator.prototype), context = new Context(tryLocsList || []); return defineProperty(generator, "_invoke", { value: makeInvokeMethod(innerFn, self, context) }), generator; } function tryCatch(fn, obj, arg) { try { return { type: "normal", arg: fn.call(obj, arg) }; } catch (err) { return { type: "throw", arg: err }; } } exports.wrap = wrap; var ContinueSentinel = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var IteratorPrototype = {}; define(IteratorPrototype, iteratorSymbol, function () { return this; }); var getProto = Object.getPrototypeOf, NativeIteratorPrototype = getProto && getProto(getProto(values([]))); NativeIteratorPrototype && NativeIteratorPrototype !== Op && hasOwn.call(NativeIteratorPrototype, iteratorSymbol) && (IteratorPrototype = NativeIteratorPrototype); var Gp = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(IteratorPrototype); function defineIteratorMethods(prototype) { ["next", "throw", "return"].forEach(function (method) { define(prototype, method, function (arg) { return this._invoke(method, arg); }); }); } function AsyncIterator(generator, PromiseImpl) { function invoke(method, arg, resolve, reject) { var record = tryCatch(generator[method], generator, arg); if ("throw" !== record.type) { var result = record.arg, value = result.value; return value && "object" == _typeof$8(value) && hasOwn.call(value, "__await") ? PromiseImpl.resolve(value.__await).then(function (value) { invoke("next", value, resolve, reject); }, function (err) { invoke("throw", err, resolve, reject); }) : PromiseImpl.resolve(value).then(function (unwrapped) { result.value = unwrapped, resolve(result); }, function (error) { return invoke("throw", error, resolve, reject); }); } reject(record.arg); } var previousPromise; defineProperty(this, "_invoke", { value: function value(method, arg) { function callInvokeWithMethodAndArg() { return new PromiseImpl(function (resolve, reject) { invoke(method, arg, resolve, reject); }); } return previousPromise = previousPromise ? previousPromise.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(innerFn, self, context) { var state = "suspendedStart"; return function (method, arg) { if ("executing" === state) throw new Error("Generator is already running"); if ("completed" === state) { if ("throw" === method) throw arg; return doneResult(); } for (context.method = method, context.arg = arg;;) { var delegate = context.delegate; if (delegate) { var delegateResult = maybeInvokeDelegate(delegate, context); if (delegateResult) { if (delegateResult === ContinueSentinel) continue; return delegateResult; } } if ("next" === context.method) context.sent = context._sent = context.arg;else if ("throw" === context.method) { if ("suspendedStart" === state) throw state = "completed", context.arg; context.dispatchException(context.arg); } else "return" === context.method && context.abrupt("return", context.arg); state = "executing"; var record = tryCatch(innerFn, self, context); if ("normal" === record.type) { if (state = context.done ? "completed" : "suspendedYield", record.arg === ContinueSentinel) continue; return { value: record.arg, done: context.done }; } "throw" === record.type && (state = "completed", context.method = "throw", context.arg = record.arg); } }; } function maybeInvokeDelegate(delegate, context) { var methodName = context.method, method = delegate.iterator[methodName]; if (undefined === method) return context.delegate = null, "throw" === methodName && delegate.iterator["return"] && (context.method = "return", context.arg = undefined, maybeInvokeDelegate(delegate, context), "throw" === context.method) || "return" !== methodName && (context.method = "throw", context.arg = new TypeError("The iterator does not provide a '" + methodName + "' method")), ContinueSentinel; var record = tryCatch(method, delegate.iterator, context.arg); if ("throw" === record.type) return context.method = "throw", context.arg = record.arg, context.delegate = null, ContinueSentinel; var info = record.arg; return info ? info.done ? (context[delegate.resultName] = info.value, context.next = delegate.nextLoc, "return" !== context.method && (context.method = "next", context.arg = undefined), context.delegate = null, ContinueSentinel) : info : (context.method = "throw", context.arg = new TypeError("iterator result is not an object"), context.delegate = null, ContinueSentinel); } function pushTryEntry(locs) { var entry = { tryLoc: locs[0] }; 1 in locs && (entry.catchLoc = locs[1]), 2 in locs && (entry.finallyLoc = locs[2], entry.afterLoc = locs[3]), this.tryEntries.push(entry); } function resetTryEntry(entry) { var record = entry.completion || {}; record.type = "normal", delete record.arg, entry.completion = record; } function Context(tryLocsList) { this.tryEntries = [{ tryLoc: "root" }], tryLocsList.forEach(pushTryEntry, this), this.reset(!0); } function values(iterable) { if (iterable) { var iteratorMethod = iterable[iteratorSymbol]; if (iteratorMethod) return iteratorMethod.call(iterable); if ("function" == typeof iterable.next) return iterable; if (!isNaN(iterable.length)) { var i = -1, next = function next() { for (; ++i < iterable.length;) if (hasOwn.call(iterable, i)) return next.value = iterable[i], next.done = !1, next; return next.value = undefined, next.done = !0, next; }; return next.next = next; } } return { next: doneResult }; } function doneResult() { return { value: undefined, done: !0 }; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, defineProperty(Gp, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), defineProperty(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, toStringTagSymbol, "GeneratorFunction"), exports.isGeneratorFunction = function (genFun) { var ctor = "function" == typeof genFun && genFun.constructor; return !!ctor && (ctor === GeneratorFunction || "GeneratorFunction" === (ctor.displayName || ctor.name)); }, exports.mark = function (genFun) { return Object.setPrototypeOf ? Object.setPrototypeOf(genFun, GeneratorFunctionPrototype) : (genFun.__proto__ = GeneratorFunctionPrototype, define(genFun, toStringTagSymbol, "GeneratorFunction")), genFun.prototype = Object.create(Gp), genFun; }, exports.awrap = function (arg) { return { __await: arg }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, asyncIteratorSymbol, function () { return this; }), exports.AsyncIterator = AsyncIterator, exports.async = function (innerFn, outerFn, self, tryLocsList, PromiseImpl) { void 0 === PromiseImpl && (PromiseImpl = Promise); var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList), PromiseImpl); return exports.isGeneratorFunction(outerFn) ? iter : iter.next().then(function (result) { return result.done ? result.value : iter.next(); }); }, defineIteratorMethods(Gp), define(Gp, toStringTagSymbol, "Generator"), define(Gp, iteratorSymbol, function () { return this; }), define(Gp, "toString", function () { return "[object Generator]"; }), exports.keys = function (val) { var object = Object(val), keys = []; for (var key in object) keys.push(key); return keys.reverse(), function next() { for (; keys.length;) { var key = keys.pop(); if (key in object) return next.value = key, next.done = !1, next; } return next.done = !0, next; }; }, exports.values = values, Context.prototype = { constructor: Context, reset: function reset(skipTempReset) { if (this.prev = 0, this.next = 0, this.sent = this._sent = undefined, this.done = !1, this.delegate = null, this.method = "next", this.arg = undefined, this.tryEntries.forEach(resetTryEntry), !skipTempReset) for (var name in this) "t" === name.charAt(0) && hasOwn.call(this, name) && !isNaN(+name.slice(1)) && (this[name] = undefined); }, stop: function stop() { this.done = !0; var rootRecord = this.tryEntries[0].completion; if ("throw" === rootRecord.type) throw rootRecord.arg; return this.rval; }, dispatchException: function dispatchException(exception) { if (this.done) throw exception; var context = this; function handle(loc, caught) { return record.type = "throw", record.arg = exception, context.next = loc, caught && (context.method = "next", context.arg = undefined), !!caught; } for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i], record = entry.completion; if ("root" === entry.tryLoc) return handle("end"); if (entry.tryLoc <= this.prev) { var hasCatch = hasOwn.call(entry, "catchLoc"), hasFinally = hasOwn.call(entry, "finallyLoc"); if (hasCatch && hasFinally) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } else if (hasCatch) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); } else { if (!hasFinally) throw new Error("try statement without catch or finally"); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } } } }, abrupt: function abrupt(type, arg) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc <= this.prev && hasOwn.call(entry, "finallyLoc") && this.prev < entry.finallyLoc) { var finallyEntry = entry; break; } } finallyEntry && ("break" === type || "continue" === type) && finallyEntry.tryLoc <= arg && arg <= finallyEntry.finallyLoc && (finallyEntry = null); var record = finallyEntry ? finallyEntry.completion : {}; return record.type = type, record.arg = arg, finallyEntry ? (this.method = "next", this.next = finallyEntry.finallyLoc, ContinueSentinel) : this.complete(record); }, complete: function complete(record, afterLoc) { if ("throw" === record.type) throw record.arg; return "break" === record.type || "continue" === record.type ? this.next = record.arg : "return" === record.type ? (this.rval = this.arg = record.arg, this.method = "return", this.next = "end") : "normal" === record.type && afterLoc && (this.next = afterLoc), ContinueSentinel; }, finish: function finish(finallyLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.finallyLoc === finallyLoc) return this.complete(entry.completion, entry.afterLoc), resetTryEntry(entry), ContinueSentinel; } }, "catch": function _catch(tryLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc === tryLoc) { var record = entry.completion; if ("throw" === record.type) { var thrown = record.arg; resetTryEntry(entry); } return thrown; } } throw new Error("illegal catch attempt"); }, delegateYield: function delegateYield(iterable, resultName, nextLoc) { return this.delegate = { iterator: values(iterable), resultName: resultName, nextLoc: nextLoc }, "next" === this.method && (this.arg = undefined), ContinueSentinel; } }, exports; }
+function ownKeys$3(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$3(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$3(Object(source), !0).forEach(function (key) { _defineProperty$7(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$3(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$7(obj, key, value) { key = _toPropertyKey$7(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$7(arg) { var key = _toPrimitive$7(arg, "string"); return _typeof$8(key) === "symbol" ? key : String(key); }
+function _toPrimitive$7(input, hint) { if (_typeof$8(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$8(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function asyncGeneratorStep$2(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function _asyncToGenerator$2(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep$2(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep$2(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+function _slicedToArray$9(arr, i) { return _arrayWithHoles$9(arr) || _iterableToArrayLimit$9(arr, i) || _unsupportedIterableToArray$9(arr, i) || _nonIterableRest$9(); }
+function _nonIterableRest$9() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$9(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$9(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$9(o, minLen); }
+function _arrayLikeToArray$9(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$9(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$9(arr) { if (Array.isArray(arr)) return arr; }
+function getReadableMimeType(mimeType) {
+  switch (mimeType) {
+    case 'application/pdf':
+      return 'PDF';
+    case 'image/jpeg':
+    case 'image/png':
+    case 'image/gif':
+    case 'image/webp':
+    case 'image/svg+xml':
+      return 'Image';
+    case 'application/zip':
+    case 'application/x-rar-compressed':
+    case 'application/x-7z-compressed':
+      return 'Archive';
+    case 'text/plain':
+      return 'Text';
+    case 'text/html':
+      return 'HTML';
+    case 'application/json':
+      return 'JSON';
+    case 'application/javascript':
+      return 'JavaScript';
+    case 'application/xml':
+      return 'XML';
+    case 'video/mp4':
+    case 'video/mpeg':
+    case 'video/ogg':
+    case 'video/webm':
+      return 'Video';
+    case 'audio/mpeg':
+    case 'audio/ogg':
+    case 'audio/*':
+      return 'Audio';
+    default:
+      return 'File';
+  }
+}
+function getTotalMessagesCount(groupedByDay) {
+  return Object.values(groupedByDay).reduce(function (total, groupedMessages) {
+    var _groupedMessages$mess;
+    return total + (groupedMessages === null || groupedMessages === void 0 ? void 0 : (_groupedMessages$mess = groupedMessages.messages) === null || _groupedMessages$mess === void 0 ? void 0 : _groupedMessages$mess.length);
+  }, 0);
+}
+
+//Transform the isoDate string into a Date object and get the hours and minutes
+var getHoursAndMinutes = function getHoursAndMinutes(isoDate) {
+  var date = new Date(isoDate);
+  var hours = date.getHours();
+  var minutes = date.getMinutes();
+  // Pad the minutes with a 0 if it's less than 10
+  return "".concat(hours, ":").concat(minutes < 10 ? '0' : '').concat(minutes);
+};
+function AudioPlayer(_ref) {
+  var _transcription$transc;
+  var activityId = _ref.activityId,
+    hasTranscription = _ref.hasTranscription;
+  var waveRef = useRef();
+  var _useState = useState(false),
+    _useState2 = _slicedToArray$9(_useState, 2),
+    isPlaying = _useState2[0],
+    setIsPlaying = _useState2[1];
+  var _useState3 = useState(true),
+    _useState4 = _slicedToArray$9(_useState3, 2),
+    isLoading = _useState4[0],
+    setIsLoading = _useState4[1];
+  var _useState5 = useState(undefined),
+    _useState6 = _slicedToArray$9(_useState5, 2),
+    audio = _useState6[0],
+    setAudio = _useState6[1];
+  var _useState7 = useState(undefined),
+    _useState8 = _slicedToArray$9(_useState7, 2),
+    transcription = _useState8[0],
+    setTranscription = _useState8[1];
+  useEffect(function () {
+    var _waveRef$current2, _waveRef$current2$han, _waveRef$current4, _waveRef$current4$han;
+    if (waveRef.current) {
+      var _waveRef$current;
+      // @ts-ignore
+      waveRef === null || waveRef === void 0 ? void 0 : (_waveRef$current = waveRef.current) === null || _waveRef$current === void 0 ? void 0 : _waveRef$current.destroy();
+      setIsLoading(true);
+    }
+    waveRef.current = WaveSurfer.create({
+      container: '#waveform' + activityId,
+      waveColor: '#D4E0F1',
+      progressColor: '#94A5BA',
+      barGap: 3,
+      barWidth: 4,
+      barHeight: 3,
+      barRadius: 4,
+      cursorWidth: 2,
+      cursorColor: '#1991FF',
+      width: 184,
+      height: 42
+    });
+    // @ts-ignore
+    if (!((_waveRef$current2 = waveRef.current) !== null && _waveRef$current2 !== void 0 && (_waveRef$current2$han = _waveRef$current2.handlers) !== null && _waveRef$current2$han !== void 0 && _waveRef$current2$han.ready)) {
+      var _waveRef$current3;
+      // @ts-ignore
+      (_waveRef$current3 = waveRef.current) === null || _waveRef$current3 === void 0 ? void 0 : _waveRef$current3.on('ready', function () {
+        setIsLoading(false);
+      });
+    }
+    // @ts-ignore
+    if (!((_waveRef$current4 = waveRef.current) !== null && _waveRef$current4 !== void 0 && (_waveRef$current4$han = _waveRef$current4.handlers) !== null && _waveRef$current4$han !== void 0 && _waveRef$current4$han.error)) {
+      var _waveRef$current5;
+      // @ts-ignore
+      (_waveRef$current5 = waveRef.current) === null || _waveRef$current5 === void 0 ? void 0 : _waveRef$current5.on('error', function (e) {
+        console.warn(e);
+      });
+    }
+    return function () {
+      // @ts-ignore
+      waveRef.current.destroy();
+    };
+  }, []);
+  useEffect(function () {
+    if (activityId) {
+      api.get("/messaging/whatsapp/".concat(activityId, "/media"), {
+        responseType: 'blob'
+      }).then(function (res) {
+        return setAudio(res.data);
+      });
+    }
+  }, [activityId]);
+  useEffect(function () {
+    if (audio && (audio === null || audio === void 0 ? void 0 : audio.size) !== 0) {
+      var _waveRef$current6;
+      // @ts-ignore
+      (_waveRef$current6 = waveRef.current) === null || _waveRef$current6 === void 0 ? void 0 : _waveRef$current6.loadBlob(audio);
+    }
+  }, [audio]);
+  var buttonProps = isPlaying ? {
+    name: 'pause',
+    onClick: function onClick() {
+      var _waveRef$current7;
+      setIsPlaying(false);
+      // @ts-ignore
+      waveRef === null || waveRef === void 0 ? void 0 : (_waveRef$current7 = waveRef.current) === null || _waveRef$current7 === void 0 ? void 0 : _waveRef$current7.pause();
+    }
+  } : {
+    name: 'play',
+    onClick: function onClick() {
+      var _waveRef$current8;
+      setIsPlaying(true);
+      // @ts-ignore
+      waveRef === null || waveRef === void 0 ? void 0 : (_waveRef$current8 = waveRef.current) === null || _waveRef$current8 === void 0 ? void 0 : _waveRef$current8.play();
+    }
+  };
+  function getTranscription() {
+    return _getTranscription.apply(this, arguments);
+  }
+  function _getTranscription() {
+    _getTranscription = _asyncToGenerator$2( /*#__PURE__*/_regeneratorRuntime$2().mark(function _callee() {
+      var response;
+      return _regeneratorRuntime$2().wrap(function _callee$(_context) {
+        while (1) switch (_context.prev = _context.next) {
+          case 0:
+            _context.next = 2;
+            return api.get("/copilot/transcript/audioMessage/".concat(activityId));
+          case 2:
+            response = _context.sent;
+            setTranscription(response.data);
+            /*setTranscription({
+              pk: '01HSDW4DT76TVG65GRPSRV72F3',
+              accountId: '7VA3TbSzLkrOE3Ud',
+              transcript: [
+                {
+                  text:
+                    'Tú que eres el que más disfruta de los cacatones, esa es la casa de Toni cuando...',
+                  start: 0,
+                  speaker: 'Eudald Arranz',
+                  isLead: true,
+                  end: 0,
+                },
+              ],
+              activityId: 'HoJx2wDGcQ6VRVba',
+              status: 'GENERATED',
+              language: 'es',
+              error: null,
+              generation_started_at: '2024-03-20T12:07:30.656048',
+              generated_at: null,
+              activity_type: null,
+            });*/
+          case 4:
+          case "end":
+            return _context.stop();
+        }
+      }, _callee);
+    }));
+    return _getTranscription.apply(this, arguments);
+  }
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsxs("div", {
+      className: styles$6._audio_player,
+      children: [/*#__PURE__*/jsx(IconButton, _objectSpread$3(_objectSpread$3({}, buttonProps), {}, {
+        size: 36,
+        color: "softPeanut"
+      })), /*#__PURE__*/jsx("div", {
+        id: "waveform".concat(activityId),
+        className: styles$6._waveform
+      }), isLoading && /*#__PURE__*/jsx("div", {
+        className: styles$6.loader,
+        children: /*#__PURE__*/jsx(Spinner, {
+          name: "loadingCircle"
+        })
+      })]
+    }), hasTranscription && /*#__PURE__*/jsxs("div", {
+      className: styles$6._transcription_wrapper,
+      children: [!transcription && /*#__PURE__*/jsxs("div", {
+        className: styles$6.display_transcription,
+        onClick: getTranscription,
+        children: [/*#__PURE__*/jsx(Icon, {
+          name: "alignLeft",
+          size: 12,
+          color: "bloobirds"
+        }), /*#__PURE__*/jsx(Text, {
+          size: "xs",
+          color: "bloobirds",
+          children: "Get transcription"
+        })]
+      }), transcription && /*#__PURE__*/jsxs("div", {
+        className: styles$6.transcription_box,
+        children: [/*#__PURE__*/jsxs("div", {
+          className: styles$6.display_transcription,
+          children: [/*#__PURE__*/jsx(Icon, {
+            name: "alignLeft",
+            size: 12,
+            color: "softPeanut"
+          }), /*#__PURE__*/jsx(Text, {
+            size: "xs",
+            color: "bloobirds",
+            children: "Transcription"
+          })]
+        }), /*#__PURE__*/jsx(Text, {
+          size: "xs",
+          color: "peanut",
+          children: (transcription === null || transcription === void 0 ? void 0 : (_transcription$transc = transcription.transcript[0]) === null || _transcription$transc === void 0 ? void 0 : _transcription$transc.text) || 'Transcription not available'
+        })]
+      })]
+    })]
+  });
+}
+function WhatsappMessageMedia(_ref2) {
+  var activityId = _ref2.activityId,
+    media = _ref2.media,
+    onClick = _ref2.onClick,
+    hasTranscription = _ref2.hasTranscription;
+  var readableMimeType = getReadableMimeType(media.contentType);
+  var isAudio = readableMimeType === 'Audio';
+  var isImage = readableMimeType === 'Image';
+  if (isAudio) {
+    return /*#__PURE__*/jsx(AudioPlayer, {
+      activityId: activityId,
+      hasTranscription: hasTranscription
+    });
+  }
+  if (isImage) {
+    return /*#__PURE__*/jsx("div", {
+      children: /*#__PURE__*/jsx("img", {
+        src: media.url,
+        alt: "media",
+        className: styles$6._media_image
+      })
+    });
+  }
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$6._media_wrapper,
+    children: [/*#__PURE__*/jsxs("div", {
+      className: styles$6._media_title,
+      children: [/*#__PURE__*/jsx(Icon, {
+        name: "file",
+        size: 32,
+        color: "softPeanut"
+      }), /*#__PURE__*/jsxs("div", {
+        className: styles$6._media_text,
+        children: [/*#__PURE__*/jsx(Text, {
+          size: "s",
+          children: media.name
+        }), /*#__PURE__*/jsxs(Text, {
+          size: "xs",
+          color: "softPeanut",
+          children: [media.size ? "".concat(media.size, " - ") : '', " ", readableMimeType]
+        })]
+      })]
+    }), /*#__PURE__*/jsx(IconButton, {
+      name: "download",
+      size: 32,
+      color: "bloobirds",
+      onClick: onClick
+    })]
+  });
+}
+function WhatsappMessage(_ref3) {
+  var _message$media, _message$id;
+  var messagesPerDay = _ref3.messagesPerDay,
+    day = _ref3.day,
+    message = _ref3.message,
+    index = _ref3.index,
+    handleDownload = _ref3.handleDownload;
+  var previousMessage = messagesPerDay[day].messages[index - 1];
+  var previousIsDifferentDirection = previousMessage ? previousMessage.direction !== message.direction : false;
+  var media = (_message$media = message.media) === null || _message$media === void 0 ? void 0 : _message$media[0];
+  return /*#__PURE__*/jsx("div", {
+    children: /*#__PURE__*/jsx("div", {
+      className: clsx(styles$6._message, _defineProperty$7(_defineProperty$7(_defineProperty$7({}, styles$6._message_incoming, message.direction === 'INCOMING'), styles$6._message_outgoing, message.direction === 'OUTGOING'), styles$6._last_message, previousIsDifferentDirection || index === 0)),
+      children: /*#__PURE__*/jsxs("div", {
+        className: styles$6._message_body,
+        children: [/*#__PURE__*/jsx("div", {
+          className: clsx(styles$6._svg_wrapper, _defineProperty$7(_defineProperty$7({}, styles$6._svg_incoming, message.direction === 'INCOMING'), styles$6._svg_outgoing, message.direction === 'OUTGOING'))
+        }), !media && (message.body === 'undefined' || message.body === '' || !message.body) ? /*#__PURE__*/jsx(Text, {
+          size: "s",
+          className: styles$6._message_text,
+          color: 'softPeanut',
+          children: "Message could not be parsed into Bloobirds"
+        }) : /*#__PURE__*/jsx(Text, {
+          size: "s",
+          className: styles$6._message_text,
+          children: message.body
+        }), media && /*#__PURE__*/jsx(WhatsappMessageMedia, {
+          activityId: (_message$id = message.id) === null || _message$id === void 0 ? void 0 : _message$id.split('/')[2],
+          hasTranscription: message.hasTranscription,
+          media: media,
+          onClick: function onClick() {
+            return handleDownload(media);
+          }
+        }), /*#__PURE__*/jsx("span", {
+          className: styles$6._message_date,
+          children: getHoursAndMinutes(message.isoDate)
+        })]
+      })
+    })
+  }, message === null || message === void 0 ? void 0 : message.id);
+}
+var WhatsappDetailedActivity = function WhatsappDetailedActivity(_ref4) {
+  var _activity$id, _activity$id2;
+  var activity = _ref4.activity,
+    dataModel = _ref4.dataModel,
+    messagesPerDay = _ref4.messagesPerDay,
+    totalMatching = _ref4.totalMatching,
+    fetchNextPage = _ref4.fetchNextPage,
+    isLoading = _ref4.isLoading;
+  var ref = useRef();
+  var _useCustomTasks = useCustomTasks(),
+    customTasks = _useCustomTasks.customTasks;
+  var _useQuickLogActivity = useQuickLogActivity(),
+    openQuickLogModal = _useQuickLogActivity.openQuickLogModal;
+  var totalMessages = getTotalMessagesCount(messagesPerDay);
+  var _useActiveUserSetting = useActiveUserSettings(),
+    settings = _useActiveUserSetting.settings;
+  var hasNextPage = useMemo(function () {
+    return false;
+  }, [totalMessages, totalMatching]);
+  if (!messagesPerDay || isLoading) {
+    return /*#__PURE__*/jsx("div", {
+      className: styles$6.loading,
+      children: /*#__PURE__*/jsx(Spinner, {
+        name: "loadingCircle"
+      })
+    });
+  }
+  function handleDownload(media) {
+    window.open(media.url, '_blank');
+  }
+  var handleClickOnCase = function handleClickOnCase(caseId) {
+    var _settings$account;
+    window.open((settings === null || settings === void 0 ? void 0 : (_settings$account = settings.account) === null || _settings$account === void 0 ? void 0 : _settings$account.salesforceInstance) + '/' + caseId, '_blank');
+  };
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsx(ActivityTimelineItem, {
+      activity: activity,
+      startDisplayDivider: false,
+      endDisplayDivider: false,
+      extended: true,
+      alternativeDescription: true,
+      activeHover: false,
+      dataModel: dataModel,
+      customTasks: customTasks,
+      openQuickLogModal: openQuickLogModal
+    }, activity === null || activity === void 0 ? void 0 : (_activity$id = activity.id) === null || _activity$id === void 0 ? void 0 : _activity$id.value), /*#__PURE__*/jsx("div", {
+      className: styles$6._messages_wrapper,
+      id: "conversationContent",
+      ref: ref,
+      children: /*#__PURE__*/jsx(InfiniteScroll, {
+        dataLength: totalMessages,
+        hasMore: hasNextPage,
+        next: fetchNextPage,
+        inverse: true,
+        height: "100%",
+        scrollThreshold: 0.75,
+        scrollableTarget: "conversationContent",
+        loader: /*#__PURE__*/jsx("div", {
+          className: styles$6.loading,
+          children: /*#__PURE__*/jsx(Spinner, {
+            name: "dots"
+          })
+        }),
+        style: {
+          display: 'flex',
+          flexDirection: 'column-reverse'
+        },
+        children: /*#__PURE__*/jsx("div", {
+          className: styles$6._conversation_wrapper,
+          children: Object.keys(messagesPerDay).map(function (key, indexGroup) {
+            return /*#__PURE__*/jsxs(Fragment, {
+              children: [messagesPerDay[key].messages.map(function (data, index) {
+                var _data$id;
+                // If the message has case Id and the previous mage has not the same case id or is the first message, we show the case id
+                var nextMessage = index === messagesPerDay[key].messages.length - 1 && Object.keys(messagesPerDay)[indexGroup + 1] ? messagesPerDay[Object.keys(messagesPerDay)[indexGroup + 1]].messages[0] : messagesPerDay[key].messages[index + 1];
+                var shouldShowCaseId = (data === null || data === void 0 ? void 0 : data.caseId) && (!nextMessage || (nextMessage === null || nextMessage === void 0 ? void 0 : nextMessage.caseId) !== data.caseId);
+                return /*#__PURE__*/jsxs("div", {
+                  className: styles$6.messageBox,
+                  children: [(data === null || data === void 0 ? void 0 : data.caseId) && shouldShowCaseId && /*#__PURE__*/jsxs("div", {
+                    className: styles$6.case_id_wrapper,
+                    children: [/*#__PURE__*/jsx(Text, {
+                      size: "s",
+                      color: "softPeanut",
+                      children: "New case created"
+                    }), /*#__PURE__*/jsxs("div", {
+                      onClick: function onClick() {
+                        return handleClickOnCase(data === null || data === void 0 ? void 0 : data.caseId);
+                      },
+                      style: {
+                        cursor: 'pointer'
+                      },
+                      children: [/*#__PURE__*/jsx(Icon, {
+                        name: "briefcase",
+                        size: 16,
+                        color: "bloobirds"
+                      }), /*#__PURE__*/jsx(Text, {
+                        size: "s",
+                        color: "bloobirds",
+                        children: (data === null || data === void 0 ? void 0 : data.caseNumber) || (data === null || data === void 0 ? void 0 : data.caseId)
+                      })]
+                    })]
+                  }), /*#__PURE__*/jsx(WhatsappMessage, {
+                    messagesPerDay: messagesPerDay,
+                    day: key,
+                    message: data,
+                    index: index,
+                    handleDownload: handleDownload
+                  })]
+                }, data === null || data === void 0 ? void 0 : (_data$id = data.id) === null || _data$id === void 0 ? void 0 : _data$id.value);
+              }), /*#__PURE__*/jsx("div", {
+                className: styles$6._date_wrapper,
+                children: /*#__PURE__*/jsx(Text, {
+                  size: "m",
+                  children: messagesPerDay[key].formattedDate
+                })
+              })]
+            });
+          })
+        }, "".concat(activity === null || activity === void 0 ? void 0 : (_activity$id2 = activity.id) === null || _activity$id2 === void 0 ? void 0 : _activity$id2.value, "-list"))
+      })
+    })]
+  });
+};
+
+function _typeof$7(obj) { "@babel/helpers - typeof"; return _typeof$7 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$7(obj); }
+function _regeneratorRuntime$1() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime$1 = function _regeneratorRuntime() { return exports; }; var exports = {}, Op = Object.prototype, hasOwn = Op.hasOwnProperty, defineProperty = Object.defineProperty || function (obj, key, desc) { obj[key] = desc.value; }, $Symbol = "function" == typeof Symbol ? Symbol : {}, iteratorSymbol = $Symbol.iterator || "@@iterator", asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator", toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag"; function define(obj, key, value) { return Object.defineProperty(obj, key, { value: value, enumerable: !0, configurable: !0, writable: !0 }), obj[key]; } try { define({}, ""); } catch (err) { define = function define(obj, key, value) { return obj[key] = value; }; } function wrap(innerFn, outerFn, self, tryLocsList) { var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator, generator = Object.create(protoGenerator.prototype), context = new Context(tryLocsList || []); return defineProperty(generator, "_invoke", { value: makeInvokeMethod(innerFn, self, context) }), generator; } function tryCatch(fn, obj, arg) { try { return { type: "normal", arg: fn.call(obj, arg) }; } catch (err) { return { type: "throw", arg: err }; } } exports.wrap = wrap; var ContinueSentinel = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var IteratorPrototype = {}; define(IteratorPrototype, iteratorSymbol, function () { return this; }); var getProto = Object.getPrototypeOf, NativeIteratorPrototype = getProto && getProto(getProto(values([]))); NativeIteratorPrototype && NativeIteratorPrototype !== Op && hasOwn.call(NativeIteratorPrototype, iteratorSymbol) && (IteratorPrototype = NativeIteratorPrototype); var Gp = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(IteratorPrototype); function defineIteratorMethods(prototype) { ["next", "throw", "return"].forEach(function (method) { define(prototype, method, function (arg) { return this._invoke(method, arg); }); }); } function AsyncIterator(generator, PromiseImpl) { function invoke(method, arg, resolve, reject) { var record = tryCatch(generator[method], generator, arg); if ("throw" !== record.type) { var result = record.arg, value = result.value; return value && "object" == _typeof$7(value) && hasOwn.call(value, "__await") ? PromiseImpl.resolve(value.__await).then(function (value) { invoke("next", value, resolve, reject); }, function (err) { invoke("throw", err, resolve, reject); }) : PromiseImpl.resolve(value).then(function (unwrapped) { result.value = unwrapped, resolve(result); }, function (error) { return invoke("throw", error, resolve, reject); }); } reject(record.arg); } var previousPromise; defineProperty(this, "_invoke", { value: function value(method, arg) { function callInvokeWithMethodAndArg() { return new PromiseImpl(function (resolve, reject) { invoke(method, arg, resolve, reject); }); } return previousPromise = previousPromise ? previousPromise.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(innerFn, self, context) { var state = "suspendedStart"; return function (method, arg) { if ("executing" === state) throw new Error("Generator is already running"); if ("completed" === state) { if ("throw" === method) throw arg; return doneResult(); } for (context.method = method, context.arg = arg;;) { var delegate = context.delegate; if (delegate) { var delegateResult = maybeInvokeDelegate(delegate, context); if (delegateResult) { if (delegateResult === ContinueSentinel) continue; return delegateResult; } } if ("next" === context.method) context.sent = context._sent = context.arg;else if ("throw" === context.method) { if ("suspendedStart" === state) throw state = "completed", context.arg; context.dispatchException(context.arg); } else "return" === context.method && context.abrupt("return", context.arg); state = "executing"; var record = tryCatch(innerFn, self, context); if ("normal" === record.type) { if (state = context.done ? "completed" : "suspendedYield", record.arg === ContinueSentinel) continue; return { value: record.arg, done: context.done }; } "throw" === record.type && (state = "completed", context.method = "throw", context.arg = record.arg); } }; } function maybeInvokeDelegate(delegate, context) { var methodName = context.method, method = delegate.iterator[methodName]; if (undefined === method) return context.delegate = null, "throw" === methodName && delegate.iterator["return"] && (context.method = "return", context.arg = undefined, maybeInvokeDelegate(delegate, context), "throw" === context.method) || "return" !== methodName && (context.method = "throw", context.arg = new TypeError("The iterator does not provide a '" + methodName + "' method")), ContinueSentinel; var record = tryCatch(method, delegate.iterator, context.arg); if ("throw" === record.type) return context.method = "throw", context.arg = record.arg, context.delegate = null, ContinueSentinel; var info = record.arg; return info ? info.done ? (context[delegate.resultName] = info.value, context.next = delegate.nextLoc, "return" !== context.method && (context.method = "next", context.arg = undefined), context.delegate = null, ContinueSentinel) : info : (context.method = "throw", context.arg = new TypeError("iterator result is not an object"), context.delegate = null, ContinueSentinel); } function pushTryEntry(locs) { var entry = { tryLoc: locs[0] }; 1 in locs && (entry.catchLoc = locs[1]), 2 in locs && (entry.finallyLoc = locs[2], entry.afterLoc = locs[3]), this.tryEntries.push(entry); } function resetTryEntry(entry) { var record = entry.completion || {}; record.type = "normal", delete record.arg, entry.completion = record; } function Context(tryLocsList) { this.tryEntries = [{ tryLoc: "root" }], tryLocsList.forEach(pushTryEntry, this), this.reset(!0); } function values(iterable) { if (iterable) { var iteratorMethod = iterable[iteratorSymbol]; if (iteratorMethod) return iteratorMethod.call(iterable); if ("function" == typeof iterable.next) return iterable; if (!isNaN(iterable.length)) { var i = -1, next = function next() { for (; ++i < iterable.length;) if (hasOwn.call(iterable, i)) return next.value = iterable[i], next.done = !1, next; return next.value = undefined, next.done = !0, next; }; return next.next = next; } } return { next: doneResult }; } function doneResult() { return { value: undefined, done: !0 }; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, defineProperty(Gp, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), defineProperty(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, toStringTagSymbol, "GeneratorFunction"), exports.isGeneratorFunction = function (genFun) { var ctor = "function" == typeof genFun && genFun.constructor; return !!ctor && (ctor === GeneratorFunction || "GeneratorFunction" === (ctor.displayName || ctor.name)); }, exports.mark = function (genFun) { return Object.setPrototypeOf ? Object.setPrototypeOf(genFun, GeneratorFunctionPrototype) : (genFun.__proto__ = GeneratorFunctionPrototype, define(genFun, toStringTagSymbol, "GeneratorFunction")), genFun.prototype = Object.create(Gp), genFun; }, exports.awrap = function (arg) { return { __await: arg }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, asyncIteratorSymbol, function () { return this; }), exports.AsyncIterator = AsyncIterator, exports.async = function (innerFn, outerFn, self, tryLocsList, PromiseImpl) { void 0 === PromiseImpl && (PromiseImpl = Promise); var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList), PromiseImpl); return exports.isGeneratorFunction(outerFn) ? iter : iter.next().then(function (result) { return result.done ? result.value : iter.next(); }); }, defineIteratorMethods(Gp), define(Gp, toStringTagSymbol, "Generator"), define(Gp, iteratorSymbol, function () { return this; }), define(Gp, "toString", function () { return "[object Generator]"; }), exports.keys = function (val) { var object = Object(val), keys = []; for (var key in object) keys.push(key); return keys.reverse(), function next() { for (; keys.length;) { var key = keys.pop(); if (key in object) return next.value = key, next.done = !1, next; } return next.done = !0, next; }; }, exports.values = values, Context.prototype = { constructor: Context, reset: function reset(skipTempReset) { if (this.prev = 0, this.next = 0, this.sent = this._sent = undefined, this.done = !1, this.delegate = null, this.method = "next", this.arg = undefined, this.tryEntries.forEach(resetTryEntry), !skipTempReset) for (var name in this) "t" === name.charAt(0) && hasOwn.call(this, name) && !isNaN(+name.slice(1)) && (this[name] = undefined); }, stop: function stop() { this.done = !0; var rootRecord = this.tryEntries[0].completion; if ("throw" === rootRecord.type) throw rootRecord.arg; return this.rval; }, dispatchException: function dispatchException(exception) { if (this.done) throw exception; var context = this; function handle(loc, caught) { return record.type = "throw", record.arg = exception, context.next = loc, caught && (context.method = "next", context.arg = undefined), !!caught; } for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i], record = entry.completion; if ("root" === entry.tryLoc) return handle("end"); if (entry.tryLoc <= this.prev) { var hasCatch = hasOwn.call(entry, "catchLoc"), hasFinally = hasOwn.call(entry, "finallyLoc"); if (hasCatch && hasFinally) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } else if (hasCatch) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); } else { if (!hasFinally) throw new Error("try statement without catch or finally"); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } } } }, abrupt: function abrupt(type, arg) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc <= this.prev && hasOwn.call(entry, "finallyLoc") && this.prev < entry.finallyLoc) { var finallyEntry = entry; break; } } finallyEntry && ("break" === type || "continue" === type) && finallyEntry.tryLoc <= arg && arg <= finallyEntry.finallyLoc && (finallyEntry = null); var record = finallyEntry ? finallyEntry.completion : {}; return record.type = type, record.arg = arg, finallyEntry ? (this.method = "next", this.next = finallyEntry.finallyLoc, ContinueSentinel) : this.complete(record); }, complete: function complete(record, afterLoc) { if ("throw" === record.type) throw record.arg; return "break" === record.type || "continue" === record.type ? this.next = record.arg : "return" === record.type ? (this.rval = this.arg = record.arg, this.method = "return", this.next = "end") : "normal" === record.type && afterLoc && (this.next = afterLoc), ContinueSentinel; }, finish: function finish(finallyLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.finallyLoc === finallyLoc) return this.complete(entry.completion, entry.afterLoc), resetTryEntry(entry), ContinueSentinel; } }, "catch": function _catch(tryLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc === tryLoc) { var record = entry.completion; if ("throw" === record.type) { var thrown = record.arg; resetTryEntry(entry); } return thrown; } } throw new Error("illegal catch attempt"); }, delegateYield: function delegateYield(iterable, resultName, nextLoc) { return this.delegate = { iterator: values(iterable), resultName: resultName, nextLoc: nextLoc }, "next" === this.method && (this.arg = undefined), ContinueSentinel; } }, exports; }
+function _defineProperty$6(obj, key, value) { key = _toPropertyKey$6(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$6(arg) { var key = _toPrimitive$6(arg, "string"); return _typeof$7(key) === "symbol" ? key : String(key); }
+function _toPrimitive$6(input, hint) { if (_typeof$7(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$7(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$8(arr, i) { return _arrayWithHoles$8(arr) || _iterableToArrayLimit$8(arr, i) || _unsupportedIterableToArray$8(arr, i) || _nonIterableRest$8(); }
+function _nonIterableRest$8() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArrayLimit$8(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$8(arr) { if (Array.isArray(arr)) return arr; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray$8(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _unsupportedIterableToArray$8(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$8(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$8(o, minLen); }
+function _arrayLikeToArray$8(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function asyncGeneratorStep$1(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function _asyncToGenerator$1(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep$1(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep$1(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+function getISODate(date) {
+  var sDate = spacetime(date);
+  return sDate.format('{year}-{iso-month}-{date-pad}');
+}
+function fetchWhatsappMessages(_x, _x2, _x3) {
+  return _fetchWhatsappMessages.apply(this, arguments);
+}
+function _fetchWhatsappMessages() {
+  _fetchWhatsappMessages = _asyncToGenerator$1( /*#__PURE__*/_regeneratorRuntime$1().mark(function _callee2(accountId, leadId, customTaskId) {
+    var _yield$api$post, data;
+    return _regeneratorRuntime$1().wrap(function _callee2$(_context2) {
+      while (1) switch (_context2.prev = _context2.next) {
+        case 0:
+          _context2.next = 2;
+          return api.post("/bobjects/".concat(accountId, "/Activity/search"), {
+            query: {
+              ACTIVITY__LEAD: [leadId],
+              ACTIVITY__TYPE: ['ACTIVITY__TYPE__CUSTOM_TASK'],
+              ACTIVITY__CUSTOM_TASK: customTaskId
+            },
+            formFields: true,
+            pageSize: 200,
+            injectReferences: true
+          });
+        case 2:
+          _yield$api$post = _context2.sent;
+          data = _yield$api$post.data;
+          return _context2.abrupt("return", data);
+        case 5:
+        case "end":
+          return _context2.stop();
+      }
+    }, _callee2);
+  }));
+  return _fetchWhatsappMessages.apply(this, arguments);
+}
+function formatDate(date, lang, timezone, t) {
+  var now = getI18nSpacetimeLng(lang, new Date(), timezone);
+  var sDate = getI18nSpacetimeLng(lang, date, timezone);
+  if (sDate.isSame('day', now)) {
+    return t('whatsapp.chat.today');
+  } else if (sDate.isSame('day', now.subtract(1, 'day'))) {
+    return t('whatsapp.chat.yesterday');
+  } else if (sDate.isSame('year', now)) {
+    var format = lang === 'es' ? '{date} {month-short}' : '{month-short} {date-ordinal}';
+    return sDate.format(format);
+  } else {
+    var _format = lang === 'es' ? '{date} {month-short}, {year}' : '{month-short} {date-ordinal}, {year}';
+    return sDate.format(_format);
+  }
+}
+function parseMessages(whatsappMessages, lang, t) {
+  var timeZone = getUserTimeZone();
+  var parsedMessages = (whatsappMessages === null || whatsappMessages === void 0 ? void 0 : whatsappMessages.contents.map(function (message) {
+    var _getFieldByLogicRole, _getFieldByLogicRole2;
+    var media = getValueFromLogicRole(message, 'ACTIVITY__ATTACHMENTS');
+    return {
+      id: message.id.value,
+      wid: getValueFromLogicRole(message, ACTIVITY_FIELDS_LOGIC_ROLE.WHATSAPP_ID),
+      direction: ((_getFieldByLogicRole = getFieldByLogicRole(message, ACTIVITY_FIELDS_LOGIC_ROLE.DIRECTION)) === null || _getFieldByLogicRole === void 0 ? void 0 : _getFieldByLogicRole.valueLogicRole) === 'ACTIVITY__DIRECTION__INCOMING' ? 'INCOMING' : 'OUTGOING',
+      body: getValueFromLogicRole(message, ACTIVITY_FIELDS_LOGIC_ROLE.MESSAGE_BODY),
+      media: media ? JSON.parse(media) : null,
+      isoDate: getValueFromLogicRole(message, ACTIVITY_FIELDS_LOGIC_ROLE.TIME),
+      hasTranscription: ((_getFieldByLogicRole2 = getFieldByLogicRole(message, ACTIVITY_FIELDS_LOGIC_ROLE.TRANSCRIPTION)) === null || _getFieldByLogicRole2 === void 0 ? void 0 : _getFieldByLogicRole2.valueLogicRole) === "".concat(ACTIVITY_FIELDS_LOGIC_ROLE.TRANSCRIPTION, "__YES"),
+      caseId: getValueFromLogicRole(message, 'ACTIVITY__CASE_ID'),
+      caseNumber: getValueFromLogicRole(message, 'ACTIVITY__CASE_NUMBER')
+    };
+  })) || [];
+
+  // Then, group them by day
+  var groupedByDay = {};
+  var _iterator = _createForOfIteratorHelper(parsedMessages),
+    _step;
+  try {
+    for (_iterator.s(); !(_step = _iterator.n()).done;) {
+      var message = _step.value;
+      var isoKey = getISODate(message.isoDate);
+      var formattedDateKey = formatDate(message.isoDate, lang, timeZone, t);
+      if (!groupedByDay[isoKey]) {
+        groupedByDay[isoKey] = {
+          formattedDate: formattedDateKey,
+          messages: []
+        };
+      }
+      groupedByDay[isoKey].messages.push(message);
+    }
+
+    // Sort the messages by date
+  } catch (err) {
+    _iterator.e(err);
+  } finally {
+    _iterator.f();
+  }
+  for (var _i = 0, _Object$keys = Object.keys(groupedByDay); _i < _Object$keys.length; _i++) {
+    var key = _Object$keys[_i];
+    var messages = groupedByDay[key].messages;
+    groupedByDay[key].messages = messages.sort(function (a, b) {
+      var dateA = spacetime(a.isoDate);
+      var dateB = spacetime(b.isoDate);
+      return dateA.isBefore(dateB) ? 1 : -1;
+    });
+  }
+
+  // Sort the keys by date
+  return Object.fromEntries(Object.entries(groupedByDay).sort(function (a, b) {
+    var dateA = spacetime(a[0]);
+    var dateB = spacetime(b[0]);
+    return dateA.isBefore(dateB) ? 1 : -1;
+  }));
+}
+var useWhatsappMessages = function useWhatsappMessages(channel, leadId, accountId) {
+  var _useCustomTasks = useCustomTasks(),
+    getCustomTaskByLogicRole = _useCustomTasks.getCustomTaskByLogicRole;
+  var _useTranslation = useTranslation(),
+    i18n = _useTranslation.i18n,
+    t = _useTranslation.t;
+  var whatsappCustomTask = getCustomTaskByLogicRole(channel);
+  var lang = i18n.language;
+
+  //TODO: Handle next page
+  var _useSWR = useSWR([accountId, leadId, whatsappCustomTask === null || whatsappCustomTask === void 0 ? void 0 : whatsappCustomTask.id], function () {
+      return fetchWhatsappMessages(accountId, leadId, whatsappCustomTask === null || whatsappCustomTask === void 0 ? void 0 : whatsappCustomTask.id);
+    }),
+    whatsappMessages = _useSWR.data,
+    mutate = _useSWR.mutate;
+  useEventSubscription('data-Activity', function (data) {
+    if (((data === null || data === void 0 ? void 0 : data.operation) === 'CREATE' || (data === null || data === void 0 ? void 0 : data.operation) === 'UPDATE') && (data === null || data === void 0 ? void 0 : data.relatedLead) === leadId) {
+      mutate();
+    }
+  });
+  var messages = parseMessages(whatsappMessages, lang, t);
+  function fetchNextPage() {
+    mutate();
+  }
+  var isLoading = !whatsappMessages;
+  var totalMatching = whatsappMessages === null || whatsappMessages === void 0 ? void 0 : whatsappMessages.totalMatching;
+  return {
+    messages: messages,
+    isLoading: isLoading,
+    totalMatching: totalMatching,
+    fetchNextPage: fetchNextPage
+  };
+};
+function FileDropzone(_ref) {
+  var onFilesAdded = _ref.onFilesAdded;
+  var _useState = useState(false),
+    _useState2 = _slicedToArray$8(_useState, 2),
+    dragging = _useState2[0],
+    setDragging = _useState2[1];
+  var _useState3 = useState(false),
+    _useState4 = _slicedToArray$8(_useState3, 2);
+    _useState4[0];
+    var setDropzoneDragged = _useState4[1];
+  var _useDebounce = useDebounce(dragging, 200),
+    _useDebounce2 = _slicedToArray$8(_useDebounce, 1),
+    delayedDragging = _useDebounce2[0];
+  var handleDrop = function handleDrop(e) {
+    e.preventDefault();
+    setDragging(false);
+    onFilesAdded(e.dataTransfer.files);
+  };
+  useEffect(function () {
+    var handleDrag = function handleDrag(e) {
+      e.preventDefault();
+      setDragging(true);
+    };
+    var handleDragLeave = function handleDragLeave(e) {
+      e.preventDefault();
+      setDragging(false);
+    };
+    window.addEventListener('dragover', handleDrag, false);
+    window.addEventListener('dragleave', handleDragLeave, false);
+    window.addEventListener('drop', handleDrop, false);
+    return function () {
+      window.removeEventListener('dragover', handleDrag);
+      window.removeEventListener('dragleave', handleDragLeave);
+      window.removeEventListener('drop', handleDrop);
+    };
+  }, [onFilesAdded]);
+  if (!delayedDragging) {
+    return null;
+  }
+  return /*#__PURE__*/jsxs("div", {
+    className: clsx(styles$6.dropzone, _defineProperty$6({}, styles$6.dropzoneActive, delayedDragging)),
+    onDragLeave: function onDragLeave() {
+      setDropzoneDragged(false);
+    },
+    onDragOver: function onDragOver() {
+      setDropzoneDragged(true);
+    },
+    onDrop: handleDrop,
+    children: [/*#__PURE__*/jsx(Icon, {
+      name: "upload",
+      size: 24,
+      color: "melon"
+    }), "Drop your files here"]
+  });
+}
+
+//TODO EXTRACT THESE !!!!!!!!!
+var NoTemplatesFound = function NoTemplatesFound(_ref2) {
+  var _ref2$type = _ref2.type,
+    type = _ref2$type === void 0 ? 'linkedin' : _ref2$type;
+  var _useTranslation2 = useTranslation('translation', {
+      keyPrefix: 'templateSelector.noResults'
+    }),
+    t = _useTranslation2.t;
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$6.noResultFound,
+    children: [/*#__PURE__*/jsx(Text, {
+      color: "softPeanut",
+      size: "s",
+      children: t('noResultsFound')
+    }), /*#__PURE__*/jsx("span", {
+      onClick: function onClick() {
+        return window.open(redirectToMessagingSettings(type), '_blank');
+      },
+      style: {
+        cursor: 'pointer'
+      },
+      children: /*#__PURE__*/jsx(Text, {
+        color: "softPeanut",
+        size: "s",
+        decoration: "underline",
+        children: t('addTemplate')
+      })
+    })]
+  });
+};
+var TemplatesList = function TemplatesList(_ref3) {
+  var templates = _ref3.templates,
+    handleAdd = _ref3.handleAdd,
+    title = _ref3.title,
+    icon = _ref3.icon,
+    iconColor = _ref3.iconColor,
+    titleColor = _ref3.titleColor,
+    infoText = _ref3.infoText;
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsx(Section, {
+      children: /*#__PURE__*/jsxs("div", {
+        className: styles$6.titleSectionContainer,
+        style: {
+          color: 'var(--' + titleColor + ')'
+        },
+        children: [/*#__PURE__*/jsx(Icon, {
+          name: icon,
+          size: 16,
+          color: iconColor
+        }), title, infoText && /*#__PURE__*/jsx(Tooltip, {
+          position: "top",
+          title: infoText,
+          children: /*#__PURE__*/jsx(Icon, {
+            name: "info",
+            color: "bloobirds",
+            size: 12
+          })
+        })]
+      })
+    }), /*#__PURE__*/jsx("div", {
+      className: styles$6.templatesContainer,
+      children: templates === null || templates === void 0 ? void 0 : templates.map(function (template) {
+        return /*#__PURE__*/jsx(Item, {
+          onClick: function onClick() {
+            return handleAdd(template.id, template.previewContent);
+          },
+          children: template.name
+        }, template.id);
+      })
+    })]
+  });
+};
+var WhatsappTemplateSelector = function WhatsappTemplateSelector(_ref4) {
+  var setMessage = _ref4.setMessage,
+    disabled = _ref4.disabled,
+    activeBobject = _ref4.activeBobject;
+  var _useTranslation3 = useTranslation('translation', {
+      keyPrefix: 'templateSelector'
+    }),
+    t = _useTranslation3.t,
+    ready = _useTranslation3.ready;
+  var _useVisible = useVisible(false),
+    visible = _useVisible.visible,
+    setVisible = _useVisible.setVisible,
+    ref = _useVisible.ref;
+  var userId = useActiveUserId();
+  var _useActiveMessagingNa = useActiveMessagingNameFilter(),
+    _useActiveMessagingNa2 = _slicedToArray$8(_useActiveMessagingNa, 2),
+    setMessagingTemplateName = _useActiveMessagingNa2[1];
+  var _useMessagingTemplate = useMessagingTemplates({
+      name: null,
+      stage: TemplateStage['All'],
+      segmentationValues: {},
+      onlyMine: false,
+      visibility: null,
+      type: TEMPLATE_TYPES.WHATSAPP,
+      page: 0,
+      size: 200
+    }),
+    messagingTemplates = _useMessagingTemplate.messagingTemplates;
+  var myTemplates = messagingTemplates === null || messagingTemplates === void 0 ? void 0 : messagingTemplates.filter(function (template) {
+    return template.createdBy === userId;
+  });
+  var teamTemplates = messagingTemplates === null || messagingTemplates === void 0 ? void 0 : messagingTemplates.filter(function (template) {
+    return template.createdBy !== userId;
+  });
+  useEffect(function () {
+    setMessagingTemplateName(null);
+  }, []);
+  var handleMessagingTemplateNameChange = useCallback(debounce(setMessagingTemplateName, 200), []);
+  var handleAdd = /*#__PURE__*/function () {
+    var _ref5 = _asyncToGenerator$1( /*#__PURE__*/_regeneratorRuntime$1().mark(function _callee(id, fallbackContent) {
+      var templateParsed, templateWithoutHtml;
+      return _regeneratorRuntime$1().wrap(function _callee$(_context) {
+        while (1) switch (_context.prev = _context.next) {
+          case 0:
+            _context.next = 2;
+            return handleAddWhatsAppTemplate(id, fallbackContent, activeBobject, 'User name');
+          case 2:
+            templateParsed = _context.sent;
+            templateWithoutHtml = templateParsed.replace(/<(?:br|\/div|\/p)>/g, '\n').replace(/<.*?>/g, '');
+            setMessage(templateWithoutHtml);
+          case 5:
+          case "end":
+            return _context.stop();
+        }
+      }, _callee);
+    }));
+    return function handleAdd(_x4, _x5) {
+      return _ref5.apply(this, arguments);
+    };
+  }();
+  var classnames = clsx(styles$6.whatsAppContainer, _defineProperty$6({}, styles$6.whatsAppContainerDisabled, disabled));
+  var actionsDisabled = disabled;
+  return ready ? /*#__PURE__*/jsx("div", {
+    className: styles$6.templateSelectorDropdown,
+    children: /*#__PURE__*/jsxs(Dropdown, {
+      width: 323,
+      ref: ref,
+      visible: visible,
+      zIndex: 20000,
+      anchor: /*#__PURE__*/jsx("div", {
+        id: "badgeGroup",
+        className: classnames,
+        onClick: function onClick() {
+          return !actionsDisabled && setVisible(!visible);
+        },
+        children: !activeBobject ? /*#__PURE__*/jsx(Spinner, {
+          name: "loadingCircle",
+          color: "softPeanut",
+          size: 12
+        }) : /*#__PURE__*/jsx(Tooltip, {
+          title: actionsDisabled && t('permissions'),
+          position: "top",
+          children: /*#__PURE__*/jsx(Icon, {
+            name: "bBTemplate",
+            color: "bloobirds"
+          })
+        })
+      }),
+      children: [/*#__PURE__*/jsx("input", {
+        width: "100%",
+        placeholder: t('search'),
+        className: styles$6.input,
+        onChange: function onChange(e) {
+          return handleMessagingTemplateNameChange(e.target.value);
+        }
+      }), /*#__PURE__*/jsx(Fragment, {
+        children: (!myTemplates || (myTemplates === null || myTemplates === void 0 ? void 0 : myTemplates.length) === 0) && (!teamTemplates || (teamTemplates === null || teamTemplates === void 0 ? void 0 : teamTemplates.length) === 0) ? /*#__PURE__*/jsx(NoTemplatesFound, {
+          type: "whatsapp"
+        }) : /*#__PURE__*/jsxs(Fragment, {
+          children: [(myTemplates === null || myTemplates === void 0 ? void 0 : myTemplates.length) > 0 && /*#__PURE__*/jsx(TemplatesList, {
+            icon: "person",
+            iconColor: "softPeanut",
+            titleColor: "peanut",
+            title: t('myTemplates'),
+            templates: myTemplates,
+            handleAdd: handleAdd
+          }), (teamTemplates === null || teamTemplates === void 0 ? void 0 : teamTemplates.length) > 0 && /*#__PURE__*/jsx(TemplatesList, {
+            titleColor: "peanut",
+            iconColor: "softPeanut",
+            icon: "company",
+            templates: teamTemplates,
+            handleAdd: handleAdd,
+            title: t('teamTemplates')
+          })]
+        })
+      })]
+    })
+  }) : /*#__PURE__*/jsx(Fragment, {});
+};
+var WhatsappDetail = function WhatsappDetail(_ref6) {
+  var _settings$user, _settings$user$permis, _getFieldByLogicRole3;
+  var settings = _ref6.settings,
+    activity = _ref6.activity,
+    accountId = _ref6.accountId,
+    dataModel = _ref6.dataModel,
+    activeBobject = _ref6.activeBobject,
+    userId = _ref6.userId,
+    channel = _ref6.channel;
+  var leadId = getValueFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.LEAD);
+  var companyId = getValueFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.COMPANY);
+  var _useAttachedFiles = useAttachedFiles(),
+    attachedFiles = _useAttachedFiles.attachedFiles,
+    removeAttachedFile = _useAttachedFiles.removeAttachedFile,
+    uploadAttachedFile = _useAttachedFiles.uploadAttachedFile;
+  var isWhatsappAdmin = settings === null || settings === void 0 ? void 0 : (_settings$user = settings.user) === null || _settings$user === void 0 ? void 0 : (_settings$user$permis = _settings$user.permissions) === null || _settings$user$permis === void 0 ? void 0 : _settings$user$permis.includes(UserPermission.WHATSAPP_BUSINESS_ADMIN);
+  var _useWhatsappMessages = useWhatsappMessages(channel, leadId, accountId),
+    messages = _useWhatsappMessages.messages,
+    isLoading = _useWhatsappMessages.isLoading,
+    totalMatching = _useWhatsappMessages.totalMatching,
+    fetchNextPage = _useWhatsappMessages.fetchNextPage;
+  var _useTranslation4 = useTranslation(),
+    t = _useTranslation4.t;
+  var hasWhatsappEnabled = useWhatsappEnabled(accountId);
+  var visibleFooter = hasWhatsappEnabled && channel == 'WHATSAPP_BUSINESS';
+  var messageToSend = useRef('');
+  var _useState5 = useState(false),
+    _useState6 = _slicedToArray$8(_useState5, 2),
+    isSending = _useState6[0],
+    setIsSending = _useState6[1];
+  var _useState7 = useState(''),
+    _useState8 = _slicedToArray$8(_useState7, 2),
+    defaultMessage = _useState8[0],
+    setDefaultMessage = _useState8[1];
+  var _useState9 = useState(0),
+    _useState10 = _slicedToArray$8(_useState9, 2),
+    resetMessageCounter = _useState10[0],
+    setMessageCounter = _useState10[1];
+  var referenceBobject = getReferencedBobject(activity);
+  var assignee = ((_getFieldByLogicRole3 = getFieldByLogicRole(referenceBobject, LEAD_FIELDS_LOGIC_ROLE.ASSIGNED_TO
+  // @ts-ignore
+  )) === null || _getFieldByLogicRole3 === void 0 ? void 0 : _getFieldByLogicRole3.value) || (referenceBobject === null || referenceBobject === void 0 ? void 0 : referenceBobject.assignedTo);
+  var assignedToActiveUser = assignee === userId;
+  var phoneTo = getValueFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.CALL_LEAD_PHONE_NUMBER);
+  var phoneFrom = getValueFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.CALL_USER_PHONE_NUMBER);
+  useEffect(function () {
+    fetchNextPage();
+  }, []);
+  var sendWhatsAppMessage = function sendWhatsAppMessage() {
+    if (messageToSend.current != '' || (attachedFiles === null || attachedFiles === void 0 ? void 0 : attachedFiles.length) > 0) {
+      setIsSending(true);
+      api.post('/messaging/whatsapp/send', {
+        from: phoneFrom,
+        to: phoneTo,
+        body: messageToSend.current,
+        leadId: leadId,
+        companyId: companyId,
+        mediaIds: (attachedFiles === null || attachedFiles === void 0 ? void 0 : attachedFiles.length) > 0 ? attachedFiles.map(function (af) {
+          return af.id;
+        }) : null,
+        markConversationAsReported: true
+      }).then(function () {
+        setDefaultMessage('');
+        setMessageCounter(function (c) {
+          return c + 1;
+        });
+        messageToSend.current = '';
+        setIsSending(false);
+        fetchNextPage();
+        window.dispatchEvent(new CustomEvent(MessagesEvents.ActiveBobjectUpdated, {
+          detail: {
+            type: BobjectTypes.Activity
+          }
+        }));
+        var _iterator2 = _createForOfIteratorHelper(attachedFiles),
+          _step2;
+        try {
+          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+            var file = _step2.value;
+            removeAttachedFile(file.id);
+          }
+        } catch (err) {
+          _iterator2.e(err);
+        } finally {
+          _iterator2.f();
+        }
+      })["catch"](function () {
+        createToast({
+          message: t('whatsapp.conversation.errorSending'),
+          type: 'error'
+        });
+        setIsSending(false);
+      });
+    }
+  };
+  var handleFilesAdded = function handleFilesAdded(files) {
+    // Process the files here (e.g., uploading them and attaching to a message)
+    if (messageToSend.current === '') {
+      messageToSend.current = ' ';
+    }
+    uploadAttachedFile(Array.from(files), true);
+  };
+  var hasPermissionToSend = isWhatsappAdmin || assignedToActiveUser && phoneFrom && phoneTo || true;
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$6.container,
+    children: [/*#__PURE__*/jsx(FileDropzone, {
+      onFilesAdded: handleFilesAdded
+    }), /*#__PURE__*/jsx("div", {
+      className: styles$6.activity_container,
+      children: /*#__PURE__*/jsx(WhatsappDetailedActivity, {
+        activity: activity,
+        dataModel: dataModel,
+        messagesPerDay: messages,
+        isLoading: isLoading,
+        totalMatching: totalMatching,
+        fetchNextPage: fetchNextPage
+      })
+    }), visibleFooter && /*#__PURE__*/jsxs(Fragment, {
+      children: [(attachedFiles === null || attachedFiles === void 0 ? void 0 : attachedFiles.length) > 0 && /*#__PURE__*/jsx(AttachmentList, {
+        files: attachedFiles,
+        onDelete: removeAttachedFile
+      }), /*#__PURE__*/jsx(DetailsFooter, {
+        color: "veryLightPeanut",
+        withPadding: false,
+        children: /*#__PURE__*/jsxs("div", {
+          className: styles$6.chatBox,
+          children: [/*#__PURE__*/jsxs(Fragment, {
+            children: [/*#__PURE__*/jsx(WhatsappTemplateSelector, {
+              activeBobject: activeBobject,
+              setMessage: function setMessage(message) {
+                setDefaultMessage(message);
+                messageToSend.current = message;
+              },
+              disabled: !hasPermissionToSend || isSending
+            }), /*#__PURE__*/jsxs("label", {
+              className: styles$6.label,
+              htmlFor: "file-attachment",
+              children: [/*#__PURE__*/jsx(Icon, {
+                name: "paperclip",
+                size: 20,
+                color: "bloobirds"
+              }), /*#__PURE__*/jsx("input", {
+                type: "file",
+                id: "file-attachment",
+                name: "file-attachment",
+                "data-test": "file-attachment",
+                onChange: function onChange(event) {
+                  if (messageToSend.current === '') {
+                    messageToSend.current = ' ';
+                  }
+                  uploadAttachedFile(Array.from(event.target.files), true);
+                  event.target.value = null;
+                },
+                className: styles$6.input,
+                multiple: true
+              })]
+            })]
+          }), /*#__PURE__*/jsx(AutoResizingTextarea, {
+            hasPermissionToSend: hasPermissionToSend,
+            isSending: isSending,
+            defaultMessage: defaultMessage,
+            setMessage: function setMessage(message) {
+              return messageToSend.current = message;
+            },
+            resetMessageCounter: resetMessageCounter
+          }), /*#__PURE__*/jsx(IconButton, {
+            name: "deliver",
+            disabled: isSending || !hasPermissionToSend,
+            color: "bloobirds",
+            size: 24,
+            onClick: sendWhatsAppMessage
+          })]
+        })
+      })]
+    })]
+  });
+};
+
+var css_248z$5 = ".pastActivityFilters-module__filters__LJoB- {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-between;\n  align-items: center;\n  padding-left: 24px;\n}\n\n.pastActivityFilters-module__filters__LJoB- > div > span {\n  font-size: 11px;\n  padding: 4px 8px;\n  margin-right: 2px;\n}\n\n.pastActivityFilters-module__filters__sidePeek__DK5l5 {\n  padding: 10px 16px 0 16px;\n}\n\n.pastActivityFilters-module__filters__sidePeek__DK5l5 > div > span {\n  font-size: 13px;\n}\n\n.pastActivityFilters-module__filters__LJoB- > div:nth-child(2) {\n  margin-top: -2px;\n}\n\n.pastActivityFilters-module__lead_multiselect__-iSaw {\n  margin-right: -10px;\n  display: flex;\n  align-items: center;\n}\n\n.pastActivityFilters-module__lead_multiselect__-iSaw > div > div {\n  width: auto;\n}\n\n.pastActivityFilters-module__lead_multiselect__-iSaw > svg {\n  margin-right: -4px;\n}\n\n.pastActivityFilters-module__lead_multiselect__-iSaw > div > div > input {\n  color: var(--bloobirds) !important;\n  max-width: 108px;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  font-size: 11px;\n}\n\n.pastActivityFilters-module__user_filter_anchor__srqJc{\n  display: flex;\n  align-items: center;\n  margin-right: 4px;\n  cursor: pointer;\n  gap: 2px;\n}\n\n.pastActivityFilters-module__user_filter_anchor__srqJc button{\n  margin-top: -2px;\n}\n.pastActivityFilters-module__search_input__43IGf{\n  padding: 8px;\n  margin-bottom: 12px;\n}\n.pastActivityFilters-module__search_input__43IGf fieldset{\n  height: auto;\n}\n.pastActivityFilters-module__icon__6lKB-{\n  position: relative;\n}\n.pastActivityFilters-module__filtersTouched__kzaJg::after {\n  content: \"\";\n  position: absolute;\n  top: 2px;\n  right: 1px;\n  width: 6px;\n  height: 6px;\n  border-radius: 50%;\n  background-color: var(--verySoftTomato, #FFB2C2);\n  border: 1px solid var(--lightestGray, #FBFBFB);\n}\n\n.pastActivityFilters-module_shortened_input__I-5Wd > div > div > input {\n  max-width: 44px;\n  min-width: 10px;\n}\n\n.pastActivityFilters-module__lead_multiselect__-iSaw > div > div > svg {\n  display: none;\n}\n\n.pastActivityFilters-module__lead_multiselect__-iSaw input {\n  box-shadow: none;\n}\n\n.pastActivityFilters-module__lead_multiselect_header__bmA2v {\n  margin-left: 16px;\n}\n\n.pastActivityFilters-module__magic_filter__QCfPJ {\n  font-size: 11px;\n}\n\n.pastActivityFilters-module__filter_selector_items__P4iMG {\n  display: flex;\n}\n\n.pastActivityFilters-module__filter_selector_items__P4iMG > div {\n  display: flex;\n  width: 100%;\n  justify-content: space-between;\n}\n\n.pastActivityFilters-module__filter_type_item_wrapper__4ZluP > svg {\n  flex-shrink: 0;\n}\n";
+var styles$5 = {"_filters":"pastActivityFilters-module__filters__LJoB-","_filters__sidePeek":"pastActivityFilters-module__filters__sidePeek__DK5l5","_lead_multiselect":"pastActivityFilters-module__lead_multiselect__-iSaw","_user_filter_anchor":"pastActivityFilters-module__user_filter_anchor__srqJc","_search_input":"pastActivityFilters-module__search_input__43IGf","_icon":"pastActivityFilters-module__icon__6lKB-","_filtersTouched":"pastActivityFilters-module__filtersTouched__kzaJg","shortened_input":"pastActivityFilters-module_shortened_input__I-5Wd","_lead_multiselect_header":"pastActivityFilters-module__lead_multiselect_header__bmA2v","_magic_filter":"pastActivityFilters-module__magic_filter__QCfPJ","_filter_selector_items":"pastActivityFilters-module__filter_selector_items__P4iMG","_filter_type_item_wrapper":"pastActivityFilters-module__filter_type_item_wrapper__4ZluP"};
+styleInject(css_248z$5);
+
+function _typeof$6(obj) { "@babel/helpers - typeof"; return _typeof$6 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$6(obj); }
+function _toConsumableArray$4(arr) { return _arrayWithoutHoles$4(arr) || _iterableToArray$4(arr) || _unsupportedIterableToArray$7(arr) || _nonIterableSpread$4(); }
+function _nonIterableSpread$4() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray$4(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function _arrayWithoutHoles$4(arr) { if (Array.isArray(arr)) return _arrayLikeToArray$7(arr); }
+function _slicedToArray$7(arr, i) { return _arrayWithHoles$7(arr) || _iterableToArrayLimit$7(arr, i) || _unsupportedIterableToArray$7(arr, i) || _nonIterableRest$7(); }
+function _nonIterableRest$7() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$7(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$7(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$7(o, minLen); }
+function _arrayLikeToArray$7(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$7(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$7(arr) { if (Array.isArray(arr)) return arr; }
+function _defineProperty$5(obj, key, value) { key = _toPropertyKey$5(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$5(arg) { var key = _toPrimitive$5(arg, "string"); return _typeof$6(key) === "symbol" ? key : String(key); }
+function _toPrimitive$5(input, hint) { if (_typeof$6(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$6(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var ActivityUserAnchor = function ActivityUserAnchor(_ref) {
+  var selectedUsers = _ref.selectedUsers,
+    allSelected = _ref.allSelected,
+    onClick = _ref.onClick,
+    isMe = _ref.isMe,
+    isTaskFeed = _ref.isTaskFeed;
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'activityTimelineItem.activityFeed'
+    }),
+    t = _useTranslation.t;
+  var anchorText = isMe ? isTaskFeed ? t('myTasks') : t('myActivities') : allSelected ? t('allUsers') : "".concat(selectedUsers === null || selectedUsers === void 0 ? void 0 : selectedUsers.length, " user").concat((selectedUsers === null || selectedUsers === void 0 ? void 0 : selectedUsers.length) > 1 ? 's' : '');
+  var isSmallView = window.innerWidth < 1250;
+  var iconClass = clsx(styles$5._icon, _defineProperty$5({}, styles$5._filtersTouched, isSmallView && (selectedUsers === null || selectedUsers === void 0 ? void 0 : selectedUsers.length) > 0));
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$5._user_filter_anchor,
+    onClick: onClick,
+    children: [/*#__PURE__*/jsx(IconButton, {
+      name: "user",
+      size: 16,
+      color: "bloobirds",
+      className: iconClass
+    }), !isSmallView && /*#__PURE__*/jsx(Text, {
+      size: "xs",
+      color: "bloobirds",
+      children: anchorText
+    })]
+  });
+};
+var ActivityFeedUserFilter = function ActivityFeedUserFilter(_ref2) {
+  var _settings$user, _settings$user2, _settings$user2$permi, _settings$user3;
+  var selectedUser = _ref2.selectedUser,
+    setUserFilter = _ref2.setUserFilter,
+    _ref2$isTaskFeed = _ref2.isTaskFeed,
+    isTaskFeed = _ref2$isTaskFeed === void 0 ? false : _ref2$isTaskFeed;
+  var _useTranslation2 = useTranslation('translation', {
+      keyPrefix: 'activityTimelineItem.activityFeed'
+    }),
+    t = _useTranslation2.t;
+  var _useUserSearch = useUserSearch(),
+    users = _useUserSearch.users;
+  var _useState = useState(''),
+    _useState2 = _slicedToArray$7(_useState, 2),
+    searchValue = _useState2[0],
+    setSearchValue = _useState2[1];
+  var settings = useUserSettings();
+  var _useVisible = useVisible(),
+    ref = _useVisible.ref,
+    visible = _useVisible.visible,
+    setVisible = _useVisible.setVisible;
+  function handleSelectItem(value) {
+    if (selectedUser !== null && selectedUser !== void 0 && selectedUser.includes(value)) {
+      setUserFilter(selectedUser === null || selectedUser === void 0 ? void 0 : selectedUser.filter(function (user) {
+        return user !== value;
+      }));
+    } else {
+      setUserFilter([].concat(_toConsumableArray$4(selectedUser || []), [value]));
+    }
+  }
+  if (!(settings !== null && settings !== void 0 && (_settings$user = settings.user) !== null && _settings$user !== void 0 && _settings$user.accountAdmin) || !(settings !== null && settings !== void 0 && (_settings$user2 = settings.user) !== null && _settings$user2 !== void 0 && (_settings$user2$permi = _settings$user2.permissions) !== null && _settings$user2$permi !== void 0 && _settings$user2$permi.includes(UserPermission.EDIT_ALL))) return null;
+  return /*#__PURE__*/jsx(Dropdown, {
+    ref: ref,
+    anchor: /*#__PURE__*/jsx(ActivityUserAnchor, {
+      selectedUsers: selectedUser !== null && selectedUser !== void 0 ? selectedUser : [],
+      allSelected: isTaskFeed ? (users === null || users === void 0 ? void 0 : users.length) === selectedUser.length : (users === null || users === void 0 ? void 0 : users.length) === selectedUser.length || !selectedUser || (selectedUser === null || selectedUser === void 0 ? void 0 : selectedUser.length) === 0,
+      onClick: function onClick() {
+        return setVisible(!visible);
+      },
+      isMe: (selectedUser === null || selectedUser === void 0 ? void 0 : selectedUser.length) === 1 && (selectedUser === null || selectedUser === void 0 ? void 0 : selectedUser[0]) === (settings === null || settings === void 0 ? void 0 : (_settings$user3 = settings.user) === null || _settings$user3 === void 0 ? void 0 : _settings$user3.id),
+      isTaskFeed: isTaskFeed
+    }),
+    position: "bottom-start",
+    visible: visible,
+    children: /*#__PURE__*/jsxs(Fragment, {
+      children: [/*#__PURE__*/jsx("div", {
+        className: styles$5._search_input,
+        children: /*#__PURE__*/jsx(Input, {
+          autoFocus: true,
+          width: "100%",
+          size: "labeled",
+          placeholder: t('search'),
+          onChange: setSearchValue,
+          value: searchValue
+        })
+      }), /*#__PURE__*/jsxs("div", {
+        style: {
+          height: '300px',
+          overflowY: 'scroll',
+          padding: '4px'
+        },
+        children: [/*#__PURE__*/jsx(CheckItem, {
+          onClick: function onClick() {
+            return setUserFilter((selectedUser === null || selectedUser === void 0 ? void 0 : selectedUser.length) === (users === null || users === void 0 ? void 0 : users.length) ? [] : users === null || users === void 0 ? void 0 : users.map(function (u) {
+              return u === null || u === void 0 ? void 0 : u.id;
+            }));
+          },
+          checked: (selectedUser === null || selectedUser === void 0 ? void 0 : selectedUser.length) === (users === null || users === void 0 ? void 0 : users.length),
+          children: t('allUsers')
+        }), users === null || users === void 0 ? void 0 : users.reduce(function (acc, user) {
+          if (!searchValue || user !== null && user !== void 0 && user.name.toLowerCase().includes(searchValue.toLowerCase())) {
+            acc.push( /*#__PURE__*/jsx(CheckItem, {
+              value: user === null || user === void 0 ? void 0 : user.id,
+              label: user === null || user === void 0 ? void 0 : user.name,
+              onClick: function onClick() {
+                return handleSelectItem(user.id);
+              },
+              checked: selectedUser === null || selectedUser === void 0 ? void 0 : selectedUser.includes(user.id),
+              children: user === null || user === void 0 ? void 0 : user.name
+            }, user === null || user === void 0 ? void 0 : user.id));
+          }
+          return acc;
+        }, [])]
+      })]
+    })
+  });
+};
+
+function _slicedToArray$6(arr, i) { return _arrayWithHoles$6(arr) || _iterableToArrayLimit$6(arr, i) || _unsupportedIterableToArray$6(arr, i) || _nonIterableRest$6(); }
+function _nonIterableRest$6() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$6(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$6(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$6(o, minLen); }
+function _arrayLikeToArray$6(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$6(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$6(arr) { if (Array.isArray(arr)) return arr; }
+var MagicFilter = function MagicFilter(_ref) {
+  var isDisabled = _ref.isDisabled,
+    _ref$magicFilterHandl = _slicedToArray$6(_ref.magicFilterHandling, 2),
+    activeMagicFilter = _ref$magicFilterHandl[0],
+    setActiveMagicFilter = _ref$magicFilterHandl[1];
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  return /*#__PURE__*/jsx(Button, {
+    iconLeft: "magic",
+    color: isDisabled ? 'softPeanut' : 'purple',
+    size: "small",
+    onClick: function onClick() {
+      setActiveMagicFilter(!activeMagicFilter);
+    },
+    variant: activeMagicFilter ? 'primary' : 'clear',
+    uppercase: false,
+    disabled: isDisabled,
+    className: styles$5._magic_filter,
+    children: t('activityTimelineItem.activityFeed.magicFilter')
+  });
+};
+
+function _typeof$5(obj) { "@babel/helpers - typeof"; return _typeof$5 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$5(obj); }
+function _defineProperty$4(obj, key, value) { key = _toPropertyKey$4(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$4(arg) { var key = _toPrimitive$4(arg, "string"); return _typeof$5(key) === "symbol" ? key : String(key); }
+function _toPrimitive$4(input, hint) { if (_typeof$5(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$5(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var PastActivityLeadFilter = function PastActivityLeadFilter(_ref) {
+  var setLeadFilter = _ref.setLeadFilter,
+    leadsAvailable = _ref.leadsAvailable,
+    selectedLead = _ref.selectedLead,
+    setSelectedLead = _ref.setSelectedLead,
+    _ref$isSEE = _ref.isSEE,
+    isSEE = _ref$isSEE === void 0 ? true : _ref$isSEE;
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'activityTimelineItem.activityFeed'
+    }),
+    t = _useTranslation.t;
+  return /*#__PURE__*/jsxs("div", {
+    className: clsx(styles$5._lead_multiselect, _defineProperty$4({}, styles$5.shortened_input, !isSEE)),
+    children: [/*#__PURE__*/jsx(Icon, {
+      name: "person",
+      color: "bloobirds",
+      size: 16
+    }), /*#__PURE__*/jsx(MultiSelect, {
+      size: "small",
+      borderless: true,
+      value: selectedLead,
+      defaultValue: selectedLead,
+      onChange: function onChange(value) {
+        setSelectedLead(value);
+        setLeadFilter(value);
+      },
+      placeholder: isSEE ? t('selectLead') : t('select'),
+      autocomplete: true,
+      selectAllOption: true,
+      errorStyle: (selectedLead === null || selectedLead === void 0 ? void 0 : selectedLead.length) === 0,
+      itemsTitle: t('activityFrom'),
+      transparent: true,
+      renderDisplayValue: isSEE ? undefined : function (value) {
+        return !value.length || value.length === (leadsAvailable === null || leadsAvailable === void 0 ? void 0 : leadsAvailable.length) ? t('allLeads') : "".concat(value === null || value === void 0 ? void 0 : value.length, " lead").concat((value === null || value === void 0 ? void 0 : value.length) > 1 ? 's' : '');
+      },
+      children: leadsAvailable === null || leadsAvailable === void 0 ? void 0 : leadsAvailable.map(function (filterLead) {
+        return /*#__PURE__*/jsx(CheckItem, {
+          value: filterLead === null || filterLead === void 0 ? void 0 : filterLead.id,
+          label: filterLead === null || filterLead === void 0 ? void 0 : filterLead.name,
+          children: filterLead === null || filterLead === void 0 ? void 0 : filterLead.name
+        }, filterLead === null || filterLead === void 0 ? void 0 : filterLead.id);
+      })
+    })]
+  });
+};
+
+function _typeof$4(obj) { "@babel/helpers - typeof"; return _typeof$4 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$4(obj); }
+function _defineProperty$3(obj, key, value) { key = _toPropertyKey$3(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$3(arg) { var key = _toPrimitive$3(arg, "string"); return _typeof$4(key) === "symbol" ? key : String(key); }
+function _toPrimitive$3(input, hint) { if (_typeof$4(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$4(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _toConsumableArray$3(arr) { return _arrayWithoutHoles$3(arr) || _iterableToArray$3(arr) || _unsupportedIterableToArray$5(arr) || _nonIterableSpread$3(); }
+function _nonIterableSpread$3() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray$3(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function _arrayWithoutHoles$3(arr) { if (Array.isArray(arr)) return _arrayLikeToArray$5(arr); }
+function _slicedToArray$5(arr, i) { return _arrayWithHoles$5(arr) || _iterableToArrayLimit$5(arr, i) || _unsupportedIterableToArray$5(arr, i) || _nonIterableRest$5(); }
+function _nonIterableRest$5() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$5(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$5(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$5(o, minLen); }
+function _arrayLikeToArray$5(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$5(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$5(arr) { if (Array.isArray(arr)) return arr; }
+var PAST_ACTIVITY_FILTERS = [{
+  label: /*#__PURE__*/jsx(Trans, {
+    i18nKey: "activityTimelineItem.pastActivityFilters.calls"
+  }),
+  value: ACTIVITY_TYPES_VALUES_LOGIC_ROLE.CALL
+}, {
+  label: /*#__PURE__*/jsx(Trans, {
+    i18nKey: "activityTimelineItem.pastActivityFilters.emails"
+  }),
+  value: ACTIVITY_TYPES_VALUES_LOGIC_ROLE.EMAIL
+}, {
+  label: /*#__PURE__*/jsx(Trans, {
+    i18nKey: "activityTimelineItem.pastActivityFilters.meetings"
+  }),
+  value: ACTIVITY_TYPES_VALUES_LOGIC_ROLE.MEETING
+}, {
+  label: /*#__PURE__*/jsx(Trans, {
+    i18nKey: "activityTimelineItem.pastActivityFilters.linkedin"
+  }),
+  value: ACTIVITY_TYPES_VALUES_LOGIC_ROLE.LINKEDIN
+}, {
+  label: /*#__PURE__*/jsx(Trans, {
+    i18nKey: "activityTimelineItem.pastActivityFilters.inbound"
+  }),
+  value: ACTIVITY_TYPES_VALUES_LOGIC_ROLE.INBOUND
+}, {
+  label: /*#__PURE__*/jsx(Trans, {
+    i18nKey: "activityTimelineItem.pastActivityFilters.notes"
+  }),
+  value: ACTIVITY_TYPES_VALUES_LOGIC_ROLE.NOTE
+}, {
+  label: /*#__PURE__*/jsx(Trans, {
+    i18nKey: "activityTimelineItem.pastActivityFilters.customTask"
+  }),
+  value: ACTIVITY_TYPES_VALUES_LOGIC_ROLE.CUSTOM_TASK
+}, {
+  label: /*#__PURE__*/jsx(Trans, {
+    i18nKey: "activityTimelineItem.pastActivityFilters.cadence"
+  }),
+  value: 'ACTIVITY__TYPE__CADENCE'
+}, {
+  label: /*#__PURE__*/jsx(Trans, {
+    i18nKey: "activityTimelineItem.pastActivityFilters.updates"
+  }),
+  value: 'ACTIVITY__TYPE__STATUS'
+}];
+var PastActivityTypeFilter = function PastActivityTypeFilter(_ref) {
+  var _JSON$parse;
+  var filters = _ref.filters,
+    setTypeFilter = _ref.setTypeFilter,
+    sidePeekEnabled = _ref.sidePeekEnabled;
+  var isNoStatusBased = useIsNoStatusPlanAccount();
+  var _useState = useState([]),
+    _useState2 = _slicedToArray$5(_useState, 2),
+    tabGroupValue = _useState2[0],
+    setTabGroupValue = _useState2[1];
+  var anchorRef = useRef();
+  var _useVisible = useVisible(false, anchorRef),
+    visible = _useVisible.visible,
+    setVisible = _useVisible.setVisible,
+    ref = _useVisible.ref;
+  var _useUserHelpers = useUserHelpers(),
+    saveCustom = _useUserHelpers.saveCustom,
+    helpers = _useUserHelpers.helpers;
+  var activityFilters = (helpers === null || helpers === void 0 ? void 0 : helpers['ACTIVITY_FILTERS']) && ((_JSON$parse = JSON.parse(helpers === null || helpers === void 0 ? void 0 : helpers['ACTIVITY_FILTERS'])) === null || _JSON$parse === void 0 ? void 0 : _JSON$parse.filter(function (i) {
+    return i;
+  }));
+  var _useState3 = useState(activityFilters || PAST_ACTIVITY_FILTERS.map(function (_ref2) {
+      var value = _ref2.value;
+      if (value !== 'ACTIVITY__TYPE__STATUS') return value;
+    })),
+    _useState4 = _slicedToArray$5(_useState3, 2),
+    visibleFilters = _useState4[0],
+    setVisibleFilters = _useState4[1];
+  var filtersToDisplay = PAST_ACTIVITY_FILTERS === null || PAST_ACTIVITY_FILTERS === void 0 ? void 0 : PAST_ACTIVITY_FILTERS.filter(function (_ref3) {
+    var value = _ref3.value;
+    return isNoStatusBased ? value !== ACTIVITY_TYPES_VALUES_LOGIC_ROLE.STATUS : true;
+  });
+  function toggleVisible() {
+    setVisible(!visible);
+  }
+  function handleFiltersVisibility(filterValue) {
+    var filtersToSave;
+    if (visibleFilters !== null && visibleFilters !== void 0 && visibleFilters.includes(filterValue)) {
+      filtersToSave = visibleFilters === null || visibleFilters === void 0 ? void 0 : visibleFilters.filter(function (filter) {
+        return filter !== filterValue;
+      });
+    } else {
+      filtersToSave = [].concat(_toConsumableArray$3(visibleFilters), [filterValue]);
+    }
+    saveCustom({
+      key: 'ACTIVITY_FILTERS',
+      data: JSON.stringify(filtersToSave)
+    });
+    if ((tabGroupValue === null || tabGroupValue === void 0 ? void 0 : tabGroupValue.length) === 0) {
+      setTypeFilter(filtersToSave);
+    } else {
+      setTypeFilter(tabGroupValue);
+    }
+    setVisibleFilters(filtersToSave);
+  }
+  function handleTagGroupChange(value) {
+    var valueToSave = value;
+    if (value.length === PAST_ACTIVITY_FILTERS.length) valueToSave = [];
+    setTabGroupValue(valueToSave);
+    setTypeFilter(valueToSave);
+  }
+  useEffect(function () {
+    setTabGroupValue(filters.type);
+  }, []);
+  var filtersClasses = clsx(styles$5._filters, _defineProperty$3({}, styles$5._filters__sidePeek, sidePeekEnabled));
+  return /*#__PURE__*/jsx("div", {
+    className: filtersClasses,
+    children: /*#__PURE__*/jsxs(TagGroup, {
+      value: tabGroupValue,
+      onChange: handleTagGroupChange,
+      uppercase: false,
+      children: [filtersToDisplay.map(function (_ref4) {
+        var label = _ref4.label,
+          value = _ref4.value;
+        if (visibleFilters !== null && visibleFilters !== void 0 && visibleFilters.includes(value)) {
+          return /*#__PURE__*/jsx(Tag, {
+            value: value,
+            children: label
+          }, value);
+        }
+      }), /*#__PURE__*/jsx(Dropdown, {
+        visible: visible,
+        ref: ref,
+        anchor: /*#__PURE__*/jsx("div", {
+          ref: anchorRef,
+          children: /*#__PURE__*/jsx(IconButton, {
+            name: "settings",
+            color: "bloobirds",
+            onClick: toggleVisible
+          })
+        }),
+        width: 150,
+        children: filtersToDisplay.map(function (_ref5, index) {
+          var value = _ref5.value,
+            label = _ref5.label;
+          var isHidden = !(visibleFilters !== null && visibleFilters !== void 0 && visibleFilters.includes(value));
+          return /*#__PURE__*/jsx("div", {
+            className: styles$5._filter_selector_items,
+            children: /*#__PURE__*/jsxs(Item, {
+              value: value,
+              onClick: function onClick(value) {
+                return handleFiltersVisibility(value);
+              },
+              className: styles$5._filter_type_item_wrapper,
+              children: [/*#__PURE__*/jsx(Text, {
+                size: "s",
+                color: isHidden ? 'softPeanut' : 'bloobirds',
+                children: label
+              }), /*#__PURE__*/jsx(Icon, {
+                name: isHidden ? 'eyeOff' : 'eye'
+              })]
+            }, value)
+          }, index);
+        })
+      })]
+    })
+  });
+};
+
+var css_248z$4 = ".pastActivity-module_wrapper__wXaMH {\n  display: flex;\n  flex-direction: column;\n  align-items: flex-start;\n  justify-content: flex-start;\n  height: 100%;\n}\n\n.pastActivity-module_feed__vIHRd {\n  padding: 16px 0;\n  box-sizing: border-box;\n  height: 100%;\n  width: 100%;\n  display: flex;\n  flex-direction: column;\n}\n\n.pastActivity-module_header__AUE6b {\n  display: flex;\n  flex-direction: column;\n  padding-bottom: 8px;\n  box-sizing: border-box;\n  padding-left: 24px;\n  padding-right: 24px;\n}\n\n.pastActivity-module_headerRow__jNFeH {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 8px;\n}\n\n.pastActivity-module_headerSecondRow__hbw61 {\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n}\n\n.pastActivity-module_leftHeader__ZzGMC {\n  display: flex;\n  align-items: center;\n  justify-content: flex-start;\n  gap: 8px;\n}\n\n.pastActivity-module_leftHeader__ZzGMC > button {\n  padding: 0;\n  height: 18px;\n}\n\n.pastActivity-module_leads__U7UfH {\n  display: flex;\n}\n\n.pastActivity-module__top_filters__t3EIJ {\n  display: flex;\n  align-items: center;\n}\n\n.pastActivity-module__top_filters__t3EIJ > button {\n  display: flex;\n  font-size: 11px;\n}\n\n.pastActivity-module__lead_multiselect__ZljQL {\n  margin-right: -10px;\n}\n\n.pastActivity-module__lead_multiselect__ZljQL > div > div {\n  width: auto;\n  margin-right: -10px;\n}\n\n.pastActivity-module__lead_multiselect__ZljQL > svg {\n  margin-right: -4px;\n}\n\n.pastActivity-module__lead_multiselect__ZljQL > div > div > input {\n  color: var(--bloobirds) !important;\n  max-width: 128px;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  font-size: 11px;\n  height: 22px;\n}\n\n.pastActivity-module__lead_multiselect__ZljQL > div > div > svg {\n  display: none;\n}\n\n.pastActivity-module__lead_multiselect__ZljQL input {\n  box-shadow: none;\n}\n\n.pastActivity-module__lead_multiselect_header__N3NET {\n  margin-left: 16px;\n}\n\n.pastActivity-module_no_results__zhoKl {\n  height: 86%;\n  width: 100%;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n\n.pastActivity-module_skeleton__1bH-Q {\n  padding: 15px 15px 0 15px;\n}\n\n.pastActivity-module_past_activity_feed_container__cE0PW {\n  overflow: scroll;\n  flex: 1;\n  box-sizing: border-box;\n}\n\n.pastActivity-module_suggestionsButton__c-Nym {\n  background: var(--lightestPurple) !important;\n  border: 1px solid var(--lightPurple) !important;\n  border-radius: 4px;\n  padding: 2px 6px !important;\n  margin-left: 4px !important;\n}\n\n.pastActivity-module__no_results_container__22SKo {\n  height: 100%;\n  width: 80%;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  gap: 10px;\n  margin: auto;\n}\n";
+var styles$4 = {"wrapper":"pastActivity-module_wrapper__wXaMH","feed":"pastActivity-module_feed__vIHRd","header":"pastActivity-module_header__AUE6b","headerRow":"pastActivity-module_headerRow__jNFeH","headerSecondRow":"pastActivity-module_headerSecondRow__hbw61","leftHeader":"pastActivity-module_leftHeader__ZzGMC","leads":"pastActivity-module_leads__U7UfH","_top_filters":"pastActivity-module__top_filters__t3EIJ","_lead_multiselect":"pastActivity-module__lead_multiselect__ZljQL","_lead_multiselect_header":"pastActivity-module__lead_multiselect_header__N3NET","no_results":"pastActivity-module_no_results__zhoKl","skeleton":"pastActivity-module_skeleton__1bH-Q","past_activity_feed_container":"pastActivity-module_past_activity_feed_container__cE0PW","suggestionsButton":"pastActivity-module_suggestionsButton__c-Nym","_no_results_container":"pastActivity-module__no_results_container__22SKo"};
+styleInject(css_248z$4);
+
+var NoDataPage = function NoDataPage(_ref) {
+  var objectName = _ref.objectName;
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'smartEmailModal.components.noDataPage'
+    }),
+    t = _useTranslation.t;
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$4._no_results_container,
+    children: [/*#__PURE__*/jsx(Icon, {
+      name: "searchNone",
+      color: "softPeanut",
+      size: 36
+    }), /*#__PURE__*/jsxs("div", {
+      children: [/*#__PURE__*/jsx(Text, {
+        size: "m",
+        align: "center",
+        color: "softPeanut",
+        weight: "bold",
+        children: t('title', {
+          objectName: objectName
+        })
+      }), /*#__PURE__*/jsx(Text, {
+        size: "s",
+        align: "center",
+        color: "softPeanut",
+        children: t('subtitle')
+      })]
+    })]
+  });
+};
+var NoResultsPage = function NoResultsPage() {
+  var _useTranslation2 = useTranslation('translation', {
+      keyPrefix: 'smartEmailModal.components.noResultsPage'
+    }),
+    t = _useTranslation2.t;
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$4._no_results_container,
+    children: [/*#__PURE__*/jsx(Icon, {
+      name: "historyNonFlipped",
+      color: "bloobirds",
+      size: 36
+    }), /*#__PURE__*/jsxs("div", {
+      children: [/*#__PURE__*/jsx(Text, {
+        size: "m",
+        align: "center",
+        color: "softPeanut",
+        weight: "bold",
+        children: t('title')
+      }), /*#__PURE__*/jsxs(Text, {
+        size: "s",
+        align: "center",
+        color: "softPeanut",
+        children: [t('subtitle'), ' ']
+      })]
+    })]
+  });
+};
+
+function _typeof$3(obj) { "@babel/helpers - typeof"; return _typeof$3 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$3(obj); }
+function ownKeys$2(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$2(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$2(Object(source), !0).forEach(function (key) { _defineProperty$2(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$2(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$2(obj, key, value) { key = _toPropertyKey$2(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$2(arg) { var key = _toPrimitive$2(arg, "string"); return _typeof$3(key) === "symbol" ? key : String(key); }
+function _toPrimitive$2(input, hint) { if (_typeof$3(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$3(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _toConsumableArray$2(arr) { return _arrayWithoutHoles$2(arr) || _iterableToArray$2(arr) || _unsupportedIterableToArray$4(arr) || _nonIterableSpread$2(); }
+function _nonIterableSpread$2() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray$2(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function _arrayWithoutHoles$2(arr) { if (Array.isArray(arr)) return _arrayLikeToArray$4(arr); }
+function _slicedToArray$4(arr, i) { return _arrayWithHoles$4(arr) || _iterableToArrayLimit$4(arr, i) || _unsupportedIterableToArray$4(arr, i) || _nonIterableRest$4(); }
+function _nonIterableRest$4() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$4(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$4(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$4(o, minLen); }
+function _arrayLikeToArray$4(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$4(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$4(arr) { if (Array.isArray(arr)) return arr; }
+var activityTypes = [ACTIVITY_TYPES_VALUES_LOGIC_ROLE.CALL, ACTIVITY_TYPES_VALUES_LOGIC_ROLE.EMAIL, ACTIVITY_TYPES_VALUES_LOGIC_ROLE.LINKEDIN, ACTIVITY_TYPES_VALUES_LOGIC_ROLE.MEETING, ACTIVITY_TYPES_VALUES_LOGIC_ROLE.NOTE, ACTIVITY_TYPES_VALUES_LOGIC_ROLE.INBOUND, ACTIVITY_TYPES_VALUES_LOGIC_ROLE.CUSTOM_TASK, 'ACTIVITY__TYPE__CADENCE'];
+var newActivitiesFilterAtom = atom({
+  key: 'newActivityTypeFilterAtom',
+  "default": {
+    type: [],
+    lead: [],
+    user: [],
+    magicFilter: false,
+    activeBobjectId: undefined
+  }
+});
+var useActivityFeed = function useActivityFeed(_ref) {
+  var _user$permissions, _JSON$parse, _activeBobject$id2;
+  var activeBobject = _ref.activeBobject,
+    subscribeMutator = _ref.subscribeMutator;
+  var activeBobjectId = activeBobject === null || activeBobject === void 0 ? void 0 : activeBobject.id.value;
+  var activeBobjectType = activeBobject === null || activeBobject === void 0 ? void 0 : activeBobject.id.typeName;
+  var settings = useUserSettings();
+  var user = settings === null || settings === void 0 ? void 0 : settings.user;
+  var canSeeOthersActivities = user === null || user === void 0 ? void 0 : (_user$permissions = user.permissions) === null || _user$permissions === void 0 ? void 0 : _user$permissions.includes(UserPermission.USER_ACTIVITY_VISIBILITY);
+  var _useUserHelpers = useUserHelpers(),
+    helpers = _useUserHelpers.helpers;
+  var activityVisibleFilters = helpers !== null && helpers !== void 0 && helpers['ACTIVITY_FILTERS'] ? (_JSON$parse = JSON.parse(helpers === null || helpers === void 0 ? void 0 : helpers['ACTIVITY_FILTERS'])) === null || _JSON$parse === void 0 ? void 0 : _JSON$parse.filter(function (i) {
+    return i;
+  }) : activityTypes;
+  var _useRecoilState = useRecoilState(newActivitiesFilterAtom),
+    _useRecoilState2 = _slicedToArray$4(_useRecoilState, 2),
+    filters = _useRecoilState2[0],
+    _setFilters = _useRecoilState2[1];
+  var resetFilters = useResetRecoilState(newActivitiesFilterAtom);
+  var placeholderItems = useRef([]);
+  var _useState = useState(0),
+    _useState2 = _slicedToArray$4(_useState, 2),
+    newFeedIndex = _useState2[0],
+    setNewFeedIndex = _useState2[1];
+  useEffect(function () {
+    mutate();
+  }, []);
+  var fetchNextPage = function fetchNextPage() {
+    placeholderItems.current = _toConsumableArray$2(newActivityFeedData ? newActivityFeedData.activities : []);
+    setNewFeedIndex(newActivityFeedData === null || newActivityFeedData === void 0 ? void 0 : newActivityFeedData.index);
+  };
+  function fetchNewActivityFeed(body) {
+    return api.post('/utils/service/activity/groupActivities', body).then(function (data) {
+      var _placeholderItems$cur;
+      return _objectSpread$2(_objectSpread$2({}, data.data), {}, {
+        activities: [].concat(_toConsumableArray$2((_placeholderItems$cur = placeholderItems.current) !== null && _placeholderItems$cur !== void 0 ? _placeholderItems$cur : []), _toConsumableArray$2(data.data.activities))
+      });
+    });
+  }
+  var query = {
+    Company: _defineProperty$2({}, ACTIVITY_FIELDS_LOGIC_ROLE.COMPANY, [activeBobjectId]),
+    Lead: _defineProperty$2({}, ACTIVITY_FIELDS_LOGIC_ROLE.LEAD, [activeBobjectId]),
+    Opportunity: _defineProperty$2({}, ACTIVITY_FIELDS_LOGIC_ROLE.OPPORTUNITY, [activeBobjectId])
+  };
+  var _useSWR = useSWR(activeBobject && "/".concat(activeBobject.id.value, "/groupActivities/").concat(newFeedIndex, "/").concat(JSON.stringify(filters)), function () {
+      var _filters$lead, _filters$user;
+      //TODO figure out why the resetRecoil doesnt update this values
+      var filteredTypes = filters.activeBobjectId !== activeBobjectId ? [] : filters.type;
+      var bobjectQuery = query[activeBobjectType];
+      return fetchNewActivityFeed({
+        query: _objectSpread$2(_objectSpread$2(_objectSpread$2(_objectSpread$2({}, filters.magicFilter ? bobjectQuery : _defineProperty$2({}, ACTIVITY_FIELDS_LOGIC_ROLE.TYPE, (filteredTypes === null || filteredTypes === void 0 ? void 0 : filteredTypes.length) !== 0 ? filteredTypes : activityVisibleFilters)), !canSeeOthersActivities && _defineProperty$2({}, ACTIVITY_FIELDS_LOGIC_ROLE.USER, user === null || user === void 0 ? void 0 : user.id)), ((_filters$lead = filters.lead) === null || _filters$lead === void 0 ? void 0 : _filters$lead.length) !== 0 && _defineProperty$2({}, ACTIVITY_FIELDS_LOGIC_ROLE.LEAD, filters.lead)), ((_filters$user = filters.user) === null || _filters$user === void 0 ? void 0 : _filters$user.length) !== 0 && _defineProperty$2({}, ACTIVITY_FIELDS_LOGIC_ROLE.USER, filters.user)),
+        zoneId: getUserTimeZone(),
+        bobjectId: activeBobjectId,
+        pageSize: 20,
+        index: newFeedIndex,
+        queries: filters.magicFilter ? magicFilterORs(activeBobjectType) : []
+      });
+    }, {
+      use: [keepPreviousResponse]
+    }),
+    newActivityFeedData = _useSWR.data,
+    isLoading = _useSWR.isLoading,
+    mutate = _useSWR.mutate;
+  //TODO check this interaction when theres only one activityFeed left
+  useEffect(function () {
+    var _activeBobject$id;
+    if ((activeBobject === null || activeBobject === void 0 ? void 0 : (_activeBobject$id = activeBobject.id) === null || _activeBobject$id === void 0 ? void 0 : _activeBobject$id.value) !== filters.activeBobjectId) {
+      resetFilters();
+    }
+  }, [activeBobject === null || activeBobject === void 0 ? void 0 : (_activeBobject$id2 = activeBobject.id) === null || _activeBobject$id2 === void 0 ? void 0 : _activeBobject$id2.value]);
+  useEventSubscription('data-Activity', function (data) {
+    var _activeBobject$id3, _activeBobject$id4;
+    if (((data === null || data === void 0 ? void 0 : data.operation) === 'CREATE' || (data === null || data === void 0 ? void 0 : data.operation) === 'UPDATE') && ((data === null || data === void 0 ? void 0 : data.relatedLead) === (activeBobject === null || activeBobject === void 0 ? void 0 : (_activeBobject$id3 = activeBobject.id) === null || _activeBobject$id3 === void 0 ? void 0 : _activeBobject$id3.value) || (data === null || data === void 0 ? void 0 : data.relatedCompany) === (activeBobject === null || activeBobject === void 0 ? void 0 : (_activeBobject$id4 = activeBobject.id) === null || _activeBobject$id4 === void 0 ? void 0 : _activeBobject$id4.value))) {
+      mutate();
+    }
+  });
+  var isAPP = ['app.dev-bloobirds.com', 'app.bloobirds.com', 'localhost'].includes(window.location.hostname) || window.location.hostname.includes('bloobirds-platform-frontend.pages.dev');
+  if (!isAPP) {
+    subscribeMutator === null || subscribeMutator === void 0 ? void 0 : subscribeMutator(mutate);
+  }
+  return {
+    newActivityFeedData: newActivityFeedData,
+    newActivitiesLoading: isLoading,
+    fetchNextPage: fetchNextPage,
+    mutate: mutate,
+    filters: filters,
+    setFilters: function setFilters(value) {
+      placeholderItems.current = [];
+      setNewFeedIndex(0);
+      _setFilters(value);
+    },
+    resetTypeFilter: function resetTypeFilter() {
+      _setFilters(_objectSpread$2(_objectSpread$2({}, filters), {}, {
+        type: []
+      }));
+    },
+    activeMagicFilter: filters.magicFilter,
+    setActiveMagicFilter: function setActiveMagicFilter(value) {
+      return _setFilters(_objectSpread$2(_objectSpread$2({}, filters), {}, {
+        magicFilter: value
+      }));
+    }
+  };
+};
+
+var css_248z$3 = ".activitySkeleton-module__list__Mk9h3 {\n  margin-top: 32px;\n}\n\n.activitySkeleton-module__date_title__0FKE8 {\n  margin-bottom: 8px;\n  width: 100%;\n}\n\n.activitySkeleton-module__card__od87b {\n  margin-bottom: 12px;\n}\n\n.activitySkeleton-module__fade_enter__z8ms9 {\n  opacity: 0;\n}\n\n.activitySkeleton-module__fade_enter_active__KpbY6 {\n  opacity: 1;\n  transition: opacity 300ms;\n}\n\n.activitySkeleton-module__fade_exit__AU573 {\n  opacity: 1;\n}\n\n.activitySkeleton-module__fade_exit_active__9zRUM {\n  opacity: 0;\n  transition: opacity 300ms;\n}\n";
+var styles$3 = {"_list":"activitySkeleton-module__list__Mk9h3","_date_title":"activitySkeleton-module__date_title__0FKE8","_card":"activitySkeleton-module__card__od87b","_fade_enter":"activitySkeleton-module__fade_enter__z8ms9","_fade_enter_active":"activitySkeleton-module__fade_enter_active__KpbY6","_fade_exit":"activitySkeleton-module__fade_exit__AU573","_fade_exit_active":"activitySkeleton-module__fade_exit_active__9zRUM"};
+styleInject(css_248z$3);
+
+var ActivitySkeleton = function ActivitySkeleton(_ref) {
+  var visible = _ref.visible;
+  return /*#__PURE__*/jsx(Transition$1, {
+    type: "fade",
+    visible: visible,
+    children: /*#__PURE__*/jsx("div", {
+      className: styles$3._list,
+      children: range(12).map(function (number) {
+        return /*#__PURE__*/jsx(Fragment$1, {
+          children: /*#__PURE__*/jsx("div", {
+            className: styles$3._card,
+            children: /*#__PURE__*/jsx(Skeleton, {
+              variant: "rect",
+              width: "100%",
+              height: 48
+            })
+          })
+        }, number);
+      })
+    })
+  });
+};
+var classNames = {
+  fade: {
+    appear: styles$3._fade_enter,
+    appearActive: styles$3._fade_enter_active,
+    enter: styles$3._fade_enter,
+    enterActive: styles$3._fade_enter_active,
+    exit: styles$3._fade_exit,
+    exitActive: styles$3._fade_exit_active
+  }
+};
+var Transition$1 = function Transition(_ref2) {
+  var children = _ref2.children,
+    visible = _ref2.visible,
+    type = _ref2.type;
+  return (
+    /*#__PURE__*/
+    // @ts-ignore
+    jsx(CSSTransition, {
+      appear: true,
+      "in": visible,
+      unmountOnExit: true,
+      timeout: 300,
+      classNames: classNames[type],
+      children: children
+    })
+  );
+};
+
+function _typeof$2(obj) { "@babel/helpers - typeof"; return _typeof$2 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$2(obj); }
+function ownKeys$1(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$1(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$1(Object(source), !0).forEach(function (key) { _defineProperty$1(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$1(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$1(obj, key, value) { key = _toPropertyKey$1(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$1(arg) { var key = _toPrimitive$1(arg, "string"); return _typeof$2(key) === "symbol" ? key : String(key); }
+function _toPrimitive$1(input, hint) { if (_typeof$2(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$2(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$3(arr, i) { return _arrayWithHoles$3(arr) || _iterableToArrayLimit$3(arr, i) || _unsupportedIterableToArray$3(arr, i) || _nonIterableRest$3(); }
+function _nonIterableRest$3() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$3(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$3(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$3(o, minLen); }
+function _arrayLikeToArray$3(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$3(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$3(arr) { if (Array.isArray(arr)) return arr; }
+var PastActivityFilters = function PastActivityFilters(_ref) {
+  var _filters$type;
+  var _ref$magicFilterHandl = _slicedToArray$3(_ref.magicFilterHandling, 2),
+    activeMagicFilter = _ref$magicFilterHandl[0],
+    setActiveMagicFilter = _ref$magicFilterHandl[1],
+    leadFilterOptions = _ref.leadFilterOptions,
+    filters = _ref.filters,
+    setFilters = _ref.setFilters,
+    activeBobject = _ref.activeBobject;
+  var _useActivityFeed = useActivityFeed$1({
+      activeBobject: activeBobject,
+      subscribeMutator: function subscribeMutator() {
+        return undefined;
+      }
+    }),
+    newActivityFeedFilters = _useActivityFeed.filters,
+    setNewActivityFeedFilters = _useActivityFeed.setFilters,
+    setNewFeedMagicFilter = _useActivityFeed.setActiveMagicFilter;
+  var _useState = useState(false),
+    _useState2 = _slicedToArray$3(_useState, 2),
+    showTypeFilters = _useState2[0],
+    setShowTypeFilters = _useState2[1];
+  var _useUserHelpers = useUserHelpers(),
+    has = _useUserHelpers.has;
+  has(ExtensionHelperKeys.ACTIVITY_TIMELINE_TOOLTIP_BLOCK);
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'smartEmailModal.pastActivityTab'
+    }),
+    t = _useTranslation.t;
+  function setUserFilter(value) {
+    if (!isEqual(value, filters.user)) {
+      var _activeBobject$id;
+      //@ts-ignore
+      setFilters(_objectSpread$1(_objectSpread$1({}, filters), {}, {
+        user: value
+      }));
+      setNewActivityFeedFilters(_objectSpread$1(_objectSpread$1({}, newActivityFeedFilters), {}, {
+        user: value,
+        activeBobjectId: activeBobject === null || activeBobject === void 0 ? void 0 : (_activeBobject$id = activeBobject.id) === null || _activeBobject$id === void 0 ? void 0 : _activeBobject$id.value
+      }));
+    }
+  }
+  function setLeadFilter(value) {
+    if (!isEqual(value, filters.lead)) {
+      var _activeBobject$id2;
+      //@ts-ignore
+      setFilters(_objectSpread$1(_objectSpread$1({}, filters), {}, {
+        lead: value
+      }));
+      setNewActivityFeedFilters(_objectSpread$1(_objectSpread$1({}, newActivityFeedFilters), {}, {
+        lead: value,
+        activeBobjectId: activeBobject === null || activeBobject === void 0 ? void 0 : (_activeBobject$id2 = activeBobject.id) === null || _activeBobject$id2 === void 0 ? void 0 : _activeBobject$id2.value
+      }));
+    }
+  }
+  function setTypeFilter(value) {
+    if (!isEqual(value, filters.type)) {
+      var _activeBobject$id3;
+      //@ts-ignore
+      setFilters(_objectSpread$1(_objectSpread$1({}, filters), {}, {
+        type: value
+      }));
+      setNewActivityFeedFilters(_objectSpread$1(_objectSpread$1({}, newActivityFeedFilters), {}, {
+        type: value,
+        activeBobjectId: activeBobject === null || activeBobject === void 0 ? void 0 : (_activeBobject$id3 = activeBobject.id) === null || _activeBobject$id3 === void 0 ? void 0 : _activeBobject$id3.value
+      }));
+    }
+  }
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsxs("div", {
+      className: styles$4.header,
+      children: [/*#__PURE__*/jsxs("div", {
+        className: styles$4.headerRow,
+        children: [/*#__PURE__*/jsxs("div", {
+          className: styles$4.leftHeader,
+          children: [/*#__PURE__*/jsx(Text, {
+            size: "m",
+            color: "peanut",
+            weight: "medium",
+            children: t('title')
+          }), /*#__PURE__*/jsx(Button, {
+            iconLeft: "slidersHor",
+            size: "small",
+            onClick: function onClick() {
+              setShowTypeFilters(!showTypeFilters);
+            },
+            color: activeMagicFilter ? 'softPeanut' : 'bloobirds',
+            variant: showTypeFilters ? 'primary' : 'clear',
+            disabled: activeMagicFilter
+          })]
+        }), /*#__PURE__*/jsx("div", {
+          className: styles$4._top_filters,
+          children: /*#__PURE__*/jsx(MagicFilter, {
+            isDisabled: ((_filters$type = filters.type) === null || _filters$type === void 0 ? void 0 : _filters$type.length) !== 0,
+            magicFilterHandling: [activeMagicFilter, function () {
+              setShowTypeFilters(false);
+              setActiveMagicFilter(!activeMagicFilter);
+              setNewFeedMagicFilter(!activeMagicFilter);
+            }]
+          })
+        })]
+      }), /*#__PURE__*/jsxs("div", {
+        className: styles$4.headerSecondRow,
+        children: [/*#__PURE__*/jsx(ActivityFeedUserFilter, {
+          selectedUser: filters.user,
+          setUserFilter: setUserFilter
+        }), /*#__PURE__*/jsx(PastActivityLeadFilter, {
+          setLeadFilter: setLeadFilter,
+          leadsAvailable: leadFilterOptions
+          //@ts-ignore
+          ,
+          selectedLead: filters.lead,
+          setSelectedLead: setLeadFilter
+        })]
+      })]
+    }), showTypeFilters && /*#__PURE__*/jsx(PastActivityTypeFilter, {
+      filters: filters,
+      setTypeFilter: setTypeFilter
+    })]
+  });
+};
+
+function _typeof$1(obj) { "@babel/helpers - typeof"; return _typeof$1 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$1(obj); }
+function _toConsumableArray$1(arr) { return _arrayWithoutHoles$1(arr) || _iterableToArray$1(arr) || _unsupportedIterableToArray$2(arr) || _nonIterableSpread$1(); }
+function _nonIterableSpread$1() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray$1(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function _arrayWithoutHoles$1(arr) { if (Array.isArray(arr)) return _arrayLikeToArray$2(arr); }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof$1(key) === "symbol" ? key : String(key); }
+function _toPrimitive(input, hint) { if (_typeof$1(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$1(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$2(arr, i) { return _arrayWithHoles$2(arr) || _iterableToArrayLimit$2(arr, i) || _unsupportedIterableToArray$2(arr, i) || _nonIterableRest$2(); }
+function _nonIterableRest$2() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$2(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$2(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$2(o, minLen); }
+function _arrayLikeToArray$2(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$2(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$2(arr) { if (Array.isArray(arr)) return arr; }
+var PAGE_SIZE = 20;
+var usePastActivity = function usePastActivity(extraData) {
+  var _user$permissions, _JSON$parse, _activeBobject$id7, _injectReferencesSear;
+  var activeBobject = extraData.activeBobject,
+    opportunity = extraData.opportunity,
+    pageBobjectType = extraData.pageBobjectType,
+    filters = extraData.filters,
+    setFilters = extraData.setFilters;
+  var _useState = useState(),
+    _useState2 = _slicedToArray$2(_useState, 2),
+    activeMagicFilter = _useState2[0],
+    setActiveMagicFilter = _useState2[1];
+  var _useUserHelpers = useUserHelpers(),
+    helpers = _useUserHelpers.helpers;
+  var settings = useUserSettings();
+  var user = settings === null || settings === void 0 ? void 0 : settings.user;
+  var canSeeOthersActivities = user === null || user === void 0 ? void 0 : (_user$permissions = user.permissions) === null || _user$permissions === void 0 ? void 0 : _user$permissions.includes(UserPermission.USER_ACTIVITY_VISIBILITY);
+  var activityVisibleFilters = (helpers === null || helpers === void 0 ? void 0 : helpers['ACTIVITY_FILTERS']) && ((_JSON$parse = JSON.parse(helpers === null || helpers === void 0 ? void 0 : helpers['ACTIVITY_FILTERS'])) === null || _JSON$parse === void 0 ? void 0 : _JSON$parse.filter(function (i) {
+    return i;
+  }));
+  var _useState3 = useState(1),
+    _useState4 = _slicedToArray$2(_useState3, 2),
+    page = _useState4[0],
+    setPage = _useState4[1];
+  var fetchNextPage = function fetchNextPage() {
+    setPage(page + 1);
+  };
+  //@ts-ignore
+  var query = useMemo(function () {
+    var _activeBobject$id, _activeBobject$id2;
+    var filteredTypes = filters === null || filters === void 0 ? void 0 : filters.type;
+    var filteredLeads = filters === null || filters === void 0 ? void 0 : filters.lead;
+    var filteredUsers = filters === null || filters === void 0 ? void 0 : filters.user;
+    var relatedQuery = {};
+    if ((filteredLeads === null || filteredLeads === void 0 ? void 0 : filteredLeads.length) === 0 &&
+    //@ts-ignore
+    [activeBobject === null || activeBobject === void 0 ? void 0 : (_activeBobject$id = activeBobject.id) === null || _activeBobject$id === void 0 ? void 0 : _activeBobject$id.typeName, activeBobject === null || activeBobject === void 0 ? void 0 : activeBobject.bobjectType].includes(BobjectTypes.Company)) {
+      relatedQuery[ACTIVITY_FIELDS_LOGIC_ROLE.COMPANY] = [activeBobject === null || activeBobject === void 0 ? void 0 : activeBobject.id.value];
+    } else if ((filteredLeads === null || filteredLeads === void 0 ? void 0 : filteredLeads.length) === 0 &&
+    //@ts-ignore
+    [activeBobject === null || activeBobject === void 0 ? void 0 : (_activeBobject$id2 = activeBobject.id) === null || _activeBobject$id2 === void 0 ? void 0 : _activeBobject$id2.typeName, activeBobject === null || activeBobject === void 0 ? void 0 : activeBobject.bobjectType].includes(BobjectTypes.Lead)) {
+      var _activeBobject$id3;
+      relatedQuery[ACTIVITY_FIELDS_LOGIC_ROLE.LEAD] = [activeBobject === null || activeBobject === void 0 ? void 0 : (_activeBobject$id3 = activeBobject.id) === null || _activeBobject$id3 === void 0 ? void 0 : _activeBobject$id3.value];
+    } else {
+      relatedQuery[ACTIVITY_FIELDS_LOGIC_ROLE.LEAD] = (filteredLeads === null || filteredLeads === void 0 ? void 0 : filteredLeads.length) === 0 ? [''] : filteredLeads;
+    }
+    var activitiesQuery = activeMagicFilter ? null : _defineProperty({}, ACTIVITY_FIELDS_LOGIC_ROLE.TYPE, (filteredTypes === null || filteredTypes === void 0 ? void 0 : filteredTypes.length) !== 0 ? filteredTypes : activityVisibleFilters);
+    return _objectSpread(_objectSpread(_objectSpread({}, activitiesQuery), pageBobjectType !== BobjectTypes.Opportunity && relatedQuery), (!canSeeOthersActivities || filteredUsers) && _defineProperty({}, ACTIVITY_FIELDS_LOGIC_ROLE.USER, !canSeeOthersActivities ? user === null || user === void 0 ? void 0 : user.id : filteredUsers));
+  }, [filters, activeMagicFilter, canSeeOthersActivities]);
+  var queries = useMemo(function () {
+    var _opportunity$id, _activeBobject$id4, _activeBobject$id5;
+    var filteredLeads = filters === null || filters === void 0 ? void 0 : filters.lead;
+    var oppORs = [opportunity && _defineProperty({}, ACTIVITY_FIELDS_LOGIC_ROLE.OPPORTUNITY, [opportunity === null || opportunity === void 0 ? void 0 : (_opportunity$id = opportunity.id) === null || _opportunity$id === void 0 ? void 0 : _opportunity$id.value]), _defineProperty(_defineProperty({}, ACTIVITY_FIELDS_LOGIC_ROLE.LEAD, (filteredLeads === null || filteredLeads === void 0 ? void 0 : filteredLeads.length) === 0 && (activeBobject === null || activeBobject === void 0 ? void 0 : (_activeBobject$id4 = activeBobject.id) === null || _activeBobject$id4 === void 0 ? void 0 : _activeBobject$id4.typeName) === BobjectTypes.Lead ? activeBobject === null || activeBobject === void 0 ? void 0 : (_activeBobject$id5 = activeBobject.id) === null || _activeBobject$id5 === void 0 ? void 0 : _activeBobject$id5.value : filteredLeads), ACTIVITY_FIELDS_LOGIC_ROLE.OPPORTUNITY, ['__MATCH_EMPTY_ROWS__'])];
+    var queriesToReturn = [];
+    if (pageBobjectType === BobjectTypes.Opportunity) {
+      queriesToReturn = [].concat(_toConsumableArray$1(queriesToReturn), oppORs);
+    } else if (activeMagicFilter) {
+      var _activeBobject$id6;
+      queriesToReturn = [].concat(_toConsumableArray$1(queriesToReturn), _toConsumableArray$1(magicFilterORs(activeBobject === null || activeBobject === void 0 ? void 0 : (_activeBobject$id6 = activeBobject.id) === null || _activeBobject$id6 === void 0 ? void 0 : _activeBobject$id6.typeName)));
+    }
+    return queriesToReturn;
+  }, [filters, activeMagicFilter]);
+  useEffect(function () {
+    mutate();
+  }, [filters.type, filters.lead, activeMagicFilter, filters.user]);
+  var fetchActivities = function fetchActivities() {
+    return (activeBobject === null || activeBobject === void 0 ? void 0 : activeBobject.id.accountId) && api.post('/bobjects/' + (activeBobject === null || activeBobject === void 0 ? void 0 : activeBobject.id.accountId) + '/Activity/search', {
+      query: query,
+      queries: (queries === null || queries === void 0 ? void 0 : queries.length) !== 0 ? queries : null,
+      page: 0,
+      formFields: true,
+      pageSize: page ? page * PAGE_SIZE : 1000,
+      injectReferences: true,
+      sort: [{
+        field: ACTIVITY_FIELDS_LOGIC_ROLE.TIME,
+        direction: 'DESC'
+      }]
+    });
+  };
+  var _useSWR = useSWR(activeBobject && "/activityFeed/".concat(activeBobject === null || activeBobject === void 0 ? void 0 : (_activeBobject$id7 = activeBobject.id) === null || _activeBobject$id7 === void 0 ? void 0 : _activeBobject$id7.value, "/").concat(page, "/see"), fetchActivities, {
+      use: [keepPreviousResponse]
+    }),
+    data = _useSWR.data,
+    mutate = _useSWR.mutate,
+    isLoading = _useSWR.isLoading,
+    error = _useSWR.error;
+  var totalMatching = useMemo(function () {
+    return data === null || data === void 0 ? void 0 : data.data.totalMatching;
+  }, [data]);
+  var pastActivitiesInfo = {
+    activities: data && (activeBobject || filters.lead.length > 0) && ((_injectReferencesSear = injectReferencesSearchProcess(data === null || data === void 0 ? void 0 : data.data)) === null || _injectReferencesSear === void 0 ? void 0 : _injectReferencesSear.contents),
+    data: data,
+    fetchNextPage: fetchNextPage,
+    totalMatching: totalMatching
+  };
+  return {
+    pastActivitiesInfo: pastActivitiesInfo,
+    isLoading: isLoading,
+    error: error,
+    mutate: mutate,
+    filters: filters,
+    setFilters: setFilters,
+    magicFilterHandling: [activeMagicFilter, setActiveMagicFilter]
+  };
+};
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+function _regeneratorRuntime() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return exports; }; var exports = {}, Op = Object.prototype, hasOwn = Op.hasOwnProperty, defineProperty = Object.defineProperty || function (obj, key, desc) { obj[key] = desc.value; }, $Symbol = "function" == typeof Symbol ? Symbol : {}, iteratorSymbol = $Symbol.iterator || "@@iterator", asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator", toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag"; function define(obj, key, value) { return Object.defineProperty(obj, key, { value: value, enumerable: !0, configurable: !0, writable: !0 }), obj[key]; } try { define({}, ""); } catch (err) { define = function define(obj, key, value) { return obj[key] = value; }; } function wrap(innerFn, outerFn, self, tryLocsList) { var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator, generator = Object.create(protoGenerator.prototype), context = new Context(tryLocsList || []); return defineProperty(generator, "_invoke", { value: makeInvokeMethod(innerFn, self, context) }), generator; } function tryCatch(fn, obj, arg) { try { return { type: "normal", arg: fn.call(obj, arg) }; } catch (err) { return { type: "throw", arg: err }; } } exports.wrap = wrap; var ContinueSentinel = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var IteratorPrototype = {}; define(IteratorPrototype, iteratorSymbol, function () { return this; }); var getProto = Object.getPrototypeOf, NativeIteratorPrototype = getProto && getProto(getProto(values([]))); NativeIteratorPrototype && NativeIteratorPrototype !== Op && hasOwn.call(NativeIteratorPrototype, iteratorSymbol) && (IteratorPrototype = NativeIteratorPrototype); var Gp = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(IteratorPrototype); function defineIteratorMethods(prototype) { ["next", "throw", "return"].forEach(function (method) { define(prototype, method, function (arg) { return this._invoke(method, arg); }); }); } function AsyncIterator(generator, PromiseImpl) { function invoke(method, arg, resolve, reject) { var record = tryCatch(generator[method], generator, arg); if ("throw" !== record.type) { var result = record.arg, value = result.value; return value && "object" == _typeof(value) && hasOwn.call(value, "__await") ? PromiseImpl.resolve(value.__await).then(function (value) { invoke("next", value, resolve, reject); }, function (err) { invoke("throw", err, resolve, reject); }) : PromiseImpl.resolve(value).then(function (unwrapped) { result.value = unwrapped, resolve(result); }, function (error) { return invoke("throw", error, resolve, reject); }); } reject(record.arg); } var previousPromise; defineProperty(this, "_invoke", { value: function value(method, arg) { function callInvokeWithMethodAndArg() { return new PromiseImpl(function (resolve, reject) { invoke(method, arg, resolve, reject); }); } return previousPromise = previousPromise ? previousPromise.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(innerFn, self, context) { var state = "suspendedStart"; return function (method, arg) { if ("executing" === state) throw new Error("Generator is already running"); if ("completed" === state) { if ("throw" === method) throw arg; return doneResult(); } for (context.method = method, context.arg = arg;;) { var delegate = context.delegate; if (delegate) { var delegateResult = maybeInvokeDelegate(delegate, context); if (delegateResult) { if (delegateResult === ContinueSentinel) continue; return delegateResult; } } if ("next" === context.method) context.sent = context._sent = context.arg;else if ("throw" === context.method) { if ("suspendedStart" === state) throw state = "completed", context.arg; context.dispatchException(context.arg); } else "return" === context.method && context.abrupt("return", context.arg); state = "executing"; var record = tryCatch(innerFn, self, context); if ("normal" === record.type) { if (state = context.done ? "completed" : "suspendedYield", record.arg === ContinueSentinel) continue; return { value: record.arg, done: context.done }; } "throw" === record.type && (state = "completed", context.method = "throw", context.arg = record.arg); } }; } function maybeInvokeDelegate(delegate, context) { var methodName = context.method, method = delegate.iterator[methodName]; if (undefined === method) return context.delegate = null, "throw" === methodName && delegate.iterator["return"] && (context.method = "return", context.arg = undefined, maybeInvokeDelegate(delegate, context), "throw" === context.method) || "return" !== methodName && (context.method = "throw", context.arg = new TypeError("The iterator does not provide a '" + methodName + "' method")), ContinueSentinel; var record = tryCatch(method, delegate.iterator, context.arg); if ("throw" === record.type) return context.method = "throw", context.arg = record.arg, context.delegate = null, ContinueSentinel; var info = record.arg; return info ? info.done ? (context[delegate.resultName] = info.value, context.next = delegate.nextLoc, "return" !== context.method && (context.method = "next", context.arg = undefined), context.delegate = null, ContinueSentinel) : info : (context.method = "throw", context.arg = new TypeError("iterator result is not an object"), context.delegate = null, ContinueSentinel); } function pushTryEntry(locs) { var entry = { tryLoc: locs[0] }; 1 in locs && (entry.catchLoc = locs[1]), 2 in locs && (entry.finallyLoc = locs[2], entry.afterLoc = locs[3]), this.tryEntries.push(entry); } function resetTryEntry(entry) { var record = entry.completion || {}; record.type = "normal", delete record.arg, entry.completion = record; } function Context(tryLocsList) { this.tryEntries = [{ tryLoc: "root" }], tryLocsList.forEach(pushTryEntry, this), this.reset(!0); } function values(iterable) { if (iterable) { var iteratorMethod = iterable[iteratorSymbol]; if (iteratorMethod) return iteratorMethod.call(iterable); if ("function" == typeof iterable.next) return iterable; if (!isNaN(iterable.length)) { var i = -1, next = function next() { for (; ++i < iterable.length;) if (hasOwn.call(iterable, i)) return next.value = iterable[i], next.done = !1, next; return next.value = undefined, next.done = !0, next; }; return next.next = next; } } return { next: doneResult }; } function doneResult() { return { value: undefined, done: !0 }; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, defineProperty(Gp, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), defineProperty(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, toStringTagSymbol, "GeneratorFunction"), exports.isGeneratorFunction = function (genFun) { var ctor = "function" == typeof genFun && genFun.constructor; return !!ctor && (ctor === GeneratorFunction || "GeneratorFunction" === (ctor.displayName || ctor.name)); }, exports.mark = function (genFun) { return Object.setPrototypeOf ? Object.setPrototypeOf(genFun, GeneratorFunctionPrototype) : (genFun.__proto__ = GeneratorFunctionPrototype, define(genFun, toStringTagSymbol, "GeneratorFunction")), genFun.prototype = Object.create(Gp), genFun; }, exports.awrap = function (arg) { return { __await: arg }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, asyncIteratorSymbol, function () { return this; }), exports.AsyncIterator = AsyncIterator, exports.async = function (innerFn, outerFn, self, tryLocsList, PromiseImpl) { void 0 === PromiseImpl && (PromiseImpl = Promise); var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList), PromiseImpl); return exports.isGeneratorFunction(outerFn) ? iter : iter.next().then(function (result) { return result.done ? result.value : iter.next(); }); }, defineIteratorMethods(Gp), define(Gp, toStringTagSymbol, "Generator"), define(Gp, iteratorSymbol, function () { return this; }), define(Gp, "toString", function () { return "[object Generator]"; }), exports.keys = function (val) { var object = Object(val), keys = []; for (var key in object) keys.push(key); return keys.reverse(), function next() { for (; keys.length;) { var key = keys.pop(); if (key in object) return next.value = key, next.done = !1, next; } return next.done = !0, next; }; }, exports.values = values, Context.prototype = { constructor: Context, reset: function reset(skipTempReset) { if (this.prev = 0, this.next = 0, this.sent = this._sent = undefined, this.done = !1, this.delegate = null, this.method = "next", this.arg = undefined, this.tryEntries.forEach(resetTryEntry), !skipTempReset) for (var name in this) "t" === name.charAt(0) && hasOwn.call(this, name) && !isNaN(+name.slice(1)) && (this[name] = undefined); }, stop: function stop() { this.done = !0; var rootRecord = this.tryEntries[0].completion; if ("throw" === rootRecord.type) throw rootRecord.arg; return this.rval; }, dispatchException: function dispatchException(exception) { if (this.done) throw exception; var context = this; function handle(loc, caught) { return record.type = "throw", record.arg = exception, context.next = loc, caught && (context.method = "next", context.arg = undefined), !!caught; } for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i], record = entry.completion; if ("root" === entry.tryLoc) return handle("end"); if (entry.tryLoc <= this.prev) { var hasCatch = hasOwn.call(entry, "catchLoc"), hasFinally = hasOwn.call(entry, "finallyLoc"); if (hasCatch && hasFinally) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } else if (hasCatch) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); } else { if (!hasFinally) throw new Error("try statement without catch or finally"); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } } } }, abrupt: function abrupt(type, arg) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc <= this.prev && hasOwn.call(entry, "finallyLoc") && this.prev < entry.finallyLoc) { var finallyEntry = entry; break; } } finallyEntry && ("break" === type || "continue" === type) && finallyEntry.tryLoc <= arg && arg <= finallyEntry.finallyLoc && (finallyEntry = null); var record = finallyEntry ? finallyEntry.completion : {}; return record.type = type, record.arg = arg, finallyEntry ? (this.method = "next", this.next = finallyEntry.finallyLoc, ContinueSentinel) : this.complete(record); }, complete: function complete(record, afterLoc) { if ("throw" === record.type) throw record.arg; return "break" === record.type || "continue" === record.type ? this.next = record.arg : "return" === record.type ? (this.rval = this.arg = record.arg, this.method = "return", this.next = "end") : "normal" === record.type && afterLoc && (this.next = afterLoc), ContinueSentinel; }, finish: function finish(finallyLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.finallyLoc === finallyLoc) return this.complete(entry.completion, entry.afterLoc), resetTryEntry(entry), ContinueSentinel; } }, "catch": function _catch(tryLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc === tryLoc) { var record = entry.completion; if ("throw" === record.type) { var thrown = record.arg; resetTryEntry(entry); } return thrown; } } throw new Error("illegal catch attempt"); }, delegateYield: function delegateYield(iterable, resultName, nextLoc) { return this.delegate = { iterator: values(iterable), resultName: resultName, nextLoc: nextLoc }, "next" === this.method && (this.arg = undefined), ContinueSentinel; } }, exports; }
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+function getCompanyLeads(companyIdValue) {
+  var accountId = companyIdValue.split('/')[0];
+  if (accountId) return api.post('/bobjects/' + accountId + '/Lead/search', {
+    query: {
+      LEAD__COMPANY: [companyIdValue]
+    },
+    formFields: true,
+    pageSize: 50,
+    injectReferences: true
+  });
+}
+function getLeadWithoutCompany(_x) {
+  return _getLeadWithoutCompany.apply(this, arguments);
+}
+function _getLeadWithoutCompany() {
+  _getLeadWithoutCompany = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(leadId) {
+    var response;
+    return _regeneratorRuntime().wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          _context.next = 2;
+          return api.get('/bobjects/' + leadId + '/form');
+        case 2:
+          response = _context.sent;
+          return _context.abrupt("return", [response.data]);
+        case 4:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee);
+  }));
+  return _getLeadWithoutCompany.apply(this, arguments);
+}
+function getLeadsToParse(needsFetchingLeads, isLeadWithoutCompany, leadsFromBE, leads) {
+  if (needsFetchingLeads) {
+    var _leadsFromBE$data;
+    return leadsFromBE === null || leadsFromBE === void 0 ? void 0 : (_leadsFromBE$data = leadsFromBE.data) === null || _leadsFromBE$data === void 0 ? void 0 : _leadsFromBE$data.contents;
+  }
+  if (isLeadWithoutCompany) {
+    return leadsFromBE;
+  }
+  return leads;
+}
+var usePastActivityTab = function usePastActivityTab(data) {
+  var _leads$, _company$id, _filters$lead;
+  var company = data.company,
+    leads = data.leads,
+    filters = data.filters;
+  var needsFetchingLeads =
+  //@ts-ignore
+  !!company && ((leads === null || leads === void 0 ? void 0 : leads.length) === 0 || !leads || ((_leads$ = leads[0]) === null || _leads$ === void 0 ? void 0 : _leads$.companyId) !== (company === null || company === void 0 ? void 0 : (_company$id = company.id) === null || _company$id === void 0 ? void 0 : _company$id.value));
+  var isLeadWithoutCompany = !company && ((_filters$lead = filters.lead) === null || _filters$lead === void 0 ? void 0 : _filters$lead.length) === 1;
+  var url = needsFetchingLeads || isLeadWithoutCompany ? "company-leads-".concat((company === null || company === void 0 ? void 0 : company.id.value) || filters.lead[0]) : null;
+  // @ts-ignore
+  var _useSWR = useSWR(url, function () {
+      return isLeadWithoutCompany ? getLeadWithoutCompany(filters.lead[0]) : getCompanyLeads(company === null || company === void 0 ? void 0 : company.id.value);
+    }),
+    leadsFromBE = _useSWR.data;
+  var leadsToParse = getLeadsToParse(needsFetchingLeads, isLeadWithoutCompany, leadsFromBE, leads);
+  var leadFilterOptions = leadsToParse === null || leadsToParse === void 0 ? void 0 : leadsToParse.map(function (lead) {
+    var _lead$id;
+    return {
+      id: lead === null || lead === void 0 ? void 0 : (_lead$id = lead.id) === null || _lead$id === void 0 ? void 0 : _lead$id.value,
+      //@ts-ignore
+      name: getValueFromLogicRole(lead, LEAD_FIELDS_LOGIC_ROLE.FULL_NAME) || (lead === null || lead === void 0 ? void 0 : lead.fullName)
+    };
+  });
+  return {
+    leadFilterOptions: leadFilterOptions
+  };
+};
+
+function _slicedToArray$1(arr, i) { return _arrayWithHoles$1(arr) || _iterableToArrayLimit$1(arr, i) || _unsupportedIterableToArray$1(arr, i) || _nonIterableRest$1(); }
+function _nonIterableRest$1() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$1(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$1(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$1(o, minLen); }
+function _arrayLikeToArray$1(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$1(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$1(arr) { if (Array.isArray(arr)) return arr; }
+var ActivityFeedWrapper = /*#__PURE__*/React.forwardRef(function (_ref, ref) {
+  var setSelectedActivity = _ref.setSelectedActivity,
+    setShowDetail = _ref.setShowDetail,
+    pastActivitiesInfo = _ref.pastActivitiesInfo,
+    dataModel = _ref.dataModel,
+    setExternalSelectedActivity = _ref.setExternalSelectedActivity,
+    activeBobject = _ref.activeBobject,
+    accountId = _ref.accountId,
+    subscribeMutator = _ref.subscribeMutator,
+    newActivityFeedData = _ref.newActivityFeedData,
+    newActivitiesLoading = _ref.newActivitiesLoading,
+    newFetchNextPage = _ref.fetchNextPage;
+  var _ref2 = pastActivitiesInfo || {},
+    activities = _ref2.activities,
+    data = _ref2.data,
+    fetchNextPage = _ref2.fetchNextPage,
+    totalMatching = _ref2.totalMatching;
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'smartEmailModal.pastActivityTab'
+    }),
+    t = _useTranslation.t;
+  var hasNewActivityFeedDisabled = useNewActivityFeed(accountId);
+  var handleActivityClick = function handleActivityClick(activity) {
+    var _getFieldByLogicRole;
+    var activityTypeLogicRole = (_getFieldByLogicRole = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.TYPE)) === null || _getFieldByLogicRole === void 0 ? void 0 : _getFieldByLogicRole.valueLogicRole;
+    if (!['ACTIVITY__TYPE__STATUS', 'ACTIVITY__TYPE__CADENCE', ACTIVITY_TYPES_VALUES_LOGIC_ROLE.CUSTOM_TASK].includes(activityTypeLogicRole)) {
+      setShowDetail(true);
+      setExternalSelectedActivity(undefined);
+      setSelectedActivity(activity);
+    }
+  };
+  if (!activeBobject) {
+    return /*#__PURE__*/jsx(NoDataPage, {
+      objectName: t('activities').toLowerCase()
+    });
+  }
+  return /*#__PURE__*/jsx("div", {
+    className: styles$4.past_activity_feed_container,
+    ref: ref,
+    children: (activities === null || activities === void 0 ? void 0 : activities.length) !== 0 && (hasNewActivityFeedDisabled ? /*#__PURE__*/jsx(ActivityFeed$1, {
+      activities: activities,
+      isLoading: !data,
+      dataModel: dataModel,
+      handleOnClick: function handleOnClick(activity) {
+        return handleActivityClick(activity);
+      }
+      // @ts-ignore
+      ,
+      parentRef: ref,
+      total: totalMatching,
+      fetchNextPage: fetchNextPage,
+      contentSkeleton: function contentSkeleton() {
+        return /*#__PURE__*/jsx("div", {
+          className: styles$4.skeleton,
+          children: /*#__PURE__*/jsx(ActivitySkeleton, {
+            visible: true
+          })
+        });
+      },
+      estimateSize: 46,
+      fixedHeight: true,
+      extended: true
+    }) : /*#__PURE__*/jsx(NewActivityFeed$1, {
+      newActivityFeedData: newActivityFeedData,
+      newActivitiesLoading: newActivitiesLoading,
+      fetchNextPage: newFetchNextPage,
+      activeBobject: activeBobject,
+      enabledArrowNavigation: true,
+      handleOnClick: function handleOnClick(activity) {
+        return handleActivityClick(activity);
+      },
+      parentRef: ref,
+      estimateSize: 45,
+      subscribeMutator: subscribeMutator
+    }))
+  });
+});
+var PastActivityTab = /*#__PURE__*/React.forwardRef(function (_ref3, parentRef) {
+  var _pastActivitiesInfo$a;
+  var accountId = _ref3.accountId,
+    dataModel = _ref3.dataModel,
+    user = _ref3.user,
+    externalSelectedActivity = _ref3.selectedActivity,
+    data = _ref3.data,
+    setExternalSelectedActivity = _ref3.setSelectedActivity,
+    subscribeMutator = _ref3.subscribeMutator;
+  var userId = user === null || user === void 0 ? void 0 : user.id;
+  var _useState = useState(false),
+    _useState2 = _slicedToArray$1(_useState, 2),
+    showDetail = _useState2[0],
+    setShowDetail = _useState2[1];
+  var _useState3 = useState(externalSelectedActivity),
+    _useState4 = _slicedToArray$1(_useState3, 2),
+    selectedActivity = _useState4[0],
+    setSelectedActivity = _useState4[1];
+  var _usePastActivityTab = usePastActivityTab(data),
+    leadFilterOptions = _usePastActivityTab.leadFilterOptions;
+  var _usePastActivity = usePastActivity(data),
+    pastActivitiesInfo = _usePastActivity.pastActivitiesInfo,
+    error = _usePastActivity.error,
+    isLoading = _usePastActivity.isLoading,
+    mutate = _usePastActivity.mutate,
+    magicFilterHandling = _usePastActivity.magicFilterHandling;
+  var _useTranslation2 = useTranslation('translation', {
+      keyPrefix: 'smartEmailModal.pastActivityTab'
+    }),
+    t = _useTranslation2.t;
+  var ref = useRef();
+  var _useActivityFeed = useActivityFeed({
+      activeBobject: data.activeBobject,
+      subscribeMutator: subscribeMutator
+    }),
+    _setFilters = _useActivityFeed.setFilters,
+    newActivityFeedData = _useActivityFeed.newActivityFeedData,
+    newActivitiesLoading = _useActivityFeed.newActivitiesLoading,
+    fetchNextPage = _useActivityFeed.fetchNextPage,
+    newMutate = _useActivityFeed.mutate;
+  useEffect(function () {
+    if (externalSelectedActivity) setShowDetail(true);
+  }, [externalSelectedActivity]);
+  return /*#__PURE__*/jsx("div", {
+    className: styles$4.wrapper,
+    children: showDetail ? /*#__PURE__*/jsx(ActivityDetails$1, {
+      activity: selectedActivity,
+      selectedActivity: externalSelectedActivity,
+      userId: userId,
+      callback: function callback() {
+        setShowDetail(false);
+        newMutate();
+        mutate();
+        // @ts-ignore
+        ref.current = ref.current || parentRef.current;
+      }
+      // @ts-ignore
+      ,
+      extended: true,
+      dataModel: dataModel,
+      visibleFooter: false
+    }) : /*#__PURE__*/jsxs("div", {
+      className: styles$4.feed,
+      children: [/*#__PURE__*/jsx(PastActivityFilters, {
+        magicFilterHandling: magicFilterHandling,
+        leadFilterOptions: leadFilterOptions,
+        filters: data.filters,
+        setFilters: function setFilters(value) {
+          _setFilters(value);
+          data.setFilters(value);
+        },
+        activeBobject: data.activeBobject
+      }), error ? /*#__PURE__*/jsx("div", {
+        className: styles$4.no_results,
+        children: /*#__PURE__*/jsx(NoDataPage, {
+          objectName: t('activities').toLowerCase()
+        })
+      }) : /*#__PURE__*/jsxs(Fragment, {
+        children: [!isLoading && pastActivitiesInfo && ((_pastActivitiesInfo$a = pastActivitiesInfo.activities) === null || _pastActivitiesInfo$a === void 0 ? void 0 : _pastActivitiesInfo$a.length) === 0 && /*#__PURE__*/jsx("div", {
+          className: styles$4.no_results,
+          children: /*#__PURE__*/jsx(NoResultsPage, {})
+        }), /*#__PURE__*/jsx(ActivityFeedWrapper, {
+          ref: ref,
+          dataModel: dataModel,
+          accountId: accountId,
+          newActivityFeedData: newActivityFeedData,
+          newActivitiesLoading: newActivitiesLoading,
+          fetchNextPage: fetchNextPage,
+          activeBobject: data.activeBobject,
+          pastActivitiesInfo: pastActivitiesInfo,
+          setSelectedActivity: setSelectedActivity,
+          setShowDetail: setShowDetail,
+          setExternalSelectedActivity: setExternalSelectedActivity,
+          subscribeMutator: subscribeMutator
+        })]
+      })]
+    })
+  });
+});
+
+var css_248z$2 = ".activityFeedSkeleton-module_card__zGJoF {\n  background-color: var(--white);\n  margin-bottom: 8px;\n  padding: 6px;\n}\n\n.activityFeedSkeleton-module_cardHeader__3-x9R {\n  display: flex;\n  gap: 6px;\n}\n\n.activityFeedSkeleton-module_cardHeader__3-x9R > *:last-child {\n  margin-left: auto;\n}\n\n.activityFeedSkeleton-module_cardHeaderText__PLGU5 {\n  width: 70%;\n  display: flex;\n  flex-direction: row;\n  align-items: center;\n}\n";
+var styles$2 = {"card":"activityFeedSkeleton-module_card__zGJoF","cardHeader":"activityFeedSkeleton-module_cardHeader__3-x9R","cardHeaderText":"activityFeedSkeleton-module_cardHeaderText__PLGU5"};
+styleInject(css_248z$2);
+
+var ActivityCardSkeleton = function ActivityCardSkeleton() {
+  return /*#__PURE__*/jsx("div", {
+    className: styles$2.card,
+    children: /*#__PURE__*/jsxs("header", {
+      className: styles$2.cardHeader,
+      children: [/*#__PURE__*/jsx(Skeleton, {
+        variant: "circle",
+        width: 16,
+        height: 16
+      }), /*#__PURE__*/jsx("div", {
+        className: styles$2.cardHeaderText,
+        children: /*#__PURE__*/jsx(Skeleton, {
+          variant: "text",
+          width: "100%",
+          height: 16
+        })
+      }), /*#__PURE__*/jsx(Skeleton, {
+        variant: "text",
+        width: "10%",
+        height: 16
+      })]
+    })
+  });
+};
+var ActivityFeedSkeleton = function ActivityFeedSkeleton() {
+  return /*#__PURE__*/jsx(Fragment, {
+    children: range(4).map(function (number) {
+      return /*#__PURE__*/jsx(Fragment$1, {
+        children: /*#__PURE__*/jsx(ActivityCardSkeleton, {})
+      }, number);
+    })
+  });
+};
+
+var css_248z$1 = ".activityFeed-module_container__Sbnw- {\n  margin-top: 8px;\n  margin-right: 1px;\n}\n\n.activityFeed-module_loading__6MWSB {\n  display: flex;\n  justify-content: center;\n}\n\n.activityFeed-module_empty__Br4rM {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  height: auto;\n  width: 100%;\n  margin: 8px 8px;\n}\n\n.activityFeed-module_skeleton__eCUzF {\n  padding: 8px 6px 0 6px;\n}\n";
+var styles$1 = {"container":"activityFeed-module_container__Sbnw-","loading":"activityFeed-module_loading__6MWSB","empty":"activityFeed-module_empty__Br4rM","skeleton":"activityFeed-module_skeleton__eCUzF"};
+styleInject(css_248z$1);
+
+var ActivityFeed = function ActivityFeed(_ref) {
+  var _activities$, _activities$$id;
+  var isLoading = _ref.isLoading,
+    activities = _ref.activities,
+    handleOnClick = _ref.handleOnClick,
+    total = _ref.total,
+    parentRef = _ref.parentRef,
+    fetchNextPage = _ref.fetchNextPage,
+    estimateSize = _ref.estimateSize,
+    fixedHeight = _ref.fixedHeight,
+    _ref$extended = _ref.extended,
+    extended = _ref$extended === void 0 ? false : _ref$extended,
+    dataModel = _ref.dataModel,
+    _ref$actionsDisabled = _ref.actionsDisabled,
+    actionsDisabled = _ref$actionsDisabled === void 0 ? false : _ref$actionsDisabled,
+    _ref$sidePeekEnabled = _ref.sidePeekEnabled,
+    sidePeekEnabled = _ref$sidePeekEnabled === void 0 ? false : _ref$sidePeekEnabled,
+    _ref$enabledArrowNavi = _ref.enabledArrowNavigation,
+    enabledArrowNavigation = _ref$enabledArrowNavi === void 0 ? false : _ref$enabledArrowNavi,
+    _ref$showTooltipBlock = _ref.showTooltipBlock,
+    showTooltipBlock = _ref$showTooltipBlock === void 0 ? true : _ref$showTooltipBlock;
+  var _useSyncBobjectStatus = useSyncBobjectStatus(activities === null || activities === void 0 ? void 0 : (_activities$ = activities[0]) === null || _activities$ === void 0 ? void 0 : (_activities$$id = _activities$.id) === null || _activities$$id === void 0 ? void 0 : _activities$$id.accountId, activities),
+    bobjectsSync = _useSyncBobjectStatus.bobjectsSync;
+  var userId = useActiveUserId();
+  var _useUserHelpers = useUserHelpers(),
+    has = _useUserHelpers.has;
+  var isFetching = !activities;
+  var activityBlockHidden = has(ExtensionHelperKeys.ACTIVITY_TIMELINE_TOOLTIP_BLOCK);
+  var _useQuickLogActivity = useQuickLogActivity(),
+    openQuickLogModal = _useQuickLogActivity.openQuickLogModal;
+  var _useCustomTasks = useCustomTasks({
+      disabled: false
+    }),
+    customTasks = _useCustomTasks.customTasks;
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'activityTimelineItem.activityFeed'
+    }),
+    t = _useTranslation.t;
+  if (!isLoading && (activities === null || activities === void 0 ? void 0 : activities.length) === 0) {
+    return /*#__PURE__*/jsx("div", {
+      className: styles$1.empty,
+      children: /*#__PURE__*/jsx(Text, {
+        size: "s",
+        color: "softPeanut",
+        children: t('noActivitiesPending')
+      })
+    });
+  }
+  return /*#__PURE__*/jsx("div", {
+    className: styles$1.container,
+    children: /*#__PURE__*/jsxs(Timeline, {
+      size: 'small',
+      children: [/*#__PURE__*/jsx(VirtualInfiniteScroll$1, {
+        enableSelectedBackground: true,
+        enabledArrowNavigation: enabledArrowNavigation,
+        onNavigation: handleOnClick,
+        parentRef: parentRef,
+        rows: activities,
+        totalRows: total,
+        isFetchingData: isFetching,
+        fetchNextPage: fetchNextPage,
+        hasNextItem: function hasNextItem(index) {
+          return index !== total - 1;
+        },
+        contentSkeleton: function contentSkeleton() {
+          return /*#__PURE__*/jsx("div", {
+            className: styles$1.skeleton,
+            children: /*#__PURE__*/jsx(ActivityFeedSkeleton, {})
+          });
+        },
+        loaderSkeleton: function loaderSkeleton() {
+          return /*#__PURE__*/jsx("div", {
+            className: styles$1.skeleton,
+            children: /*#__PURE__*/jsx(ActivityFeedSkeleton, {})
+          });
+        },
+        estimateSize: estimateSize,
+        estimatedSkeletonHeight: 130,
+        fixedHeight: fixedHeight && extended,
+        children: function children(activity, hasNext, isFirst, selected) {
+          var _bobjectsSync$find, _activity$id2, _activity$id3;
+          var syncStatus = bobjectsSync === null || bobjectsSync === void 0 ? void 0 : (_bobjectsSync$find = bobjectsSync.find(function (sync) {
+            var _activity$id;
+            return (sync === null || sync === void 0 ? void 0 : sync.bobjectId) === (activity === null || activity === void 0 ? void 0 : (_activity$id = activity.id) === null || _activity$id === void 0 ? void 0 : _activity$id.objectId);
+          })) === null || _bobjectsSync$find === void 0 ? void 0 : _bobjectsSync$find.syncStatusOk;
+          return (activity === null || activity === void 0 ? void 0 : (_activity$id2 = activity.id) === null || _activity$id2 === void 0 ? void 0 : _activity$id2.objectId) && /*#__PURE__*/jsx(ActivityTimelineItem, {
+            activity: activity,
+            onClick: handleOnClick,
+            startDisplayDivider: !isFirst,
+            endDisplayDivider: hasNext || !activityBlockHidden,
+            extended: extended,
+            dataModel: dataModel,
+            actionsDisabled: actionsDisabled,
+            userId: userId,
+            sidePeekEnabled: sidePeekEnabled,
+            activeHover: !selected,
+            syncStatus: syncStatus,
+            openQuickLogModal: openQuickLogModal,
+            customTasks: customTasks
+          }, activity === null || activity === void 0 ? void 0 : (_activity$id3 = activity.id) === null || _activity$id3 === void 0 ? void 0 : _activity$id3.value);
+        }
+      }), showTooltipBlock && !activityBlockHidden && !isFetching && !isLoading ? /*#__PURE__*/jsx(ActivityTooltipBlock, {
+        sidePeekEnabled: sidePeekEnabled
+      }) : /*#__PURE__*/jsx(Fragment, {})]
+    })
+  });
+};
+
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+var NewActivityFeed = function NewActivityFeed(_ref) {
+  var _activities$, _activities$$bobjectI;
+  var handleOnClick = _ref.handleOnClick,
+    parentRef = _ref.parentRef,
+    estimateSize = _ref.estimateSize,
+    fixedHeight = _ref.fixedHeight,
+    _ref$extended = _ref.extended,
+    extended = _ref$extended === void 0 ? false : _ref$extended,
+    _ref$actionsDisabled = _ref.actionsDisabled,
+    actionsDisabled = _ref$actionsDisabled === void 0 ? false : _ref$actionsDisabled,
+    _ref$sidePeekEnabled = _ref.sidePeekEnabled,
+    sidePeekEnabled = _ref$sidePeekEnabled === void 0 ? false : _ref$sidePeekEnabled,
+    _ref$enabledArrowNavi = _ref.enabledArrowNavigation,
+    enabledArrowNavigation = _ref$enabledArrowNavi === void 0 ? false : _ref$enabledArrowNavi,
+    selectedItem = _ref.selectedItem,
+    newActivityFeedData = _ref.newActivityFeedData,
+    newActivitiesLoading = _ref.newActivitiesLoading,
+    fetchNextPage = _ref.fetchNextPage;
+  var _ref2 = newActivityFeedData || {},
+    activities = _ref2.activities,
+    hasNext = _ref2.hasNext,
+    totalItems = _ref2.totalItems;
+  var _useSyncBobjectStatus = useSyncBobjectStatus(activities === null || activities === void 0 ? void 0 : (_activities$ = activities[0]) === null || _activities$ === void 0 ? void 0 : (_activities$$bobjectI = _activities$.bobjectId) === null || _activities$$bobjectI === void 0 ? void 0 : _activities$$bobjectI.split('/')[0], activities === null || activities === void 0 ? void 0 : activities.map(function (activity) {
+      return {
+        id: forgeIdFieldsFromIdValue(activity.bobjectId)
+      };
+    })),
+    bobjectsSync = _useSyncBobjectStatus.bobjectsSync;
+  var userId = useActiveUserId();
+  var _useUserHelpers = useUserHelpers(),
+    has = _useUserHelpers.has;
+  var activityBlockHidden = has(ExtensionHelperKeys.ACTIVITY_TIMELINE_TOOLTIP_BLOCK);
+  var _useQuickLogActivity = useQuickLogActivity(),
+    openQuickLogModal = _useQuickLogActivity.openQuickLogModal;
+  var _useCustomTasks = useCustomTasks({
+      disabled: false
+    }),
+    customTasks = _useCustomTasks.customTasks;
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'activityTimelineItem.activityFeed'
+    }),
+    t = _useTranslation.t;
+  function handleFetchAndClick(activity) {
+    api.get("/bobjects/".concat(activity.bobjectId, "/form?injectReferences=true")).then(function (response) {
+      var bobjectWithReferences = injectReferencesGetProcess(response === null || response === void 0 ? void 0 : response.data);
+      handleOnClick(bobjectWithReferences);
+    });
+  }
+  if (!newActivitiesLoading && (activities === null || activities === void 0 ? void 0 : activities.length) === 0) {
+    return /*#__PURE__*/jsx("div", {
+      className: styles$1.empty,
+      children: /*#__PURE__*/jsx(Text, {
+        size: "s",
+        color: "softPeanut",
+        children: t('noActivitiesPending')
+      })
+    });
+  }
+  return /*#__PURE__*/jsx("div", {
+    className: styles$1.container,
+    children: /*#__PURE__*/jsxs(Timeline, {
+      size: 'small',
+      children: [/*#__PURE__*/jsx(VirtualInfiniteScroll, {
+        enableSelectedBackground: true,
+        enabledArrowNavigation: enabledArrowNavigation,
+        parentRef: parentRef,
+        rows: activities,
+        hasNextPage: hasNext,
+        totalRows: totalItems + (hasNext ? 1 : 0),
+        isFetchingData: newActivitiesLoading,
+        fetchNextPage: fetchNextPage,
+        onNavigation: handleFetchAndClick,
+        hasNextItem: function hasNextItem(index) {
+          return index !== totalItems - 1;
+        },
+        contentSkeleton: function contentSkeleton() {
+          return /*#__PURE__*/jsx("div", {
+            className: styles$1.skeleton,
+            children: /*#__PURE__*/jsx(ActivityFeedSkeleton, {})
+          });
+        },
+        loaderSkeleton: function loaderSkeleton() {
+          return /*#__PURE__*/jsx("div", {
+            className: styles$1.skeleton,
+            children: /*#__PURE__*/jsx(ActivityFeedSkeleton, {})
+          });
+        },
+        estimateSize: estimateSize,
+        estimatedSkeletonHeight: 130,
+        fixedHeight: fixedHeight && extended,
+        selectedItem: selectedItem,
+        children: function children(activity, hasNext, isFirst, selected) {
+          var _bobjectsSync$find;
+          var syncStatus = bobjectsSync === null || bobjectsSync === void 0 ? void 0 : (_bobjectsSync$find = bobjectsSync.find(function (sync) {
+            var _activity$bobjectId;
+            return (sync === null || sync === void 0 ? void 0 : sync.bobjectId) === (activity === null || activity === void 0 ? void 0 : (_activity$bobjectId = activity.bobjectId) === null || _activity$bobjectId === void 0 ? void 0 : _activity$bobjectId.split('/')[2]);
+          })) === null || _bobjectsSync$find === void 0 ? void 0 : _bobjectsSync$find.syncStatusOk;
+          return (activity === null || activity === void 0 ? void 0 : activity.bobjectId) && /*#__PURE__*/jsx(NewActivityTimelineItem, {
+            activity: activity,
+            onClick: handleFetchAndClick,
+            startDisplayDivider: !isFirst,
+            endDisplayDivider: hasNext || !activityBlockHidden,
+            extended: extended,
+            actionsDisabled: actionsDisabled,
+            userId: userId,
+            sidePeekEnabled: sidePeekEnabled,
+            activeHover: !selected,
+            syncStatus: syncStatus,
+            openQuickLogModal: openQuickLogModal,
+            customTasks: customTasks
+          }, activity === null || activity === void 0 ? void 0 : activity.bobjectId);
+        }
+      }), !activityBlockHidden ? /*#__PURE__*/jsx(ActivityTooltipBlock, {
+        sidePeekEnabled: sidePeekEnabled
+      }) : /*#__PURE__*/jsx(Fragment, {})]
+    })
+  });
+};
+var Transition = function Transition(_ref3) {
+  var children = _ref3.children;
+  return (
+    /*#__PURE__*/
+    // @ts-ignore
+    jsx(CSSTransition, {
+      appear: true,
+      "in": true,
+      unmountOnExit: true,
+      timeout: 300,
+      classNames: {
+        appear: styles$1._fade_enter,
+        appearActive: styles$1._fade_enter_active,
+        enter: styles$1._fade_enter,
+        enterActive: styles$1._fade_enter_active,
+        exit: styles$1._fade_exit,
+        exitActive: styles$1._fade_exit_active
+      },
+      children: children
+    })
+  );
+};
+var VirtualInfiniteScroll = function VirtualInfiniteScroll(_ref4) {
+  var _rowsLength, _parentRef$current;
+  var hasNextPage = _ref4.hasNextPage,
+    rows = _ref4.rows,
+    totalRows = _ref4.totalRows,
+    isFetchingData = _ref4.isFetchingData,
+    fetchNextPage = _ref4.fetchNextPage,
+    children = _ref4.children,
+    hasNextItem = _ref4.hasNextItem,
+    parentRef = _ref4.parentRef,
+    footer = _ref4.footer,
+    contentSkeleton = _ref4.contentSkeleton,
+    _ref4$loaderSkeleton = _ref4.loaderSkeleton,
+    loaderSkeleton = _ref4$loaderSkeleton === void 0 ? function () {
+      return /*#__PURE__*/jsx(Skeleton, {
+        variant: "rect",
+        width: "100%",
+        height: "40px"
+      }, 'skeletonItem');
+    } : _ref4$loaderSkeleton,
+    _ref4$estimateSize = _ref4.estimateSize,
+    _estimateSize = _ref4$estimateSize === void 0 ? 40 : _ref4$estimateSize,
+    _ref4$estimatedSkelet = _ref4.estimatedSkeletonHeight,
+    estimatedSkeletonHeight = _ref4$estimatedSkelet === void 0 ? 40 : _ref4$estimatedSkelet,
+    _ref4$fixedHeight = _ref4.fixedHeight,
+    fixedHeight = _ref4$fixedHeight === void 0 ? false : _ref4$fixedHeight,
+    enabledArrowNavigation = _ref4.enabledArrowNavigation,
+    onNavigation = _ref4.onNavigation,
+    _ref4$enableSelectedB = _ref4.enableSelectedBackground,
+    enableSelectedBackground = _ref4$enableSelectedB === void 0 ? false : _ref4$enableSelectedB,
+    rowsLength = _ref4.rowsLength,
+    selectedItem = _ref4.selectedItem;
+  var _useState = useState(null),
+    _useState2 = _slicedToArray(_useState, 2),
+    selectedItemIndex = _useState2[0],
+    setSelectedItemIndex = _useState2[1];
+  rowsLength = (_rowsLength = rowsLength) !== null && _rowsLength !== void 0 ? _rowsLength : rows === null || rows === void 0 ? void 0 : rows.length;
+  var dataCount = hasNextPage ? rowsLength + 1 : rowsLength;
+  var rowVirtualizer = useVirtualizer({
+    count: dataCount,
+    getScrollElement: function getScrollElement() {
+      return parentRef === null || parentRef === void 0 ? void 0 : parentRef.current;
+    },
+    estimateSize: function estimateSize() {
+      return _estimateSize;
+    },
+    overscan: 3
+  });
+  function handleItemClick(index) {
+    setSelectedItemIndex(index); // Actualiza el índice del elemento seleccionado
+  }
+
+  function handleKeyDown(event) {
+    switch (event.key) {
+      case 'ArrowUp':
+        {
+          var targetIndex = Math.max(0, selectedItemIndex - 1);
+          if (targetIndex) {
+            rowVirtualizer.scrollToIndex(targetIndex);
+            setSelectedItemIndex(targetIndex);
+            onNavigation === null || onNavigation === void 0 ? void 0 : onNavigation(rows[targetIndex]);
+          }
+          break;
+        }
+      case 'ArrowDown':
+        {
+          var virtualItems = rowVirtualizer.getVirtualItems();
+          var currentIndex = virtualItems.findIndex(function (item) {
+            return item.index === selectedItemIndex;
+          });
+          // Determinar índice objetivo
+          var _targetIndex = currentIndex < virtualItems.length - 1 ? virtualItems[currentIndex + 1].index : null;
+          if (_targetIndex !== null && _targetIndex < dataCount) {
+            rowVirtualizer.scrollToIndex(_targetIndex + 1);
+            setSelectedItemIndex(_targetIndex);
+            onNavigation === null || onNavigation === void 0 ? void 0 : onNavigation(rows[_targetIndex]);
+          }
+          break;
+        }
+      case 'Enter':
+        {
+          var _virtualItems = rowVirtualizer.getVirtualItems();
+          var _currentIndex = _virtualItems.findIndex(function (item) {
+            return item.index === selectedItemIndex;
+          });
+          handleItemClick(_virtualItems[_currentIndex]);
+          break;
+        }
+    }
+  }
+  useEffect(function () {
+    var _reverse = _toConsumableArray(rowVirtualizer.getVirtualItems()).reverse(),
+      _reverse2 = _slicedToArray(_reverse, 1),
+      lastItem = _reverse2[0];
+    if (!lastItem) {
+      return;
+    }
+    if (lastItem.index >= (rows === null || rows === void 0 ? void 0 : rows.length) - 1 && hasNextPage && !isFetchingData) {
+      rowVirtualizer.scrollToIndex(rowVirtualizer.range.startIndex + 5);
+      fetchNextPage === null || fetchNextPage === void 0 ? void 0 : fetchNextPage();
+    }
+  }, [hasNextPage, fetchNextPage, rows === null || rows === void 0 ? void 0 : rows.length, isFetchingData, rowVirtualizer.getVirtualItems(), totalRows]);
+  useEffect(function () {
+    if (selectedItem && !selectedItemIndex && rows !== null && rows !== void 0 && rows.length) {
+      var _index = rows.findIndex(function (row) {
+        return (row === null || row === void 0 ? void 0 : row.bobjectId) === selectedItem;
+      });
+      setSelectedItemIndex(_index);
+    }
+  }, [selectedItem, rows === null || rows === void 0 ? void 0 : rows.length]);
+  useEffect(function () {
+    if (enabledArrowNavigation && selectedItemIndex !== null) {
+      document.addEventListener('keydown', handleKeyDown);
+      //removeScrollOfBox();
+    }
+
+    return function () {
+      document.removeEventListener('keydown', handleKeyDown);
+      //recoverScrollOfBox();
+    };
+  }, [enabledArrowNavigation, selectedItemIndex]); // Asegúrate de volver a suscribir el evento cuando cambie el índice del elemento seleccionado
+
+  var scrollHeight = parentRef === null || parentRef === void 0 ? void 0 : (_parentRef$current = parentRef.current) === null || _parentRef$current === void 0 ? void 0 : _parentRef$current.scrollHeight;
+  if (contentSkeleton && (isFetchingData && !rows || scrollHeight === undefined || scrollHeight === 0)) {
+    return /*#__PURE__*/jsx(Transition, {
+      children: contentSkeleton()
+    });
+  }
+  return /*#__PURE__*/jsx("div", {
+    style: {
+      height: rowVirtualizer.getTotalSize() + (isFetchingData ? estimatedSkeletonHeight || 100 : 0),
+      width: '100%',
+      position: 'relative'
+    },
+    onMouseEnter: removeScrollOfBox,
+    onMouseLeave: recoverScrollOfBox,
+    children: rowVirtualizer.getVirtualItems().map(function (virtualItem) {
+      var _ref5;
+      var isLoaderRow = virtualItem.index > (rows === null || rows === void 0 ? void 0 : rows.length) - 1;
+      var data = rows[virtualItem.index];
+      var showNext = (_ref5 = hasNextItem && hasNextItem(virtualItem.index)) !== null && _ref5 !== void 0 ? _ref5 : !!rows[virtualItem.index + 1];
+      return /*#__PURE__*/jsx("div", {
+        "data-index": virtualItem.index,
+        ref: fixedHeight ? undefined : rowVirtualizer.measureElement,
+        style: {
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: fixedHeight ? "".concat(virtualItem.size, "px") : undefined,
+          transform: "translateY(".concat(virtualItem.start, "px)"),
+          background: virtualItem.index === selectedItemIndex && enableSelectedBackground ? 'var(--softGray)' : 'transparent'
+        },
+        onClick: function onClick() {
+          return handleItemClick(virtualItem.index);
+        },
+        children: isLoaderRow ? hasNextPage ? /*#__PURE__*/jsx("div", {
+          style: {
+            height: "".concat(_estimateSize, "px")
+          },
+          children: /*#__PURE__*/jsx(Transition, {
+            children: loaderSkeleton()
+          })
+        }) : footer && /*#__PURE__*/jsx("div", {
+          style: {
+            height: "".concat(_estimateSize, "px")
+          },
+          children: footer(function () {
+            return rowVirtualizer.scrollToIndex(0);
+          })
+        }) : children(data, showNext, virtualItem.index === 0, virtualItem.index === selectedItemIndex)
+      }, virtualItem.key);
+    })
+  });
+};
+
+var css_248z = ".activityDetails-module_container__xTL-m {\n  display: flex;\n  flex-direction: column;\n  width: 100%;\n  height: 100%;\n  padding-top: 24px;\n}\n\n.activityDetails-module_container__xTL-m * {\n  font-family: var(--fontFamily);\n}\n\n.activityDetails-module_container__xTL-m > div:first-child > button {\n  padding-left: 24px;\n}\n\n.activityDetails-module_detailsContainer__6RIan {\n  flex: 1;\n  max-height: 96%;\n}\n";
+var styles = {"container":"activityDetails-module_container__xTL-m","detailsContainer":"activityDetails-module_detailsContainer__6RIan"};
+styleInject(css_248z);
+
+var ActivityDetails = function ActivityDetails(_ref) {
+  var _activityToRender$id;
+  var activity = _ref.activity,
+    callback = _ref.callback,
+    dataModel = _ref.dataModel,
+    _ref$visibleFooter = _ref.visibleFooter,
+    visibleFooter = _ref$visibleFooter === void 0 ? true : _ref$visibleFooter,
+    selectedActivity = _ref.selectedActivity;
+  var activityToRender = selectedActivity || activity;
+  var activityType = getTextFromLogicRole(activityToRender, ACTIVITY_FIELDS_LOGIC_ROLE.TYPE);
+  var accountId = activityToRender === null || activityToRender === void 0 ? void 0 : (_activityToRender$id = activityToRender.id) === null || _activityToRender$id === void 0 ? void 0 : _activityToRender$id.accountId;
+  var getActivityDetail = function getActivityDetail() {
+    switch (activityType) {
+      case ACTIVITY_TYPES.EMAIL:
+        {
+          var emailThreadId = getTextFromLogicRole(activityToRender, ACTIVITY_FIELDS_LOGIC_ROLE.EMAIL_THREAD_ID);
+          return /*#__PURE__*/jsx(EmailThreadDetail, {
+            activity: activityToRender,
+            emailThreadId: emailThreadId,
+            accountId: accountId /*Temporal approach*/,
+            dataModel: dataModel,
+            visibleFooter: visibleFooter
+          });
+        }
+      case ACTIVITY_TYPES.LINKEDIN:
+        {
+          return /*#__PURE__*/jsx(LinkedInDetail, {
+            activity: activity,
+            accountId: accountId,
+            dataModel: dataModel,
+            visibleFooter: visibleFooter
+          });
+        }
+      case ACTIVITY_TYPES.MEETING:
+        {
+          return /*#__PURE__*/jsx(MeetingDetail, {
+            activity: activity,
+            dataModel: dataModel,
+            visibleFooter: visibleFooter,
+            onSave: callback,
+            onGoToBobject: function onGoToBobject() {
+              return undefined;
+            }
+          });
+        }
+      case ACTIVITY_TYPES.CALL:
+        {
+          return /*#__PURE__*/jsx(CallDetail, {
+            activity: activity,
+            dataModel: dataModel,
+            visibleFooter: visibleFooter
+          });
+        }
+      case ACTIVITY_TYPES.INBOUND:
+        {
+          return /*#__PURE__*/jsx(InboundDetail, {
+            activity: activity,
+            dataModel: dataModel
+          });
+        }
+      case ACTIVITY_TYPES.NOTE:
+        {
+          return /*#__PURE__*/jsx(NoteDetail, {
+            activity: activity,
+            dataModel: dataModel,
+            accountId: accountId,
+            visibleHeader: true
+          });
+        }
+      default:
+        return /*#__PURE__*/jsx(Text, {
+          color: "extraMeeting",
+          align: "center",
+          size: "s",
+          weight: "bold",
+          children: "No page available"
+        });
+    }
+  };
+  return /*#__PURE__*/jsxs("div", {
+    className: styles.container,
+    children: [/*#__PURE__*/jsx("div", {
+      children: /*#__PURE__*/jsx(Button, {
+        iconLeft: "arrowLeft",
+        size: "small",
+        color: "bloobirds",
+        onClick: callback,
+        variant: "clear",
+        uppercase: false,
+        children: "Back to list"
+      })
+    }), /*#__PURE__*/jsx("div", {
+      className: styles.detailsContainer,
+      children: getActivityDetail()
+    })]
+  });
+};
+
+export { ActivityDetails, ActivityFeed, ActivityFeedUserFilter, CallDetail, EmailThreadDetail, img$5 as GoToMeeting, img$4 as GoogleMeet, InboundDetail, LinkedInDetail, MagicFilter, MeetingDetail, img$3 as MicrosoftTeams, NewActivityFeed, NoDataPage, NoteDetail, PastActivityLeadFilter, PastActivityTab, PastActivityTypeFilter, img as Video, img$2 as Webex, WhatsappDetail, img$1 as Zoom, useActivityFeed };
+//# sourceMappingURL=index.js.map

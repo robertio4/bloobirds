@@ -1,0 +1,28 @@
+._container {
+  text-decoration: none;
+  color: var(--bloobirds);
+  margin-right: 8px;
+  text-align: justify;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: block;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+._container:hover {
+  cursor: pointer;
+  color: var(--darkBloobirds);
+}
+
+._container > p {
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+}
+
+._is_complete,
+._is_complete > * {
+  text-decoration: line-through;
+  text-align: left;
+}

@@ -1,0 +1,61 @@
+.container {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  position: relative;
+  color: var(--darkGray);
+  font-size: 12px;
+  font-weight: var(--fontMedium);
+  line-height: 16px;
+  padding: 4px 16px;
+  cursor: pointer;
+}
+
+.item:hover {
+  background-color: var(--lightestBloobirds);
+}
+
+.icon {
+  width: 24px;
+  margin-right: 8px;
+}
+
+.title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.no_tasks {
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  font-size: 9px;
+}
+
+.add_new_custom_task {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 16px 14px;
+}

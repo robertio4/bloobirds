@@ -1,0 +1,22 @@
+
+.typeFilters {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px
+}
+
+.typeFilters span {
+  margin-bottom: 0;
+}
+
+.authorFilter {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px
+}
+
+.authorFilter > div > div[class^='SmallSelect-module_container'] {
+  height: 26px;
+}

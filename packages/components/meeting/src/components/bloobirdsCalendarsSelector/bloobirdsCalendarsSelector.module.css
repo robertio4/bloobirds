@@ -1,0 +1,52 @@
+._calendars_container {
+  display: flex;
+  flex-direction: column;
+  margin: 16px;
+  width: 300px;
+}
+
+._calendars_list {
+  margin: 8px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+._calendars_list > * {
+  margin: 4px 0;
+}
+
+._help_container > * {
+  margin-bottom: 8px;
+}
+
+._help_text {
+  display: flex;
+}
+
+._accounts_selector {
+  margin: 8px 0 16px 0;
+}
+
+._select_anchor {
+  width: 200px;
+  height: 24px;
+  border-radius: 4px;
+  border: 1px solid var(--peanut);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+._icon_container {
+  display: flex;
+  align-items: center;
+  margin-left: 4px;
+  margin-right: 4px;
+}
+
+._select_text {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}

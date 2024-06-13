@@ -1,0 +1,11 @@
+
+> @bloobirds-it/wizard-modal-context@0.0.0 build
+> npm run build:prod
+
+
+> @bloobirds-it/wizard-modal-context@0.0.0 build:prod
+> tsc && cross-env NODE_ENV=production rollup -c=../../../rollup.config.js
+
+[36m
+[1m/Users/robertorf/Workspace/frontend-monorepo/packages/components/wizardModalContext/src/index.tsx[22m → [1mdist/index.js, dist/index.es.js[22m...[39m
+[32mcreated [1mdist/index.js, dist/index.es.js[22m in [1m894ms[22m[39m

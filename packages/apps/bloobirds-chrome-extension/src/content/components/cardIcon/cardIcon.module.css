@@ -1,0 +1,15 @@
+._icon_direction {
+  position: absolute;
+  top: -40%;
+  right: -40%;
+}
+
+._icon_direction_xs {
+  position: absolute;
+  top: -30%;
+  right: -20%;
+}
+
+._icon {
+  position: relative;
+}

@@ -1,0 +1,79 @@
+.timeline_item_wrapper {
+  transition: all 0.5s ease-out;
+}
+
+.timeline_item_wrapper > li {
+  padding-left: 14px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  background-color: var(--lightestPurple);
+}
+
+.sidePeek_timeline_item_wrapper > li {
+  padding-left: 18px;
+}
+
+.timeline_item_wrapper div[class*='TimelineItem-module_timeline_container'] > p {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  display: flex !important;
+}
+
+.timeline_item_wrapper div[class*='TimelineItem-module_title_container'] > p {
+  width: 100%;
+}
+
+.timeline_item_wrapper > li > div:first-child > div:nth-child(2) > div {
+  width: 20px;
+  height: 20px;
+}
+
+.activityHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 4px;
+  width: 100%;
+}
+
+.activityHeader > div {
+  display: flex;
+  max-width: 100%;
+}
+
+.activityHeaderTitleWrapper {
+  overflow: hidden;
+}
+
+.activityHeaderTitleWrapper > div {
+  max-width: 100%;
+}
+
+.activityHeaderTitle {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+
+.learnMoreButton {
+  border: 1px solid var(--lightPurple) !important;
+  color: var(--purple) !important;
+  font-size: 11px !important;
+  padding: 2px !important;
+}
+
+.learnMoreButton svg > path {
+  fill: var(--purple);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--lightestPurple);
+}

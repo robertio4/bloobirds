@@ -1,0 +1,140 @@
+/**
+ * Config types that we can find in the settings of the home page. With the same
+ * calls to the BE, we will use these to identify the config we want to read or change.
+ */
+export enum ConfigType {
+  ACTIVITY_SECTION_NOTIFICATIONS_FILTERS = 'ACTIVITY_SECTION_NOTIFICATIONS_FILTERS',
+  ACTIVITY_SECTION_SELECTOR = 'ACTIVITY_SECTION_SELECTOR',
+  KPI_SECTION_SELECTOR = 'KPI_SECTION_SELECTOR',
+  ACTIVITY_SECTION_LIVE_FEED_FILTERS = 'ACTIVITY_SECTION_LIVE_FEED_FILTERS',
+  KPI_SECTION_FILTERS = 'KPI_SECTION_FILTERS',
+  TASKS_SECTION_FILTERS = 'TASKS_SECTION_FILTERS',
+  TASKS_SECTION_FILTERS_SALES = 'TASKS_SECTION_FILTERS_SALES',
+  TASKS_SECTION_SELECTOR = 'TASKS_SECTION_SELECTOR',
+}
+
+export enum Config {
+  // Here are only some of them included
+  THIS_MONTH = 'THIS_MONTH',
+  THIS_WEEK = 'THIS_WEEK',
+  THIS_YEAR = 'THIS_YEAR',
+  LAST_7_DAYS = 'LAST_7_DAYS',
+  LIVE_FEED = 'LIVE_FEED',
+  NOTIFICATIONS = 'NOTIFICATIONS',
+  SALES = 'SALES',
+  PROSPECTING = 'PROSPECTING',
+  OVERDUE = 'OVERDUE',
+  OVERDUE_SALES = 'OVERDUE_SALES',
+  RECEIVED_EMAILS_NOTIF = 'RECEIVED_EMAILS_NOTIF',
+  RECEIVED_LINKEDIN_NOTIF = 'RECEIVED_LINKEDIN_NOTIF',
+  CADENCE_END_NOTIF = 'CADENCE_END_NOTIF',
+  REPORT_MEETING_RESULT = 'REPORT_MEETING_RESULT',
+  MEETING_ACCEPTED = 'MEETING_ACCEPTED',
+  MEETING_DELETED = 'MEETING_DELETED',
+  MEETING_CANCELLED = 'MEETING_CANCELLED',
+  MEETING_RESCHEDULED = 'MEETING_RESCHEDULED',
+  NEW_LEADS_DELIVERED = 'NEW_LEADS_DELIVERED',
+  NEW_COMPANIES_DELIVERED = 'NEW_COMPANIES_DELIVERED',
+  IMPORT_COMPLETED = 'IMPORT_COMPLETED',
+  IMPORT_COMPLETED_ISSUES = 'IMPORT_COMPLETED_ISSUES',
+  IMPORT_FAILED = 'IMPORT_FAILED',
+  NEW_INBOUND_LEADS = 'NEW_INBOUND_LEADS',
+  NEW_INBOUND_ACTIVITY = 'NEW_INBOUND_ACTIVITY',
+  MISSED_CALLS_FROM_LEADS = 'MISSED_CALLS_FROM_LEADS',
+  MISSED_CALLS_FROM_UNKNOWN = 'MISSED_CALLS_FROM_UNKNOWN',
+  INCOMING_CALLS_FROM_UNKNOWN = 'INCOMING_CALLS_FROM_UNKNOWN',
+  REPORT_CALL_RESULT = 'REPORT_CALL_RESULT',
+  EMAIL_OPENED = 'EMAIL_OPENED',
+  EMAIL_CLICKED = 'EMAIL_CLICKED',
+  ACCOUNT_STOPPED = 'ACCOUNT_STOPPED',
+  RELATED_COMPANY_MEETING = 'RELATED_COMPANY_MEETING',
+  RELATED_COMPANY_STATUS_ACCOUNT = 'RELATED_COMPANY_STATUS_ACCOUNT',
+  RELATED_COMPANY_STATUS_CLIENT = 'RELATED_COMPANY_STATUS_CLIENT',
+  RELATED_COMPANIES_OPPORTUNITY = 'RELATED_COMPANIES_OPPORTUNITY',
+  RELATED_COMPANY_ACTIVITY_INBOUND = 'RELATED_COMPANY_ACTIVITY_INBOUND',
+  RELATED_COMPANY_LEAD_INBOUND = 'RELATED_COMPANY_LEAD_INBOUND',
+  QUICK_START_GUIDE = 'QUICK_START_GUIDE',
+}
+
+export interface AvailableHomeSettings {
+  availableConfigs: AvailableHomeConfigs[];
+}
+
+export interface AvailableHomeConfigs {
+  configType: ConfigType;
+  availableConfigs: UserHomeConfig[];
+}
+
+export interface UserHomeSettings {
+  configTypes: UserHomeConfigType[];
+}
+
+export interface UserHomeConfigType {
+  configType: ConfigType;
+  configs: UserHomeConfig[];
+}
+
+export interface UserHomeConfig {
+  id: string;
+  name: string;
+  enumName: Config | string;
+  enabled: boolean;
+  ordering: number;
+  extraConfig?: string;
+}
+
+export interface HomeMetric {
+  value: number | null;
+  previousValue: number | null;
+  change: number | null;
+  label: string;
+}
+
+export interface HomeMetricsResponse {
+  metrics: HomeMetric[];
+}
+
+export enum TIME_WINDOW {
+  TODAY = 'Today',
+  LAST_7_DAYS = 'Last 7 days',
+  LAST_30_DAYS = 'Last 30 days',
+  LAST_90_DAYS = 'Last 90 days',
+  THIS_WEEK = 'This week',
+  THIS_MONTH = 'This month',
+  THIS_QUARTER = 'This quarter',
+  THIS_YEAR = 'This year',
+}
+
+export enum PREVIOUS_TIME_WINDOW {
+  TODAY = 'Yesterday',
+  LAST_7_DAYS = 'Previous period',
+  LAST_30_DAYS = 'Previous period',
+  LAST_90_DAYS = 'Previous period',
+  THIS_WEEK = 'Last week',
+  THIS_MONTH = 'Last month',
+  THIS_QUARTER = 'Last quarter',
+  THIS_YEAR = 'Last year',
+}
+
+export enum HomepageBlocks {
+  MEETINGS = 'MEETINGS',
+  MY_ACTIVITY = 'MY_ACTIVITY',
+  MY_CUSTOM_ACTIVITY = 'MY_CUSTOM_ACTIVITY',
+  PIPELINE = 'PIPELINE',
+  LINKEDIN = 'LINKEDIN',
+  EMAIL = 'EMAIL',
+  CALLS = 'CALLS',
+  TASKS = 'TASKS',
+  MY_PIPELINE = 'MY_PIPELINE',
+  TEAM_MEETINGS = 'TEAM_MEETINGS',
+  TEAM_ACTIVITIES = 'TEAM_ACTIVITIES',
+  QUICK_START_GUIDE = 'QUICK_START_GUIDE',
+  EMAIL_AUTOMATION = 'EMAIL_AUTOMATION',
+}
+
+export const shouldNotShowResultsFilters = [
+  ['OVERDUE', 'COMPLETED'],
+  ['COMPLETED'],
+  ['OVERDUE'],
+  ['COMPLETED', 'OVERDUE'],
+];

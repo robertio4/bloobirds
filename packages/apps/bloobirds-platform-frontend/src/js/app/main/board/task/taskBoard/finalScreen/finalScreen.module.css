@@ -1,0 +1,70 @@
+.root {
+  min-height: calc(100vh - 152px);
+  margin: 36px;
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  flex-direction: column;
+  position: relative;
+
+  overflow: hidden;
+  box-shadow: 0px 1px 3px 0px rgb(0 0 0 / 20%), 0px 1px 1px 0px rgb(0 0 0 / 14%),
+    0px 2px 1px -1px rgb(0 0 0 / 12%);
+  border-radius: 4px;
+  transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  background-color: #fff;
+}
+
+.titleEmoji {
+  margin-top: 120px;
+  font-size: 50px;
+}
+
+.title {
+  color: var(--bloobirds);
+  font-size: 30px;
+  font-weight: normal;
+  font-stretch: normal;
+}
+
+.paragraph {
+  color: var(--peanut);
+}
+
+.background {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+
+.background > svg {
+  height: 100%;
+  width: 100%;
+}
+
+.background > svg path {
+  fill: var(--bloobirds);
+}
+
+.button {
+  background-color: var(--bloobirds);
+  color: var(--white);
+}
+
+.button:hover {
+  background-color: var(--lightBloobirds);
+}
+
+.quote_wrapper {
+  text-align: center;
+  max-width: 600px;
+}
+
+.quote_text {
+  font-size: 25px;
+}
+
+.quote_author {
+  font-size: 25px;
+  color: var(--softPeanut);
+}

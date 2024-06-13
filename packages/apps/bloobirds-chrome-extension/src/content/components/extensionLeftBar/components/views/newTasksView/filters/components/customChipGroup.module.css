@@ -1,0 +1,36 @@
+._chipGroup {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin-bottom: 8px;
+}
+
+._chip {
+    display: flex;
+    padding: 4px 5px;
+    align-items: center;
+    gap: 4px;
+
+    cursor: pointer;
+
+    border-radius: 15px;
+    background: var(--lightestBloobirds, #EDF1F5);
+
+    color: var(--peanut, #464F57);
+
+    text-align: center;
+    font-feature-settings: 'clig' off, 'liga' off;
+    font-family: Inter;
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 13.5px; /* 135% */
+
+}
+
+._selected {
+    background: var(--softPeanut, #94A5BA);
+
+    color: var(--white, #FFF);
+}

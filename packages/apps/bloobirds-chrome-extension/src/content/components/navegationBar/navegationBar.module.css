@@ -1,0 +1,133 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 8px;
+  gap: 24px;
+  border-radius: 8px 8px 0px 0px;
+}
+
+.containerSidePeek {
+  border-radius: 0px;
+}
+
+.containerGradient {
+  background: linear-gradient(270deg, #43ccf2 0%, #1991ff 100%);
+}
+
+.containerGradientCompleted {
+  background: linear-gradient(270deg, #42da9c 0%, #1991ff 100%);
+}
+
+.leftContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0px;
+  gap: 4px;
+  order: 0;
+  flex-grow: 0;
+}
+
+.rightContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0px;
+  order: 1;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.rightContainer > button {
+  padding: 3px 0;
+  margin: 0px;
+}
+
+.textPaginator {
+  text-align: center;
+  width: 55px;
+}
+
+.textPaginator > p {
+  font-size: 11px;
+  line-height: 24px;
+}
+
+.text > p {
+  font-size: 11px;
+  line-height: 24px;
+}
+
+.taskTitle {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.taskTitle > p {
+  font-size: 12px;
+  line-height: 24px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.taskTitle_sidePeek > p {
+  font-size: 13px;
+}
+
+.navigatorButton {
+  background: #65d0f6;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.navigatorButton:hover {
+  background-color: #94e3fe;
+}
+
+.chevrons {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 0px;
+  gap: 4px;
+}
+
+.spinnerContainer {
+  padding: 2px;
+}
+
+.handle {
+  position: absolute;
+  top: 4px;
+  left: 48%;
+  transform: rotate(90deg);
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 100ms ease-in;
+}
+
+.container:hover .handle {
+  opacity: 1;
+  visibility: visible;
+}
+
+.taskInfo{
+  display: flex;
+}
+
+.referenceBobjectInfo{
+  display: flex;
+}
+
+.dashSeparator{
+  white-space: pre;
+}

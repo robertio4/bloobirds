@@ -1,0 +1,32 @@
+._auto_assign_dropdown {
+  display: flex;
+  flex-direction: column;
+  width: 250px;
+  padding: 16px;
+}
+
+._auto_assign_text {
+  padding-bottom: 16px;
+}
+
+._radio_group {
+  padding-bottom: 16px;
+}
+
+._button_wrapper {
+  margin: 0 4px;
+}
+
+._button_wrapper > div > div {
+  width: 100%;
+}
+
+/*
+Breaks the START CADENCE from the wizard
+._button_wrapper > div {
+  height: 24px;
+}*/
+
+._radio_group > div > div {
+  font-size: 12px;
+}

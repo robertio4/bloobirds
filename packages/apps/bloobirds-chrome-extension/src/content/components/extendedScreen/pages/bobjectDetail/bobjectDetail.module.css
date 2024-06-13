@@ -1,0 +1,112 @@
+.container {
+  padding: 0 16px 16px 20px;
+  box-sizing: border-box;
+}
+
+.refreshHelper {
+  display: flex;
+  align-items: center;
+}
+
+.refreshText {
+  font-size: 12px;
+}
+
+.header {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.header > * {
+  white-space: nowrap;
+}
+
+.sectionHeader {
+  font-size: 14px;
+  margin: 16px 0;
+}
+
+.sectionSubHeader {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.sectionField {
+  display: flex;
+  width: 100%;
+  min-height: 24px;
+  margin-bottom: 4px;
+}
+
+.fieldLabel {
+  width: 80px;
+  box-sizing: border-box;
+  margin-right: 16px;
+}
+
+.label {
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 24px;
+}
+
+.fieldValue {
+  max-width: 190px;
+  max-height: 24px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 24px;
+}
+
+.saveButton {
+  display: flex;
+  align-items: center;
+  max-height: 24px;
+}
+
+.fieldActions {
+  display: flex;
+  margin-left: auto;
+}
+
+.input {
+  gap: 8px;
+  width: 100%;
+  display: flex;
+}
+
+.save {
+  cursor: pointer;
+}
+
+.input input,
+.input input:focus,
+.input input:hover {
+  border: none;
+  outline: none;
+  box-shadow: none;
+  background: none;
+  width: 100%;
+}
+
+.action {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  margin-left: 2px;
+}
+
+.action > div {
+  display: flex;
+  align-items: center;
+}
+
+.actionSidePeek > div > span,
+.actionSidePeek > a > div > span {
+  width: 24px;
+  height: 24px;
+}

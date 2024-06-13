@@ -1,0 +1,7 @@
+.container {
+  display: flex;
+}
+
+.container > * {
+  margin: 0 8px;
+}

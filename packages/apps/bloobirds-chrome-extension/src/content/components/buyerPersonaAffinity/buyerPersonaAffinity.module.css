@@ -1,0 +1,56 @@
+.root {
+  border-radius: 0.8rem;
+  border: 1px solid #1126EA;
+  background: linear-gradient(270deg, #DCFFF1 0%, #E2E5FF 65.49%);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 16px 0 16px;
+  gap: 16px;
+  box-sizing: border-box;
+  margin-top:0.8rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+}
+
+.title {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.button {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+
+.button_override {
+  background-color: transparent !important;
+}
+
+.content{
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding-bottom: 16px;
+  gap: 8px
+}
+
+.point {
+  display: flex;
+  align-items: start;
+  gap: 4px
+}
+
+.point_icon {
+  width: 20px;
+  top: -2px;
+  position: relative;
+  display: flex;
+}

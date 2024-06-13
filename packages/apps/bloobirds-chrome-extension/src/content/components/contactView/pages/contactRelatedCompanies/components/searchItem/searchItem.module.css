@@ -1,0 +1,21 @@
+._search_item_container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+._search_item_text {
+  margin-left: 8px;
+  margin-top: 4px;
+}
+
+._circular_badge_wrapper {
+  flex-shrink: 0;
+}
+
+._search_item_card {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}

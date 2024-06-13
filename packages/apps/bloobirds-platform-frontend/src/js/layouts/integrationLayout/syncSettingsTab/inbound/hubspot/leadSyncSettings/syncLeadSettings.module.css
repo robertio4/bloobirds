@@ -1,0 +1,58 @@
+._container {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 32px 32px;
+}
+._radio_group {
+  width: 646px;
+}
+._radio_group > div > div {
+  width: 100%;
+  text-transform: none;
+}
+
+._syncContact > p {
+  margin-bottom: 24px;
+}
+._syncContact > div {
+  width: 640px;
+}
+
+._divider {
+  box-sizing: border-box;
+  padding: 24px 0;
+}
+
+._checkBox_small {
+  display: flex;
+  flex-direction: column;
+}
+
+._checkBox_small > p {
+  margin-bottom: 24px;
+}
+
+._checkBox_small > div {
+  margin-bottom: 24px;
+  width: 366px;
+}
+
+._children_multiselect {
+  box-sizing: border-box;
+  padding-top: 32px;
+  display: flex;
+  align-items: center;
+  width: fit-content;
+}
+._children_multiselect > * {
+  margin-right: 20px;
+}
+
+._collapsible > div > div {
+  padding-top: 0;
+}
+
+._collapsible > div > svg {
+  margin-top: 4px;
+}

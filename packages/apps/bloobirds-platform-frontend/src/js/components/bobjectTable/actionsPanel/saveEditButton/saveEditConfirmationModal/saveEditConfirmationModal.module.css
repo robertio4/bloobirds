@@ -1,0 +1,11 @@
+.modalContent {
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+
+.modalContent * {
+  text-align: center;
+}

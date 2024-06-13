@@ -1,0 +1,206 @@
+.taskTitle {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-left: -4px;
+}
+
+._icons {
+  display: flex;
+  flex-shrink: 0;
+  margin-right: 2px;
+}
+
+._icons > svg {
+  margin-right: 2px;
+}
+
+.container {
+  border: 1px var(--softBloobirds) solid !important;
+  border-radius: 4px;
+  margin: 8px 0 4px 0;
+}
+
+.gray {
+  border: none !important;
+}
+
+.gray > div {
+  background-color: var(--lightestBloobirds) !important;
+}
+
+.container > div {
+  padding: 8px !important;
+}
+
+.container > div div[class*="CardContent-module_content"] {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+
+.container > div div[class*="CardBody-module_body"] {
+  gap: 4px;
+}
+
+.verticalEllipsis {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.leadName {
+  display: flex;
+  margin-left: 6px;
+  cursor: pointer;
+  align-items: center;
+  overflow: hidden;
+  gap: 2px;
+}
+
+.leadName > svg {
+  min-width: 14px;
+}
+
+.leadName > p {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+._dashed_line {
+  position: absolute;
+  width: 0;
+  height: 8px;
+  left: 28px;
+  border-left: 1px dashed #c5d1dd;
+}
+
+._dashed_line {
+  position: absolute;
+  width: 0;
+  height: 8px;
+  left: 28px;
+  border-left: 1px dashed #c5d1dd;
+}
+
+._datetime {
+  display: flex;
+  gap: 4px;
+}
+
+._datetime > p {
+  white-space: nowrap;
+}
+
+.cardButtons {
+  display: flex;
+  align-self: center;
+  max-height: 30px;
+}
+
+.cardButtonsSidePeek > div {
+  padding: 14px 14px 4px 8px !important;
+}
+
+.cardButtonsBubble > div {
+  padding: 6px 8px 6px 4px !important;
+}
+
+.cardButtons > div {
+  top: 0;
+  right: 0;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.cardButtons > div > button {
+  width: 32px;
+  height: 21px;
+  padding: 4px 6px;
+}
+
+.cardButtons > div > div {
+  width: 32px;
+}
+
+.cardButtons > div > div > button {
+  width: 32px;
+  height: 21px;
+  padding: 4px 6px;
+}
+
+.meetingIcon {
+  height: 18.6px;
+  margin-right: 2px;
+  display: flex;
+  align-items: center;
+}
+
+.activityTitle {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.taskTitle {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-left: -4px;
+}
+
+.taskTitleEllipsis {
+  max-width: 60%;
+}
+
+.taskTitleGrown {
+  flex: 1;
+}
+
+.rightSide {
+  margin-left: auto;
+  margin-right: 4px;
+}
+
+.secondLine {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+
+._icons {
+  display: flex;
+  flex-shrink: 0;
+}
+
+._icons > svg {
+  margin-right: 2px;
+}
+
+.scheduledDateTime {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: flex;
+}
+
+
+._datetime {
+  display: flex;
+  gap: 4px;
+}
+
+._datetime > p {
+  white-space: nowrap;
+}
+
+.verticalEllipsis {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

@@ -1,0 +1,6 @@
+._helpButton__container {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  padding-left: 24px;
+}

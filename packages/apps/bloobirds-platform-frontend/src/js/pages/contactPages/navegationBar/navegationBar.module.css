@@ -1,0 +1,94 @@
+._container {
+  background-color: var(--white);
+  border-bottom: 1px solid var(--lightBloobirds);
+}
+
+._topHalf__container {
+  display: flex;
+  align-items: center;
+  height: 60px;
+  border-bottom: 1px solid var(--lightBloobirds);
+  background-color: var(--lighterGray);
+  box-sizing: border-box;
+  padding: 0 40px;
+}
+
+._topHalf__gradient {
+  background: linear-gradient(270deg, #43ccf2 0%, #1991ff 100%);
+}
+
+._topHalf__completed_gradient {
+  background: linear-gradient(270deg, #42da9c 0%, #1991ff 100%);
+}
+
+._bobjectName {
+  line-height: 16px;
+}
+
+._company_name_container {
+  cursor: pointer;
+}
+
+._bobjectName__container {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+}
+
+._bobjectName__container > div {
+  display: flex;
+  align-items: center;
+  padding-right: 8px;
+}
+
+._bobjectName__container > div > svg {
+  margin-right: 4px;
+}
+
+._bobjectName__container > div:not(:first-child) {
+  padding-left: 8px;
+  border-left: 1px solid var(--lightBloobirds);
+}
+
+._bottomHalf__container > div,
+._bottomHalf__container > div > div {
+  font-size: 14px;
+  color: var(--softPeanut);
+}
+
+._bottomHalf__container > div > div > div {
+  margin-left: 0 !important;
+}
+
+._bottomHalf__container > div > div > svg {
+  margin-left: 4px;
+}
+
+._bottomHalf__container {
+  height: 40px;
+  box-sizing: border-box;
+  display: flex;
+}
+
+._tab_container {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: fit-content;
+}
+
+._tab_container:hover {
+  cursor: pointer;
+}
+
+._tab_container:not(:first-of-type) div {
+  border-left: none;
+}
+
+._bottomHalf__container > :first-child {
+  margin: 0 12px;
+}
+
+.sendSalesButton {
+  margin-left: auto;
+}

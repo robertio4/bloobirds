@@ -1,0 +1,36 @@
+.html_message{
+  color: var(--softPeanut);
+  overflow-wrap: break-word;
+}
+
+.html_message > p {
+  font-size: 12px;
+}
+
+.html_message > ol,
+.html_message > ul {
+  padding-left: 24px !important;
+}
+
+.html_message > ol {
+  list-style: decimal !important;
+}
+
+.infoSectionHeader{
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+  justify-content: space-between;
+}
+
+.infoSectionHeader > button{
+  height: 24px;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  border-color: white;
+}
+
+.infoSectionText{
+  overflow-wrap: break-word;
+}

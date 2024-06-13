@@ -1,0 +1,63 @@
+.title {
+  background-color: var(--softBanana);
+  padding: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--peanut);
+  line-height: 24px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.body {
+  background-color: var(--verySoftBanana);
+  padding: 12px;
+  padding-top: 8px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--peanut);
+  line-height: 14.52px;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.viewLogsButton {
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.body > button {
+  justify-content: center !important;
+}
+
+.anchor,
+.anchorInfo {
+  display: flex;
+}
+
+.anchor > span {
+  width: 16px;
+  height: 16px;
+  padding: 2px;
+}
+
+.anchorMedium > span {
+  width: 21px;
+  height: 21px;
+  padding: 2px;
+}
+
+.anchorInfo > span {
+  width: 24px;
+  height: 24px;
+  padding: 2px;
+}
+
+.anchor path,
+.anchorInfo path {
+  fill: var(--peanut);
+}

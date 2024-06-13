@@ -1,0 +1,80 @@
+.container {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  position: relative;
+}
+
+.expiredContainer {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.expiredContainer > * {
+  margin: 10px;
+}
+
+.formContainer {
+  display: flex;
+  width: 100%;
+  overflow: auto;
+  justify-content: center;
+}
+
+.banner {
+  background: white;
+  box-shadow: 0 2px 8px rgba(197, 209, 221, 0.3);
+  padding: 30px 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.content {
+  width: 400px;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.passwordInputs {
+  margin-top: 16px;
+}
+
+.passwordInputs > *:first-child {
+  margin-bottom: 16px;
+}
+
+.usernameInput {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.inputFeedback {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.inputFeedback > ul {
+  margin-left: 4rem;
+  margin-top: 1rem;
+}
+
+.saveButton {
+  margin-top: 24px;
+}
+
+.root {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+.logoContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 50px;
+}

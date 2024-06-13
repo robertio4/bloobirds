@@ -1,0 +1,49 @@
+
+> @bloobirds-it/bloobirds-chrome-extension@3.0.10 build:dev
+> NODE_OPTIONS=--max-old-space-size=8192 NODE_ENV=development ENV=development BASE_URL=https://gateway.dev-bloobirds.com vite build --sourcemap=true
+
+vite v3.2.10 building for production...
+transforming...
+[BABEL] Note: The code generator has deoptimised the styling of /Users/robertorf/Workspace/frontend-monorepo/packages/components/wizardModalController/dist/index.js as it exceeds the max of 500KB.
+
+../../../../../../assets/calendar-scrollable.png referenced in /Users/robertorf/Workspace/frontend-monorepo/packages/components/meeting/src/components/calendarNotConnected/calendarNotConnected.module.css?used didn't resolve at build time, it will remain unchanged to be resolved at runtime
+✓ 4078 modules transformed.
+rendering chunks...
+Sourcemap is likely to be incorrect: a plugin (base64-loader) was used to transform files, but didn't generate a sourcemap for the transformation. Consult the plugin documentation for help
+Sourcemap is likely to be incorrect: a plugin (base64-loader) was used to transform files, but didn't generate a sourcemap for the transformation. Consult the plugin documentation for help
+Sourcemap is likely to be incorrect: a plugin (base64-loader) was used to transform files, but didn't generate a sourcemap for the transformation. Consult the plugin documentation for help
+The emitted file "src/favicon.png" overwrites a previously emitted file of the same name.
+dist/assets/noContext.89cc0481.png                41.29 KiB
+dist/assets/homePage.7fbfb4f1.png                 36.44 KiB
+dist/assets/index.js-loader.f702c239.js           0.33 KiB
+dist/assets/injectJsStart.js-loader.5496ab64.js   0.34 KiB
+dist/assets/injectJsEnd.js-loader.307bca90.js     0.34 KiB
+dist/assets/injectCss.js-loader.ea216433.js       0.34 KiB
+dist/src/popup/index.html                         0.54 KiB
+dist/manifest.json                                3.12 KiB
+dist/service-worker-loader.js                     0.04 KiB
+dist/src/logo.png                                 0.49 KiB
+dist/src/favicon.png                              2.91 KiB
+dist/src/content/extendEventListeners.js          0.34 KiB
+dist/assets/index.js.920a860f.js                  2.10 KiB
+dist/assets/index.js.920a860f.js.map              3.99 KiB
+dist/assets/injectJsStart.js.c650825c.js          0.49 KiB
+dist/assets/injectJsStart.js.c650825c.js.map      0.93 KiB
+dist/assets/injectJsEnd.js.dddf342b.js            0.48 KiB
+dist/assets/injectJsEnd.js.dddf342b.js.map        0.92 KiB
+dist/assets/injectCss.js.6cc7a319.js              0.33 KiB
+dist/assets/injectCss.js.6cc7a319.js.map          0.68 KiB
+dist/assets/index.ts.0e3f27c8.js                  35.42 KiB
+dist/assets/index.ts.0e3f27c8.js.map              60.96 KiB
+dist/assets/messages.54a048cb.js                  0.73 KiB
+dist/assets/messages.54a048cb.js.map              1.15 KiB
+dist/assets/constants.e065481c.js                 0.24 KiB
+dist/assets/constants.e065481c.js.map             0.38 KiB
+dist/assets/index.html.2f05c941.js                339.39 KiB
+dist/assets/index.html.2f05c941.js.map            6.77 KiB
+dist/assets/index.1e52339a.js                     1813.70 KiB
+dist/assets/index.1e52339a.js.map                 3484.20 KiB
+dist/assets/bloobirds.c04039a2.js                 2370.11 KiB
+dist/assets/bloobirds.c04039a2.js.map             3444.33 KiB
+dist/assets/core.d964a2fb.js                      15274.69 KiB
+dist/assets/core.d964a2fb.js.map                  24889.11 KiB

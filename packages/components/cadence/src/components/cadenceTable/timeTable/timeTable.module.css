@@ -1,0 +1,208 @@
+.container {
+  border-radius: 4px;
+  border: 1px solid var(--verySoftPeanut);
+  display: flex;
+  background-color: var(--white);
+}
+
+.table_content {
+  width: calc(100% - 104px);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.table_content_center {
+  width: 100%;
+}
+
+.center_container {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: auto;
+  overflow-y: hidden !important;
+  cursor: grab;
+}
+
+.center_container:active{
+  cursor: grabbing;
+}
+
+.center_container::-webkit-scrollbar {
+  display: none;
+}
+
+.column {
+  white-space: nowrap;
+  width: 14%;
+}
+
+.edge_column {
+  max-width: fit-content;
+}
+
+.first_column {
+  width: 104px;
+  border-right: 1px solid var(--verySoftPeanut);
+}
+
+.first_column > .row {
+  justify-content: flex-start;
+}
+
+.weekendDay {
+  background: repeating-linear-gradient(
+    55deg,
+    var(--white),
+    var(--lightestBloobirds) 1px,
+    var(--lightestBloobirds) 4px,
+    var(--white) 5.2px,
+    var(--white) 10px
+  );
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 8px;
+  border-top: 1px solid var(--verySoftPeanut);
+  height: 20px;
+}
+
+.row:nth-child(1) {
+  border: 0;
+}
+
+.row > button {
+  margin-right: 4px;
+}
+
+.row > button:nth-child(2) {
+  margin-right: 0;
+}
+
+.weekendDay > .row._header {
+  background: none;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.nonClickable {
+  cursor: default;
+}
+.dropdown{
+  display: flex;
+  flex-direction: column;
+  width: 388px;
+  max-height: 195px;
+  box-sizing: border-box;
+  overflow-y: scroll;
+  padding-left: 4px;
+}
+
+.dropdown_task_icon{
+  justify-content: center;
+  display: flex;
+  padding-top: 2px;
+}
+
+.dropdown_content{
+
+  display: flex;
+  box-sizing: border-box;
+  padding: 2px 12px 2px 14px;
+}
+
+.dropdown_content:hover {
+  background-color: var(--lightestBloobirds);
+}
+
+.dropdown_task_header {
+  display: flex;
+  justify-content: space-between;
+}
+.dropdown_task_body {
+  display: flex;
+  align-items: center;
+}
+.dropdown_task_description{
+  margin-left: 4px;
+}
+
+.dropdown_task_right {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-left: 6px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  flex: 1 1 0%;
+  min-width: 0px;
+}
+
+._marker {
+  width: 16px;
+  height: 16px;
+  border-radius: 100px;
+  border: 1px dashed var(--softPeanut);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.scheduledTaskItemWrapper{
+  transition: all 0.5s ease-out;
+}
+
+.scheduledTaskItemWrapper > li {
+  padding-left: 14px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.scheduledTaskItemWrapper > li > div:first-child > div:nth-child(2) > div {
+  width: 20px;
+  height: 20px;
+}
+
+.descriptionContainer {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.scheduledTask_header {
+  display: flex;
+}
+
+.dropdown_item_actions {
+  position: relative;
+  box-sizing: border-box;
+  top: -5px;
+  margin-bottom: -30px;
+  right: 0;
+  display: flex;
+  justify-content: right;
+  gap: 4px;
+  padding-right: 48px;
+  padding-top: 6px;
+}
+
+.dropdown_item_actions > button {
+  width: 24px;
+  height: 20px;
+  padding-left: 3px;
+  padding-right: 0;
+}
+
+.dropdown_item_actions > button > svg {
+  width: 16px;
+  height: 16px;
+}

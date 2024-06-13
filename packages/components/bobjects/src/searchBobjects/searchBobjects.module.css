@@ -1,0 +1,27 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  max-height: 300px;
+}
+
+.link_button {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.link_button > * {
+  margin-right: 4px;
+}
+
+.input {
+  margin: 16px 0;
+  box-shadow: none;
+}
+
+.results {
+  height: auto;
+  overflow-y: auto;
+  width: 100%;
+}

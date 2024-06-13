@@ -1,0 +1,22 @@
+import { BobjectTypes } from '@bloobirds-it/types';
+
+import { COMPANY_FIELDS_LOGIC_ROLE } from '../../../../constants/company';
+import { LEAD_FIELDS_LOGIC_ROLE } from '../../../../constants/lead';
+
+export const companiesAndLeadsFilterFields = {
+  [BobjectTypes.Company]: [
+    COMPANY_FIELDS_LOGIC_ROLE.ASSIGNED_TO,
+    COMPANY_FIELDS_LOGIC_ROLE.TARGET_MARKET,
+    COMPANY_FIELDS_LOGIC_ROLE.SOURCE,
+    COMPANY_FIELDS_LOGIC_ROLE.SALES_STATUS,
+    COMPANY_FIELDS_LOGIC_ROLE.MR_RATING,
+    COMPANY_FIELDS_LOGIC_ROLE.NURTURING_REASONS,
+    COMPANY_FIELDS_LOGIC_ROLE.DISCARDED_REASONS,
+  ],
+  [BobjectTypes.Lead]: [
+    LEAD_FIELDS_LOGIC_ROLE.ASSIGNED_TO,
+    LEAD_FIELDS_LOGIC_ROLE.SOURCE,
+    LEAD_FIELDS_LOGIC_ROLE.SALES_STATUS,
+    LEAD_FIELDS_LOGIC_ROLE.ICP,
+  ],
+};

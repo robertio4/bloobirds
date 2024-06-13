@@ -1,0 +1,226 @@
+._meeting_card {
+  margin-bottom: 4px;
+}
+
+.cardButtons button {
+  margin-right: 4px;
+  width: 32px;
+  height: 22px;
+  padding: 1px 6px;
+}
+
+.cardButtons {
+  display: flex;
+  align-items: center;
+}
+
+._meeting_icon {
+  margin-left: 1px;
+  flex-shrink: 0;
+}
+
+._meeting_card > div > div > div > div[class^='CardHoverButton'] {
+  padding: 0 !important;
+}
+
+._meeting_card > div > div > div[class^='CardBody'] {
+  margin-left: 4px;
+}
+
+._meeting_title {
+  width: 95%;
+  display: flex;
+  align-items: center;
+}
+
+._meeting_title > div {
+  width: 100%;
+  justify-content: left;
+}
+
+._meeting_user {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+._meeting_card > div {
+  padding: 8px !important;
+  min-height: 130px;
+}
+
+._meeting_card > div > div:last-child {
+  margin-top: 4px;
+}
+
+._callCard_body__text {
+  padding-right: 8px;
+  align-self: auto;
+}
+
+._callCard_body__text_collapsed {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.card_content {
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 3;
+  height: auto !important;
+}
+
+.icon {
+  margin-right: 4px;
+}
+
+._separator {
+  display: flex;
+  align-self: center;
+  margin-right: 8px;
+  width: 1px;
+  height: 8px;
+  background-color: var(--softPeanut);
+}
+
+._callCard_body__link {
+  display: flex;
+  padding-right: 5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+.activityTitle {
+  text-overflow: ellipsis;
+  white-space: pre;
+  overflow: hidden;
+  margin-right: 4px;
+  cursor: pointer;
+}
+
+.meeting_container {
+  width: 100%;
+}
+
+._meeting_card:hover .meeting_container > div:last-child {
+  transition-delay: 0ms, 100ms;
+  transition-property: height, opacity;
+  transition-duration: 250ms;
+  height: 40px;
+  opacity: 1;
+}
+
+._meeting_card .meeting_container > div:last-child {
+  transition-delay: 200ms, 0ms;
+  transition-property: height, opacity;
+  transition-duration: 250ms;
+  height: 0;
+  opacity: 0;
+}
+
+.meeting_content {
+  display: flex;
+  flex-direction: column;
+}
+
+.meeting_content > *:not(:first-child) {
+  margin-top: 2px;
+}
+
+.meeting_content > div {
+  display: flex;
+  align-items: center;
+  height: 18px;
+}
+
+.meeting_related {
+  display: flex;
+}
+
+.meeting_time {
+  display: flex;
+}
+
+.meeting_time_text {
+  margin-left: 4px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: block;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.invitees {
+  display: flex;
+  margin-left: 4px;
+}
+
+.invitees > *:not(:last-child):after {
+  content: '·';
+  margin: 0 4px;
+}
+
+.meetingCard_buttons {
+  height: 0;
+  opacity: 0;
+  width: 100%;
+  background-color: var(--white);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 8px 10px;
+}
+
+.visible_buttons {
+  height: 40px !important;
+  opacity: 1 !important;
+}
+
+._meeting_button {
+  width: 50%;
+  justify-content: center;
+  margin: 0 2px;
+}
+
+._meeting_button_reported > svg > path {
+  fill: var(--melon);
+}
+
+.conferencing {
+  display: flex;
+  align-items: center;
+  margin-left: 8px;
+}
+
+.conferencing_text {
+  cursor: pointer;
+  margin-left: 4px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: block;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.img {
+  margin-top: -1px;
+  width: 16px;
+}
+
+.meeting_card_note,
+.meeting_card_note > p,
+.meeting_card_note > div {
+  font-size: 10px !important;
+}

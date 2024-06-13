@@ -1,0 +1,117 @@
+._icon_wrapper {
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+._datetime {
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+
+._time {
+  margin-left: 4px;
+}
+
+._separator {
+  margin-right: 8px;
+  width: 1px;
+  height: 8px;
+  background-color: var(--softPeanut);
+}
+
+._title {
+  flex-shrink: 0;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+}
+
+._description {
+  margin-left: 25px;
+}
+
+._description > p {
+  text-align: justify;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: block;
+  white-space: nowrap;
+}
+
+._cadence_name {
+  flex-shrink: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  margin-right: 6px;
+}
+
+._cadence_name > div {
+  overflow: hidden;
+}
+
+._cadence_name > div > p {
+  text-align: justify;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: block;
+  white-space: nowrap;
+}
+
+._high_priority_icon {
+  margin-left: 8px;
+}
+
+._bobject_name {
+  flex-shrink: 1;
+  font-size: 14px;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  margin-left: 8px;
+}
+
+._lead_company_name {
+  display: flex;
+  align-items: center;
+}
+
+._lead_company_name > ._bobject_name {
+  margin-left: 0;
+}
+
+._lead_company_name > ._bobject_name > span {
+  text-overflow: ellipsis;
+  width: 140px;
+}
+
+._assigned_circle {
+  display: flex;
+  align-items: center;
+  margin-left: 8px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+._status {
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1150px) {
+  ._s_hidden {
+    display: none;
+  }
+}
+
+@media (max-width: 1550px) {
+  ._m_hidden {
+    display: none;
+  }
+}
+
+@media (max-width: 1700px) {
+  ._l_hidden {
+    display: none;
+  }
+}

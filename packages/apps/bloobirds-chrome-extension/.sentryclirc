@@ -1,0 +1,6 @@
+[auth]
+token=337fcbc9028b4ee1ad09f2b1431ea719cf54e56f6e3442958adac1a376aaa86e
+
+[defaults]
+project=chrome-extension
+org=bloobirds

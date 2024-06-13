@@ -1,0 +1,143 @@
+Arguments: 
+  /Users/robertorf/.nvm/versions/node/v17.7.2/bin/node /Users/robertorf/.nvm/versions/node/v17.7.2/bin/yarn
+
+PATH: 
+  /Users/robertorf/.nvm/versions/node/v17.7.2/bin:/Library/Frameworks/Python.framework/Versions/3.10/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Users/robertorf/.nvm/versions/node/v17.7.2/bin:/Library/Frameworks/Python.framework/Versions/3.10/bin:/opt/homebrew/bin:/opt/homebrew/sbin
+
+Yarn version: 
+  1.22.19
+
+Node version: 
+  17.7.2
+
+Platform: 
+  darwin arm64
+
+Trace: 
+  TypeError: Invalid Version: 0.1.0.alpha.1
+      at new SemVer (/Users/robertorf/.nvm/versions/node/v17.7.2/lib/node_modules/yarn/lib/cli.js:3512:11)
+      at Range.module.exports.Range.test (/Users/robertorf/.nvm/versions/node/v17.7.2/lib/node_modules/yarn/lib/cli.js:4319:15)
+      at /Users/robertorf/.nvm/versions/node/v17.7.2/lib/node_modules/yarn/lib/cli.js:4381:18
+      at Array.forEach (<anonymous>)
+      at Function.maxSatisfying (/Users/robertorf/.nvm/versions/node/v17.7.2/lib/node_modules/yarn/lib/cli.js:4380:12)
+      at PackageConstraintResolver.reduce (/Users/robertorf/.nvm/versions/node/v17.7.2/lib/node_modules/yarn/lib/cli.js:89975:67)
+      at Config.resolveConstraints (/Users/robertorf/.nvm/versions/node/v17.7.2/lib/node_modules/yarn/lib/cli.js:40830:36)
+      at Function.<anonymous> (/Users/robertorf/.nvm/versions/node/v17.7.2/lib/node_modules/yarn/lib/cli.js:50328:36)
+      at Generator.next (<anonymous>)
+      at step (/Users/robertorf/.nvm/versions/node/v17.7.2/lib/node_modules/yarn/lib/cli.js:310:30)
+
+npm manifest: 
+  {
+    "name": "bloobirds-platform-frontend-monorepo",
+    "private": true,
+    "version": "1.0.0",
+    "workspaces": [
+      "packages/apps/*",
+      "packages/components/*",
+      "packages/hooks",
+      "packages/internationalization",
+      "packages/utils",
+      "packages/types",
+      "packages/internationalization"
+    ],
+    "dependencies": {
+      "@bloobirds-it/flamingo-ui": "1.206.0",
+      "@bloobirds-it/plover": "1.0.1",
+      "@bloobirds-it/rollup": "^2.79.2",
+      "@react-spring/web": "^9.7.2",
+      "@sentry/cli": "^2.17.4",
+      "@sentry/react": "7.27.0",
+      "@sentry/tracing": "7.27.0",
+      "@udecode/plate": "^19.7.0",
+      "clsx": "^1.2.1",
+      "i18next": "^23.4.6",
+      "is-hotkey": "^0.2.0",
+      "react-i18next": "^13.2.0",
+      "react-use-measure": "^2.1.1",
+      "slate": "^0.88.1",
+      "slate-history": "^0.86.0",
+      "slate-hyperscript": "^0.77.0",
+      "slate-react": "^0.88.2",
+      "styled-components": "^5.3.6",
+      "swr": "^2.2.0",
+      "xstate": "^4.11.0"
+    },
+    "devDependencies": {
+      "@babel/eslint-parser": "7.16.5",
+      "@babel/preset-react": "^7.16.5",
+      "@playwright/test": "^1.33.0",
+      "@rollup/plugin-babel": "^6.0.3",
+      "@rollup/plugin-json": "^6.0.0",
+      "@testing-library/jest-dom": "5.16.5",
+      "@testing-library/react": "12.1.5",
+      "@testing-library/react-hooks": "^8.0.1",
+      "@trivago/prettier-plugin-sort-imports": "^4.1.1",
+      "@types/jest": "^29.5.0",
+      "@types/node": "^18.11.9",
+      "@typescript-eslint/eslint-plugin": "^5.0.0",
+      "@typescript-eslint/parser": "^5.0.0",
+      "autoprefixer": "^10.4.14",
+      "bun": "^1.0.3",
+      "commitizen": "^4.2.5",
+      "cz-conventional-changelog": "^3.3.0",
+      "eslint": "8.22.0",
+      "eslint-config-airbnb": "^19.0.4",
+      "eslint-plugin-cypress": "^2.11.3",
+      "eslint-plugin-import": "^2.25.3",
+      "eslint-plugin-jsx-a11y": "^6.2.3",
+      "eslint-plugin-prettier": "4.0.0",
+      "eslint-plugin-react": "7.28.0",
+      "eslint-plugin-react-hooks": "4.3.0",
+      "i18next-scanner": "^4.4.0",
+      "jest": "^29.5.0",
+      "jest-css-modules-transform": "^4.4.2",
+      "jest-environment-jsdom": "^29.5.0",
+      "jest-transform-stub": "^2.0.0",
+      "prettier": "2.0.5",
+      "rollup-plugin-includepaths": "^0.2.4",
+      "rollup-plugin-node-builtins": "^2.1.2",
+      "rollup-plugin-peer-deps-external": "^2.2.4",
+      "ts-jest": "^29.0.5",
+      "turbo": "^1.10.14",
+      "typescript": "^4.9.5"
+    },
+    "peerDependencies": {
+      "word-wrap": "1.2.4"
+    },
+    "scripts": {
+      "clean": "turbo run clean && rm -r ./node_modules",
+      "setup": "npm run clean && npm install && npm run build",
+      "install:deps": "npm install",
+      "turbo": "turbo run start --concurrency 50",
+      "app:start:prod": "cross-env NODE_ENV=production ENV=production REACT_APP_VERSION=$npm_package_version turbo run start --filter=bloobirds-platform-frontend... --concurrency 50",
+      "app:start:dev": "cross-env NODE_ENV=development ENV=development REACT_APP_VERSION=$npm_package_version turbo run start --filter=bloobirds-platform-frontend... --concurrency 50",
+      "app:start:local": "cross-env NODE_ENV=development ENV=local REACT_APP_VERSION=$npm_package_version turbo run start --filter=bloobirds-platform-frontend... --concurrency 50",
+      "extension:start:prod": "cross-env NODE_OPTIONS=--max-old-space-size=8192 NODE_ENV=production ENV=production VERSION=$npm_package_version BASE_URL=https://gateway.bloobirds.com  turbo run start --filter=@bloobirds-it/bloobirds-chrome-extension... --concurrency 50",
+      "extension:start:dev": "cross-env NODE_OPTIONS=--max-old-space-size=8192 NODE_ENV=development ENV=development VERSION=$npm_package_version BASE_URL=https://gateway.dev-bloobirds.com turbo run start --filter=@bloobirds-it/bloobirds-chrome-extension... --concurrency 50",
+      "extension:start:local": "cross-env NODE_OPTIONS=--max-old-space-size=8192 NODE_ENV=local ENV=local VERSION=$npm_package_version BASE_URL=http://localhost turbo run start --filter=@bloobirds-it/bloobirds-chrome-extension... --concurrency 50",
+      "auth:start:dev:local": "turbo run dev:local --filter=@bloobirds-it/bloobirds-auth... --concurrency 50",
+      "auth:start:dev": "turbo run dev --filter=@bloobirds-it/bloobirds-auth... --concurrency 50",
+      "auth:start:prod:local": "turbo run prod:local --filter=@bloobirds-it/bloobirds-auth... --concurrency 50",
+      "auth:start:prod": "turbo run prod --filter=@bloobirds-it/bloobirds-auth... --concurrency 50",
+      "auth:start:local": "turbo run localhost --filter=@bloobirds-it/bloobirds-auth... --concurrency 50",
+      "create:production:release:ext": "node packages/apps/bloobirds-chrome-extension/scripts/release.cjs",
+      "build": "turbo run build",
+      "extension:build": "turbo run build --filter=@bloobirds-it/bloobirds-chrome-extension",
+      "app:build": "turbo run build --filter=bloobirds-platform-frontend",
+      "scheduler:start:dev": "turbo run start --filter=@bloobirds-it/bloobirds-scheduler...",
+      "scheduler:start:prod": "turbo run prod --filter=@bloobirds-it/bloobirds-scheduler... --concurrency 50",
+      "scheduler:start:local": "turbo run localhost --filter=@bloobirds-it/bloobirds-scheduler... --concurrency 50",
+      "lint": "eslint --ext js,jsx,ts,tsx .",
+      "lint:fix": "eslint --ext js,jsx,ts,tsx --fix .",
+      "prettier": "prettier \"**/*.{md,css,scss,yaml,yml}\"",
+      "test:unit:watch": "jest -c jest.config.js --watch",
+      "test:unit": "jest -c jest.config.js",
+      "test:unit:coverage": "jest -c jest.config.js --coverage --coverageReporters='text'"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

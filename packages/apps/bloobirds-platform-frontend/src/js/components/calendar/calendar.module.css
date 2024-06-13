@@ -1,0 +1,76 @@
+._header {
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+}
+
+._navigation_wrapper {
+  margin-left: 8px;
+}
+
+._navigation_wrapper > svg:nth-child(1) {
+  margin-right: 10px;
+}
+
+._button_wrapper {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+._days_header {
+  display: flex;
+  width: 280px;
+  margin: 0 auto;
+  margin-bottom: 10px;
+  justify-content: space-around;
+}
+
+._days_header > span {
+  width: 40px;
+}
+
+._days_grid,
+._skeleton_wrapper {
+  display: flex;
+  width: 280px;
+  flex-wrap: wrap;
+  margin: 0 auto;
+}
+
+._day_wrapper {
+  display: flex;
+  min-width: 40px;
+  height: 40px;
+  border-radius: 40px;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  border: 2px solid white;
+  box-sizing: border-box;
+}
+
+._empty {
+  cursor: inherit;
+}
+
+._day_wrapper > span {
+  min-height: 16px;
+  padding: 1px 0;
+}
+
+._today {
+  background-color: var(--bloobirds);
+}
+
+._selected {
+  background-color: var(--verySoftBloobirds);
+}
+
+._weekend {
+  background: repeating-linear-gradient(45deg, white, white 3px, #edf1f5 3px, #edf1f5 6px);
+}
+
+._marked {
+  background: repeating-linear-gradient(45deg, white, white 3px, #ffe8b2 3px, #ffe8b2 6px);
+}

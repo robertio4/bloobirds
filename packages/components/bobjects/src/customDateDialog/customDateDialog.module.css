@@ -1,0 +1,25 @@
+.modal {
+  width: unset !important;
+  background-color: var(--white);
+}
+
+.year,
+.month {
+  font-family: var(--fontFamily);
+  font-size: 13px;
+  color: var(--peanut);
+  cursor: pointer;
+  margin: 0;
+  border: 0;
+  background: none;
+  padding: 4px;
+}
+
+.month {
+  font-weight: var(--fontBold);
+}
+
+.year:hover,
+.month:hover {
+  color: var(--bloobirds);
+}

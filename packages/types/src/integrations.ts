@@ -1,0 +1,6 @@
+export enum CRM {
+  HUBSPOT = 'HUBSPOT',
+  SALESFORCE = 'SALESFORCE',
+  DYNAMICS = 'DYNAMICS',
+  VTIGER = 'VTIGER',
+}

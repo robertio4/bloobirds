@@ -1,0 +1,12 @@
+
+> @bloobirds-it/dialer@0.0.0 build:dev
+> cross-env NODE_ENV=development rollup -c=../../../rollup.config.js
+
+[36m
+[1m/Users/robertorf/Workspace/frontend-monorepo/packages/components/dialer/src/index.tsx[22m → [1mdist/index.js[22m...[39m
+[1m[33m(!) Circular dependencies[39m[22m
+src/dialer.tsx -> src/aircallDialer/hooks/useAirCallDialerVisibility.tsx -> src/dialer.tsx
+src/aircallDialer/hooks/useAirCallDialerVisibility.tsx -> src/aircallDialer/airCallDialerFrame.tsx -> src/aircallDialer/hooks/useAirCallDialerVisibility.tsx
+src/dialer.tsx -> src/deviceHandler.tsx -> src/dialer.tsx
+...and 13 more
+[32mcreated [1mdist/index.js[22m in [1m2.4s[22m[39m

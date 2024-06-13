@@ -1,0 +1,98 @@
+.optionBox {
+  margin-bottom: 16px;
+}
+
+.content {
+  margin-bottom: 24px;
+}
+
+.optionBox:first-of-type {
+  margin-top: 16px;
+}
+
+.optionBox > div {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.optionBox > div > div > span {
+  font-size: 12px;
+  line-height: 14px;
+}
+
+.cadenceBox {
+  display: flex;
+  gap: 8px;
+}
+
+.cadenceBox:first-child {
+  flex-grow: 1;
+  width: auto;
+}
+
+.cadenceBox > div:first-of-type {
+  flex-grow: 1;
+  width: auto;
+}
+
+.select {
+  flex-grow: 1;
+  width: auto;
+}
+
+.infoBox {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.infoBox > div > span > p {
+  width: calc(100% - 72px);
+}
+
+.infoBox svg {
+  padding: 0;
+}
+
+.infoBox > div {
+  gap: 8px;
+}
+
+.hidden {
+  display: none;
+}
+
+.buttons > * {
+  margin-left: 8px;
+}
+
+.cadencePreview {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.checkbox > div {
+  width: 100%;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  padding-left: 16px;
+}
+
+.cadenceOptions {
+  margin-top: 8px;
+}
+
+.box {
+  position: absolute;
+  z-index: 199;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 700px;
+  background: #ffffff;
+  border: 1px solid #d4e0f1;
+  box-shadow: 0 2px 8px rgba(70, 79, 87, 0.33);
+  border-radius: 4px;
+}

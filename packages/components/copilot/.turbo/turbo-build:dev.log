@@ -1,0 +1,9 @@
+
+> @bloobirds-it/copilot@0.0.0 build:dev
+> cross-env NODE_ENV=development rollup -c=../../../rollup.config.js
+
+[36m
+[1m/Users/robertorf/Workspace/frontend-monorepo/packages/components/copilot/src/index.ts[22m → [1mdist/index.js[22m...[39m
+[1m[33m(!) Unused external imports[39m[22m
+default imported from external module "react" but never used in "src/crmUpdates/crmUpdates.context.tsx", "src/crmUpdates/crmUpdatesModal.tsx" and "src/insights/insights.tsx"
+[32mcreated [1mdist/index.js[22m in [1m4.1s[22m[39m

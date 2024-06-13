@@ -1,0 +1,16 @@
+.bobjectItemCompressed {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 2px 12px;
+  cursor: pointer;
+}
+
+
+.bobjectItemCompressed:hover {
+  background-color: var(--veryLightBloobirds);
+}
+
+.bobjectItemCompressedHover:hover {
+  background-color: var(--lightestBloobirds);
+}

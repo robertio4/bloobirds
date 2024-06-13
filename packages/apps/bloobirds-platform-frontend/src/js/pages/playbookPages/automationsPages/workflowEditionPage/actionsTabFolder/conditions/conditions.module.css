@@ -1,0 +1,119 @@
+._conditions_connector_wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-top: -20px;
+}
+
+._conditions_connector {
+  margin-left: 300px;
+  display: flex;
+  height: 24px;
+  width: 0;
+  border: var(--verySoftPeanut) 1px dashed;
+}
+
+._conditions_excluding_button {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+._input_picker_container > div > div {
+  width: 260px;
+}
+
+._select_container > div > div {
+  height: 24px;
+}
+
+._conditions_selector_item {
+  white-space: break-spaces;
+}
+
+._conditions_excluding_button > button {
+  padding: 3px 8px;
+}
+
+._conditions_button {
+  display: flex;
+  align-self: center;
+  width: 132px;
+  margin-bottom: 20px;
+}
+
+._conditions_section_button {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+._conditions_label {
+  display: flex;
+  justify-content: center;
+}
+
+._conditions_header_space {
+  display: flex;
+  justify-content: center;
+  height: 48px;
+}
+
+._conditions_section_label {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+._conditions_options__container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+._workflows_conditions_text {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+._conditions_selector_wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 20px;
+}
+
+._conditions_selector_wrapper > *:first-child {
+  margin-right: 16px;
+  margin-left: 20px;
+}
+
+._conditions_module {
+  display: flex;
+  flex-direction: column;
+}
+
+._workflows_conditions_icon > * {
+  display: flex;
+  justify-content: center;
+  transform: rotate(90deg);
+}
+
+._workflows_conditions_icon_wrapper {
+  position: absolute;
+  justify-content: space-between;
+  right: -11px;
+  top: 0;
+}
+
+._conditions_module_header {
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  align-items: center;
+}
+
+._conditions_module > label {
+  width: 33px;
+}

@@ -1,0 +1,7 @@
+
+> @bloobirds-it/vite-plugin@2.0.0-beta.23 start
+> rollup -c rollup.config.ts --configPlugin esbuild
+
+[36m
+[1msrc/node/index.ts[22m → [1mdist/index.js[22m...[39m
+[32mcreated [1mdist/index.js[22m in [1m207ms[22m[39m

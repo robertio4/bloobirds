@@ -1,0 +1,39 @@
+.stepper__root {
+  width: 100%;
+  padding-top: 12px;
+}
+
+.stepConnector .alternativeLabel {
+  top: 10px;
+  left: calc(-50% + 16px);
+  right: calc(50% + 16px);
+}
+
+.stepConnector .line {
+  border-color: #eaeaf0;
+  border-top-width: 3px;
+  border-radius: 1px;
+}
+
+.stepIcons__root {
+  color: #eaeaf0;
+  display: flex;
+  height: 22px;
+  align-items: center;
+}
+
+.stepIcons__active {
+  color: natural;
+}
+
+.stepIcons__circle {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--bloobirds);
+}
+
+.stepIcons__completed {
+  z-index: 1;
+  font-size: 18px;
+}

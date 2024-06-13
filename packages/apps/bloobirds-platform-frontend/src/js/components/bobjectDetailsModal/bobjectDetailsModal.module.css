@@ -1,0 +1,44 @@
+._container {
+  composes: slideInRight from '../../../assets/stylesheets/animations.css';
+  background-color: var(--white);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  outline: none;
+  position: fixed;
+  right: 0;
+  width: 492px;
+  top: 0;
+  z-index: 2;
+}
+
+._container_distinction::after {
+  content: '';
+  position: absolute;
+  height: 100%;
+  left: 0;
+  width: 4px;
+  z-index: 1;
+  background-color: var(--bloobirds);
+}
+
+._container_distinction_prospecting::after {
+  background-color: var(--verySoftGrape);
+}
+
+._container_distinction_sales::after {
+  background-color: var(--peanut);
+}
+
+._content {
+  background-color: var(--white);
+  font-family: 'Proxima Nova Soft';
+  width: 492px;
+  position: absolute;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  outline: none !important;
+  box-shadow: -4px 0 12px rgba(54, 93, 128, 0.2);
+}

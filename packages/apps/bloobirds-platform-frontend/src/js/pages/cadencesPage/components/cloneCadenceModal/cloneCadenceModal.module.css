@@ -1,0 +1,34 @@
+._title__container {
+  display: flex;
+  align-items: center;
+}
+
+._title__container > svg {
+  margin-right: 4px;
+}
+
+._main_info__input {
+  margin: 8px 0 12px 0;
+}
+
+._cadence_callout__container {
+  border: var(--softBloobirds) 1px solid;
+  border-radius: 4px;
+  margin-top: 20px;
+  margin-bottom: 26px;
+  background-color: var(--veryLightBloobirds);
+}
+
+._cadence_callout__container > div > svg {
+  color: var(--bloobirds);
+}
+
+._cadence_callout__wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+._cadence_callout__wrapper > div {
+  margin-right: 23px;
+}

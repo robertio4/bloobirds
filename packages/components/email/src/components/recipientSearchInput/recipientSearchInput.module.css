@@ -1,0 +1,144 @@
+.container {
+  max-width: 85%;
+  position: relative;
+  align-items: center;
+  display: flex;
+  flex: 1 1 0;
+  flex-wrap: wrap;
+  gap: 8px;
+  cursor: text;
+}
+
+.input,
+.container > div > input {
+  font-family: var(--fontFamily);
+  font-size: 16px;
+  padding: 0;
+  margin: 0;
+  color: var(--peanut);
+  background-color: transparent;
+  border: none;
+  outline: none;
+}
+
+.input::placeholder,
+.container > div > input::placeholder {
+  color: transparent;
+}
+
+.input:focus,
+.container > div > input:focus {
+  outline: none;
+  box-shadow: none;
+  background-color: transparent;
+}
+
+.sizer {
+  min-width: 4px;
+  position: absolute;
+  left: -9999px;
+  display: inline-block;
+}
+
+.dropdown {
+  animation: popup 125ms ease-in-out forwards;
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  border-radius: 4px;
+  box-sizing: border-box;
+  color: var(--peanut);
+  display: flex;
+  filter: drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.15));
+  flex-direction: column;
+  font-family: var(--fontFamily);
+  background-color: var(--white);
+  min-height: 28px;
+  min-width: 350px;
+  padding: 8px 0;
+  z-index: 2;
+}
+
+.dropdown > *::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.dropdown > *::-webkit-scrollbar {
+  width: 4px;
+}
+
+.dropdown > *::-webkit-scrollbar-thumb {
+  border: 2px solid var(--gray);
+}
+
+.chipGroupDiv {
+  padding: 6px 20px 12px 20px;
+  display: flex;
+  justify-content: space-evenly;
+  cursor: default;
+  gap: 6px;
+}
+
+.chipSelected div {
+  cursor: default;
+}
+
+.dropdownContent {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.spinnerContainer {
+  height: 200px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  cursor: pointer;
+  font-family: var(--fontFamily);
+  color: var(--darkGray);
+  font-size: 14px;
+  font-weight: var(--fontMedium);
+  line-height: 16px;
+  padding: 8px 16px;
+  background-color: white;
+}
+
+.item[aria-selected="true"] {
+  background-color: var(--lightestBloobirds);
+}
+
+.warningIcon {
+  margin-right: 2px;
+  margin-left: -4px;
+}
+
+.noContacts {
+  width: 100%;
+  margin: 8px auto;
+  height: 256px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 24px;
+}
+
+@keyframes popup {
+  from {
+    opacity: 0;
+    transform: translateY(85%) scale(0.85);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(100%) scale(1);
+  }
+}

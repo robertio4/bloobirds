@@ -1,0 +1,15 @@
+.input_container {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+.input_container > * {
+  margin: 8px;
+}
+
+.subtitle {
+  margin-bottom: 16px;
+}
+

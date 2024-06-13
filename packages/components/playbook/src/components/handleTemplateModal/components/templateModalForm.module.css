@@ -1,0 +1,39 @@
+.form {
+}
+
+.bodyContainer {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  align-items: center;
+  min-height: 0;
+  flex: 1;
+  box-sizing: border-box;
+}
+
+.bodyContainer > div:first-child {
+  border-top: var(--verySoftPurple) 1px solid;
+}
+
+.bodyContainer > div {
+  border-bottom: 0;
+}
+
+.editorToolbar {
+  width: 100%;
+  background-color: #0c1ba4aa;
+  margin-top: -1px;
+  z-index: 99999;
+}
+
+.toolbarRight {
+  width: 100%;
+  height: inherit;
+}
+
+._editor__container_ast {
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
+  height: 100%;
+}

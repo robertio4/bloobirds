@@ -1,0 +1,83 @@
+._container {
+  box-sizing: border-box;
+  padding: 32px 32px;
+}
+
+._lead_activity_check_box {
+  max-width: 836px;
+}
+._lead_activity_check_box > p {
+  margin-bottom: 24px;
+}
+._callout {
+  margin-top: 12px;
+}
+
+._checkbox {
+  max-width: 972px;
+  margin-bottom: 20px;
+}
+._first_checkbox {
+  width: 510px;
+  margin-bottom: 20px;
+}
+._second_checkbox {
+  width: 532px;
+  margin-bottom: 20px;
+}
+._radio_group {
+  max-width: 972px;
+  display: flex;
+  max-height: 80px;
+}
+
+._radio_group > div:first-child {
+  width: 500px;
+}
+._radio_group > div > div {
+  text-transform: none;
+}
+._divider {
+  box-sizing: border-box;
+  padding: 24px 0;
+}
+
+._checkBox_small {
+  display: flex;
+  flex-direction: column;
+}
+
+._checkBox_small > p {
+  margin-bottom: 24px;
+}
+
+._checkBox_small > div {
+  margin-bottom: 24px;
+  width: 364px;
+}
+
+._section_title {
+  margin-bottom: 24px;
+}
+
+._section_title_contacts {
+  margin-bottom: 24px;
+  margin-top: 44px;
+}
+
+._text_select {
+  box-sizing: border-box;
+}
+
+._collapsible {
+  margin-left: 16px;
+}
+
+._collapsible > div > div {
+  padding-top: 0;
+  margin-bottom: 12px;
+}
+
+._collapsible > div > svg {
+  margin-top: 4px;
+}

@@ -1,0 +1,62 @@
+.header {
+  padding: 16px;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.container {
+  background-color: white;
+  position: relative;
+  min-height: calc(89vh);
+  display: flex;
+  flex-direction: column;
+}
+
+.editor {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  position: relative;
+  flex-grow: 1;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+.footer {
+  padding: 20px 32px;
+}
+
+/* .warningBanner > div {
+  background-color: #fef5df;
+}
+
+.warningBanner svg > path {
+  fill: #FF8433;
+} */
+
+.warningBanner p {
+  width: 90%;
+}
+
+._same_thread_container {
+  display: flex;
+  align-items: center;
+}
+
+._same_thread_container > span {
+  margin-right: 10px;
+}
+
+.attachmentList > div {
+  max-width: 1000px;
+}

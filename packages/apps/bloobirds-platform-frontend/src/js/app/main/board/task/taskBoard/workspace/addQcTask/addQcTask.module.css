@@ -1,0 +1,52 @@
+._tab__container {
+  margin: 40px -25px 0 -25px;
+}
+
+._tab__container > div > div:first-of-type {
+  margin: 0 25px;
+}
+._modal_container {
+  height: auto;
+  max-height: 300px;
+  width: 580px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+._modal_item {
+  width: 100%;
+  top: 0;
+  position: absolute;
+}
+
+.item {
+  width: 548px;
+}
+
+._relative {
+  width: 100%;
+  position: relative;
+}
+
+._lead__info {
+  margin-left: 8px;
+}
+
+._lead__company {
+  display: flex;
+  align-items: center;
+}
+
+._lead__company > * {
+  margin-right: 4px;
+}
+
+._company__icon {
+  flex-shrink: 0;
+}
+
+._search_container {
+  max-height: 200px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}

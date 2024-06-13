@@ -1,0 +1,37 @@
+/* Modify Sales Navigator navbar so the bubble can be in front of it */
+:global .application-header {
+  z-index: 2 !important;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+*::-webkit-scrollbar {
+  width: 6px !important;
+  height: 6px !important;
+  cursor: pointer !important;
+}
+*::-webkit-scrollbar-thumb {
+  outline: 1px solid var(--verySoftPeanut) !important;
+  border-radius: 3px !important;
+  background-color: var(--verySoftPeanut) !important;
+  border: 0px solid transparent !important;
+}
+*::-webkit-scrollbar-corner {
+  background: transparent !important;
+}
+*::-webkit-scrollbar-thumb:vertical {
+  min-height: 0px !important;
+}
+*::-webkit-scrollbar-thumb:horizontal {
+  min-width: 0px !important;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--verySoftPeanut) !important;
+  background-clip: padding-box !important;
+  border: 0px solid transparent !important;
+}
+*.smallscroll *::-webkit-scrollbar-thumb:hover {
+  border: 0px solid transparent !important;
+}

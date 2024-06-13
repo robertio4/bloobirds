@@ -1,0 +1,4 @@
+export const CHANNEL_POPUP = 'CHANNEL_POPUP';
+export const RELOAD = 'CHANNEL_NEW_VERSION';
+export const NEW_VERSION = 'NEW_VERSION';
+export const VERSION_UPDATED = 'VERSION_UPDATED';

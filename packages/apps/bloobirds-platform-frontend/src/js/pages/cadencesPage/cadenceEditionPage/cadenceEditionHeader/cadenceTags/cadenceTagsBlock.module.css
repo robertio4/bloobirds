@@ -1,0 +1,143 @@
+.title {
+    margin-right: 12px;
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin: 8px 0 16px;
+    min-height: 32px;
+}
+
+.autoSizeContainer {
+    max-width: 85%;
+    position: relative;
+    align-items: center;
+    display: flex;
+    flex: 1 1 0;
+    flex-wrap: wrap;
+    gap: 8px;
+    cursor: text;
+}
+
+.input,
+.autoSizeContainer > div > input {
+    color: var(--peanut);
+    background-color: var(--veryLightBloobirds);
+    border: 1px solid var(--white);
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 17px;
+    font-family: var(--fontFamily);
+    font-weight: var(--fontMedium);
+    font-size: 13px;
+    letter-spacing: 1px;
+    line-height: 16px;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.input:focus,
+.autoSizeContainer > div > input:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.dropdown {
+    animation: popup 125ms ease-in-out forwards;
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    border-radius: 4px;
+    box-sizing: border-box;
+    color: var(--peanut);
+    display: flex;
+    flex-wrap: wrap;
+    filter: drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.15));
+    font-family: var(--fontFamily);
+    background-color: var(--white);
+    min-height: 42px;
+    max-width: 360px;
+    min-width: 270px;
+    z-index: 2;
+    padding: 16px;
+    gap: 4px;
+}
+
+.dropdown > *::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+.dropdown > *::-webkit-scrollbar {
+    width: 4px;
+}
+
+.dropdown > *::-webkit-scrollbar-thumb {
+    border: 2px solid var(--gray);
+}
+
+.dropdownContent {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.noTagsFound {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 16px;
+    width: 100%;
+}
+
+.noTagsFound > button {
+    padding: 8px 16px;
+}
+
+.tagWrapper {
+    position: relative;
+}
+
+.deleteTagButton {
+    height: 22px;
+    width: 22px;
+    padding: 0;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px 0 #464F573B;
+    top: 2px;
+    right: 2px;
+    background-color: var(--veryLightBloobirds);
+}
+
+.deleteTagButton:hover {
+    background-color: var(--veryLightBloobirds);
+    opacity: 1;
+}
+
+.deleteTagButton > svg > path {
+    fill: var(--bloobirds);
+}
+
+.tagWrapperClickable {
+    cursor: pointer;
+}
+
+@keyframes popup {
+    from {
+        opacity: 0;
+        transform: translateY(85%) scale(0.85);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(100%) scale(1);
+    }
+}

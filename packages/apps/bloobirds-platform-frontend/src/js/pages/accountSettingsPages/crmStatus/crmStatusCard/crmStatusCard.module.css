@@ -1,0 +1,17 @@
+._status_value {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+._color__picker > div > div {
+  margin: 0;
+}
+
+._unassigned_stage_row {
+  background: var(--lightPeanut);
+}
+
+._circularBadge {
+  background: var(--verySoftBanana) !important;
+}
+

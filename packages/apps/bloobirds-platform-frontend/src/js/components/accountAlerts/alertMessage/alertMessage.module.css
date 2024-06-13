@@ -1,0 +1,31 @@
+._accounts_alert_link {
+  color: #1991ff;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+._pause_icon {
+  margin-right: 20px;
+}
+
+._pause_text_container {
+  display: flex;
+  align-items: center;
+}
+
+._edit_workflow_text_container {
+  padding-left: 110px;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+}
+
+._edit_workflow_text_container > p {
+  padding-top: 4px;
+}
+
+._lead_cadence_link {
+  font-weight: bold;
+  cursor: pointer;
+  color: var(--bloobirds);
+}

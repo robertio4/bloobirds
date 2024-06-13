@@ -1,0 +1,26 @@
+.speedControls{
+  display: flex;
+  align-items: center;
+  margin-left: 34px;
+  width: 75px;
+  justify-content: space-between;
+}
+
+.speedControls > *{
+  margin-right: 8px;
+}
+
+.controls{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.loader{
+  position: relative;
+  left:130px;
+  bottom: 78px;
+  margin-bottom: -24px;
+}

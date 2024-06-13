@@ -1,0 +1,66 @@
+.modal {
+  background-color: var(--white);
+}
+
+.header {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 580px;
+  overflow-y: scroll;
+}
+
+.content input {
+  margin: 0 !important;
+  box-shadow: none !important;
+  height: 32px;
+  border: none !important;
+  width: 100%;
+  padding: 0px;
+}
+
+.content span {
+  top: auto;
+}
+
+.datePicker {
+  padding-bottom: 8px;
+}
+
+.textArea {
+  padding-top: 8px;
+}
+
+.customButton {
+  margin-top: 8px;
+  justify-content: center;
+}
+
+.title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer_buttons {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.delete_content {
+  margin-bottom: 32px;
+}
+
+.delete_content > p:first-child {
+  margin-bottom: 8px;
+}

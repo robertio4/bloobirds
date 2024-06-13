@@ -1,0 +1,17 @@
+._clear_wrapper {
+  display: flex;
+  align-items: center;
+}
+
+._clear_wrapper > button {
+  padding-bottom: 0;
+  padding-top: 0;
+}
+
+._filters__title {
+  margin-right: 12px;
+}
+
+._quick_filter_wrapper > div {
+  margin-right: 8px;
+}

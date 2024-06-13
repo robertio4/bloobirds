@@ -1,0 +1,17 @@
+{
+  "writeKey": "a7674464934371996533-2502cc9868f79d62016879117f97d10e6449933dc4398bb8792488193aaa6635",
+  "readKey": "a7674464934371996533-15ac86deb3617593c4fff13e335e5888732755513e4737c1db0eeb995b8172bf",
+
+  "upload": {
+    "type": "json",
+    "files": {
+      "pattern": "/src/*.json",
+      "file": "translation.json",
+      "lang": "${autodetectLang}"
+    }
+  },
+
+  "download": {
+    "files": "src/${lang}.json"
+  }
+}

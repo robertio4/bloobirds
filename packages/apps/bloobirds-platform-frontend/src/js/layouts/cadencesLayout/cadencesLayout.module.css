@@ -1,0 +1,31 @@
+._container {
+  padding: 40px 120px;
+  width: 100%;
+  height: calc(100vh - 8rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--lighterGray);
+  display: flex;
+  flex-direction: column;
+}
+
+._container_small_desktop {
+  padding: 40px 40px;
+}
+
+._header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+._container div[class^='Tab-module_tab'] {
+  width: 100px;
+  justify-content: center;
+}
+
+._container div[class^='Tab-module_bottomLine'] {
+  height: 2px;
+}

@@ -1,0 +1,30 @@
+._tabs_wrapper {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+._tab {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+._tab_title {
+  padding: 4px;
+}
+
+._tab_active {
+  border-bottom: 1px;
+  border-bottom-style: solid;
+  border-image-slice: 1;
+  border-image-source: linear-gradient(270deg, #43ccf2 0%, #1991ff 100%);
+}
+
+._counter {
+  margin-left: auto;
+  background-color: var(--lightPeanut);
+  border-radius: 14px;
+  padding: 0 4px;
+  min-width: 8px;
+}

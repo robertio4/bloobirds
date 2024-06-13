@@ -1,0 +1,49 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: min-content;
+  align-items: center;
+}
+
+.leadsList {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.sync__contacts__container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 16px 0 8px;
+}
+
+.sync__contacts__container > * {
+  margin-right: 4px;
+}
+
+.badges_container {
+  display: flex;
+}
+
+.badges_container > * {
+  margin-left: -8px;
+}
+
+.sync_button {
+  cursor: pointer;
+}
+
+._related_list_container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+._related_list_title {
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+

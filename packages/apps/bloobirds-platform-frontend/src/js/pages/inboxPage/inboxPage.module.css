@@ -1,0 +1,130 @@
+._callCard_body__text {
+  margin-right: 4px;
+}
+
+._callCard_body__bobjectLink {
+  composes: _callCard_body__text;
+  display: inherit;
+}
+
+._callCard_body__source {
+  margin-left: 8px;
+}
+
+._filters__title {
+  margin-right: 12px;
+}
+
+._list_header {
+  display: flex;
+  justify-content: space-between;
+}
+
+._comingSoon_label {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0 3px;
+
+  background: var(--veryLightBloobirds);
+  border-radius: 4px;
+
+  font-size: 12px;
+  line-height: 16px;
+  /* identical to box height, or 160% */
+
+  color: var(--white);
+  font-weight: 600;
+  flex-grow: 0;
+
+  white-space: nowrap;
+  margin: 0 5px;
+}
+
+._button_reported_container {
+  display: flex;
+  background-color: var(--verySoftMelon);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+._footer_wrapper {
+  margin-top: 25px;
+}
+
+._date_text_wrapper > div > div {
+  margin-left: 8px;
+}
+
+._text_wrapper {
+  margin-bottom: 5px;
+}
+
+._text_align_center {
+  text-align: center;
+}
+
+._link {
+  color: var(--bloobirds);
+  font-size: 14px;
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+._quick_filter_wrapper > div {
+  margin-right: 8px;
+}
+
+.filter_relative_date div[role='listbox'] {
+  background-color: var(--softPeanut);
+  max-width: 210px;
+  width: auto;
+  padding: 4px 6px;
+  max-height: none;
+  border: 0;
+  box-sizing: border-box;
+  height: 24px;
+}
+
+.filter_relative_date div[role='listbox'] > button {
+  background-color: var(--softPeanut);
+  color: white;
+}
+
+.filter_relative_date div[role='listbox'] > button > span {
+  color: white !important;
+}
+
+.filter_relative_date div[role='listbox'] svg > path {
+  fill: var(--white);
+}
+
+.filter_relative_date div[role='listbox'] > div:first-child > svg {
+  margin-bottom: 3px;
+}
+
+._assigned_circle {
+  margin-left: 8px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+._counter__button {
+  display: flex;
+  align-content: center;
+  height: 24px;
+}
+
+._counter__button > div {
+  margin-right: 8px;
+}
+
+._inbox_discovery {
+  position: absolute;
+  z-index: 1;
+}
+
+._add_person {
+  margin-left: 4px;
+}

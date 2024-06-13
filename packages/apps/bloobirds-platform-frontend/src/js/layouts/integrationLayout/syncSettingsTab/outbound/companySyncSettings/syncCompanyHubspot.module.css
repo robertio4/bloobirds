@@ -1,0 +1,54 @@
+._children_multiselect {
+  box-sizing: border-box;
+  padding: 0 0 40px 32px;
+  display: flex;
+  align-items: center;
+  width: fit-content;
+}
+._children_multiselect > * {
+  margin-right: 20px;
+}
+._collapsible {
+  padding: 4px 107px 40px 32px;
+}
+._collapsible > div:first-child {
+  margin-bottom: 24px;
+}
+._collapsible_salesforce {
+  padding: 42px 107px 40px 0;
+}
+._collapsible_salesforce > div > svg {
+  margin-top: 4px;
+}
+._collapsible_salesforce > div:first-child {
+  margin-bottom: 24px;
+}
+._small_checkbox {
+  box-sizing: border-box;
+  padding-top: 12px;
+  width: 790px;
+}
+._children_salesforce_multiselect {
+  box-sizing: border-box;
+  padding-top: 24px;
+  display: flex;
+  align-items: center;
+  width: fit-content;
+}
+._children_salesforce_multiselect > * {
+  margin-right: 20px;
+}
+._children_company_container {
+  box-sizing: border-box;
+  padding: 40px 245px 60px 32px;
+}
+._checkBox {
+  margin-top: 24px;
+  max-width: 683px;
+}
+._checkBox:first-child {
+  margin-top: 0;
+}
+._checkBox > div:first-child {
+  margin-bottom: 10px;
+}

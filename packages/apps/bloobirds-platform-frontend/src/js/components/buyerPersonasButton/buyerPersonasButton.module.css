@@ -1,0 +1,21 @@
+._buyer_personas_message {
+  display: flex;
+  background: var(--verySoftPurple);
+  mix-blend-mode: normal;
+  border-radius: 4px;
+  padding: 8px 26px;
+  align-items: center;
+  margin-left: 8px;
+}
+
+._buyer_personas_message:hover {
+  cursor: pointer;
+}
+
+._buyer_personas_message > span {
+  margin-left: 3px;
+}
+
+._buyer_personas_message_small {
+  padding: 4px 11px;
+}

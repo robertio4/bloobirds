@@ -1,0 +1,23 @@
+.container {
+  overflow-y: auto;
+  gap: 8px;
+  padding: 8px;
+  margin-top: -7px;
+  position: absolute !important;
+  right: -10px;
+}
+
+.containerOpen {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  margin-top: -7px;
+  background-color: var(--white);
+  position: absolute !important;
+  right: -10px;
+  border: solid 1px var(--lighterGray);
+  border-radius: 4px;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+}

@@ -1,0 +1,91 @@
+.colorButton {
+  border-radius: 9999px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  border-width: 2px;
+  border-color: #d1d5db;
+  border-style: solid;
+  position: relative;
+}
+
+.colorButton svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.colorButton:hover {
+  box-shadow: 0px 0px 5px 1px #9a9a9a;
+}
+
+.colorButton:focus {
+  box-shadow: 0px 0px 5px 1px #676767;
+}
+
+.colorButtonBright {
+  border-color: transparent;
+  color: #ffffff;
+}
+
+.colorInputContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.colorInputInput {
+  width: 0;
+  height: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  overflow: hidden;
+}
+
+.colorPicker {
+  display: flex;
+  padding: 10px;
+  flex-direction: column;
+}
+
+.divider {
+  border-width: 1px;
+  border-color: #e5e7eb;
+  border-style: solid;
+  margin-top: 10px;
+}
+
+.clearButton {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  width: 100%;
+  margin-top: 10px;
+  border: none;
+  background-color: white;
+}
+
+.clearButton:hover {
+  background-color: rgba(243, 244, 246);
+}
+
+.colors {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 2.5px;
+  margin-top: 10px;
+}
+
+.customColors {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  width: 100%;
+  font-weight: 600;
+  border: none;
+  background-color: white;
+}
+
+.customColors:hover {
+  background-color: rgba(243, 244, 246);
+}

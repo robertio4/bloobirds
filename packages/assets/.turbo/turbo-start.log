@@ -1,0 +1,7 @@
+
+> @bloobirds-it/assets@0.0.1 start
+> cross-env NODE_ENV=production rollup -c=../../rollup.config.js
+
+[36m
+[1m/Users/robertorf/Workspace/frontend-monorepo/packages/assets/src/index.tsx[22m → [1mdist/index.js[22m...[39m
+[32mcreated [1mdist/index.js[22m in [1m527ms[22m[39m

@@ -1,0 +1,34 @@
+._textWrapperMultipleCompanies {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 12px;
+  padding: 0 16px;
+}
+
+._leadListWrapper {
+  width: 100%;
+}
+
+._text {
+  padding: 0 8px;
+  margin-bottom: 16px;
+}
+
+._textWrapperMultipleCompanies > div[class^='SmallInput-module_container'] {
+  padding: 0 8px;
+  margin-bottom: 16px;
+}
+
+._textWrapperMultipleCompanies input, ._textWrapperMultipleCompanies input:hover {
+  box-shadow: none !important;
+}
+
+._companyManagementWrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 8px 142px 8px;
+  gap: 16px;
+  max-height: 100%;
+}

@@ -1,0 +1,37 @@
+._modal_content {
+  padding: 10px 20px 10px 16px !important;
+}
+._search_content {
+  margin-top: 15px;
+}
+
+._modal_footer {
+  padding: 10px 20px 20px 16px !important;
+}
+
+._footer_buttons {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+._save_button {
+  margin-left: auto;
+}
+
+._remove_button {
+  padding-left: 0px;
+}
+
+._title__container {
+  display: flex;
+  align-items: center;
+}
+
+._icon {
+  margin-right: 4px;
+}
+
+.content {
+  margin: 8px 0 16px 0;
+}

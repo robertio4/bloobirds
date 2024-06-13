@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "noEmit": true,
+    "baseUrl": ".",
+    "allowJs": false,
+    "target": "esnext",
+    "module": "esnext",
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "types": ["vite/client", "node", "chrome"],
+    "noFallthroughCasesInSwitch": true,
+    "allowSyntheticDefaultImports": true,
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@bloobirds-it/*": ["../../components/*/src/index.tsx"],
+      "@bloobirds-it/assets": ["../../assets/src/index.tsx"],
+      "@bloobirds-it/hooks": ["../../hooks/src/index.tsx"],
+      "@bloobirds-it/types": ["../../types/src/index.ts"],
+      "@bloobirds-it/internationalization": ["../../internationalization/src/index.tsx"]
+    }
+  },
+  "include": ["src", "vite.config.ts"],
+  "exclude": [
+    "node_modules",
+    "**/__tests__/**/*",
+    "**/lib/**/*",
+    "**/build/**/*",
+    "**/dist/**/*",
+    "**/*.spec*",
+    "/**/node_modules",
+    "/dist",
+    "/**/dist"
+  ]
+}

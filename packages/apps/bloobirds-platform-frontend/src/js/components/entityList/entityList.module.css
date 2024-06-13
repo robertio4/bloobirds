@@ -1,0 +1,54 @@
+._cards__table__container {
+  width: 100%;
+  overflow: auto;
+  min-width: 1050px;
+  border-spacing: 0 2px;
+}
+
+._header__cell {
+  min-width: 20px;
+  padding: 8px 8px 8px 16px;
+  white-space: nowrap;
+  position: relative;
+}
+
+._header__cell_content {
+  display: flex;
+  align-items: center;
+}
+
+._header__clickable {
+  cursor: pointer;
+}
+
+._header__clickable {
+  cursor: pointer;
+}
+
+._header__last_sticky > tr > td:last-child {
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  background-color: var(--white);
+}
+
+.sort__icon {
+  position: absolute;
+}
+
+._sort_icon_hidden {
+  visibility: hidden;
+}
+
+.header__cell_flexEnd {
+  text-align: right;
+  padding-right: 24px;
+}
+
+.header__cell_center {
+  padding: 8px;
+}
+
+.header__cell_center > div[class*='_header__cell_content'] {
+  justify-content: center;
+}

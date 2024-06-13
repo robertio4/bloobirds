@@ -1,0 +1,67 @@
+._separator {
+  width: 94%;
+  margin: -2px auto auto;
+  border: var(--lightestBloobirds) 1px solid;
+}
+
+.linkableBobject {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.linkableBobject > div:first-child {
+  flex: 1;
+  position: relative;
+  padding: 6px 4px;
+  border-radius: 4px;
+  margin: 2px 0;
+  overflow: hidden;
+}
+
+.linkableBobject > div > div > div:first-child {
+  display: flex;
+  height: 100%;
+}
+
+.linkableBobject > div > div > div:first-child > p {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 15px;
+}
+
+.linkableBobject > div > div > div:last-child > p {
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.linkableBobject > div > div > div:last-child > div > p {
+  font-size: 10px;
+  line-height: 16px;
+}
+
+.linkableItemSidePeek * {
+  font-size: 13px !important;
+}
+
+._hoverButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-radius: 4px;
+  margin: 10px 6px;
+  align-items: center;
+  background-color: var(--lightestBloobirds);
+  padding: 2px;
+}
+
+._hoverButtons > button {
+  padding: 4px 4px;
+}
+
+._hoverButtons > button:first-child {
+  border-color: var(--verySoftBloobirds);
+}

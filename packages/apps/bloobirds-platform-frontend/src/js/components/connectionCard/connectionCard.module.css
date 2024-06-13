@@ -1,0 +1,84 @@
+@keyframes tickle {
+  0.0% {
+  }
+  20% {
+    transform: rotate(30deg) scale(0.8);
+  }
+  100% {
+  }
+}
+
+._container {
+  display: flex;
+  border-radius: 4px;
+  border: 1px solid var(--lightPeanut);
+  background-color: var(--white);
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+._card__container {
+  margin: 10px 0px;
+}
+
+._card__container > div {
+  border: 1px solid var(--lightPeanut) !important;
+  box-shadow: none !important;
+}
+
+._card__container > div > div:nth-child(2) {
+  margin-top: 12px;
+}
+
+._icon__container {
+  margin-right: 20px;
+}
+
+._text__container {
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+}
+
+._text__container > svg {
+  animation: tickle 0.7s ease 0s 1 normal none;
+}
+
+._content_right {
+  display: flex;
+}
+
+._buttons__container {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  right: 16px;
+  background-color: var(--white);
+}
+
+._buttons__container > button {
+  margin-left: 8px;
+}
+
+._content_container {
+  margin-left: 38px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+._signature_container {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  align-items: center;
+}
+
+._alias_list {
+  margin-left: 8px;
+}
+
+._alias_list > * {
+  margin: 8px 0;
+}

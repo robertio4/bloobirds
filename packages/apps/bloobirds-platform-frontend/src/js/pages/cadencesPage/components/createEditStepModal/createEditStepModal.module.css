@@ -1,0 +1,120 @@
+.title {
+  display: flex;
+  align-items: center;
+}
+
+.title > svg {
+  margin-right: 4px;
+}
+
+.stepSelector {
+  height: 150px;
+  background-color: var(--lightestBloobirds);
+  justify-content: center;
+  display: flex;
+  padding: 8px 0;
+}
+
+.verticalDivider {
+  width: 1px;
+  flex-shrink: 0;
+  background-color: var(--verySoftPeanut);
+  margin: 10px;
+}
+
+.content {
+  max-height: 45vh;
+  overflow-y: scroll;
+}
+
+.content > div {
+  overflow-y: initial;
+}
+
+.detailsRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 16px;
+  margin-bottom: 16px;
+}
+
+.customTaskSelect {
+  padding: 0 0 16px 0;
+}
+
+.noCustomTasks {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.phrase {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.banner {
+  margin: 16px 0;
+  padding: 12px 0;
+  border-radius: 8px;
+  background-color: var(--lightestBloobirds);
+}
+
+.banner ul {
+  margin: 0;
+  padding-inline-start: 40px;
+  padding-right: 16px;
+}
+
+.banner li {
+  font-size: 12px;
+}
+
+.warningBanner p {
+  width: 90%;
+}
+
+.checkboxRow {
+  margin: 16px 0;
+}
+
+.checkbox {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.radioGroup {
+  margin-left: 32px;
+  margin-top: 16px;
+}
+
+.optOutEditor {
+  border: 1px solid var(--verySoftPeanut);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.optOutDescription {
+  margin-bottom: 8px;
+}
+
+.editor {
+  height: 100px;
+  overflow: hidden;
+  position: relative;
+}
+
+.sectionHeader {
+  margin-top: 28px;
+}
+
+.form {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}

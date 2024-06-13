@@ -1,0 +1,22 @@
+
+> @bloobirds-it/vite-plugin@2.0.0-beta.23 lint
+> npm run lint:eslint && npm run lint:types
+
+
+> @bloobirds-it/vite-plugin@2.0.0-beta.23 lint:eslint
+> eslint "{src,test}/**/*.ts"
+
+
+Oops! Something went wrong! :(
+
+ESLint: 8.43.0
+
+ESLint couldn't determine the plugin "@typescript-eslint" uniquely.
+
+- /Users/robertorf/Workspace/frontend-monorepo/packages/vite-plugin/node_modules/@typescript-eslint/eslint-plugin/dist/index.js (loaded in ".eslintrc.cjs")
+- /Users/robertorf/Workspace/frontend-monorepo/node_modules/@typescript-eslint/eslint-plugin/dist/index.js (loaded in "../../.eslintrc")
+
+Please remove the "plugins" setting from either config or remove either plugin installation.
+
+If you still can't figure out the problem, please stop by https://eslint.org/chat/help to chat with the team.
+

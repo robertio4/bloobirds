@@ -1,0 +1,118 @@
+.root,
+.root p,
+.root span,
+.root a,
+.root div {
+  font-family: 'Inter', sans-serif !important;
+}
+
+.leftBar {
+  position: fixed;
+  left: 0;
+  background-color: var(--bloobirds);
+  z-index: 2;
+  width: 56px;
+  height: 100%;
+  transition: all 0.25s ease-in-out;
+}
+
+.leftBarCollapsed {
+  width: 16px;
+  transition: all 0.25s ease-in-out;
+  cursor: pointer;
+}
+
+.buttonContainer {
+  margin-left: 48px;
+  margin-top: -8px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  background-color: var(--white);
+  box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.25);
+  border-radius: 50%;
+  transition: width 0.25s;
+  z-index: 3;
+}
+
+.buttonContainer:hover {
+  background-color: var(--bloobirds);
+}
+
+.buttonWithoutHeader {
+  top: 32px;
+}
+
+.buttonContainerCollapsed {
+  margin-left: 9px;
+  transition: all 0.25s ease-in-out;
+}
+
+.buttonContainerInContent {
+  margin-left: 432px;
+  z-index: 2;
+}
+
+.button {
+  display: flex;
+  padding: 3px;
+}
+
+.button:hover > svg > path {
+  fill: var(--white);
+}
+
+.content {
+  position: fixed;
+  height: 100%;
+  left: 56px;
+  z-index: 1;
+  box-shadow: 4px 0px 4px rgba(0, 119, 181, 0.16);
+  width: 384px;
+
+  background-color: var(--lightestGray);
+  padding: 20px 10px 20px 16px;
+  overflow: auto;
+  overscroll-behavior-y: contain;
+  box-sizing: border-box;
+  overflow-y: scroll;
+
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.leftBar_wrapper {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.quickFilter div {
+  font-size: 10px;
+}
+
+.totalMatching {
+  display: flex;
+  justify-content: right;
+  margin-bottom: 5px;
+}
+
+.totalCounter {
+  box-sizing: border-box;
+  padding: 5px 16px;
+  border-radius: 4px;
+  background-color: var(--lightestBloobirds);
+}
+
+.filtersWrapper {
+  display: flex;
+}

@@ -1,0 +1,20 @@
+._status__container {
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+._status__container > div {
+  max-width: 160px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+._status__container__clickable {
+  cursor: pointer;
+}
+
+._status__container__clickable:hover {
+  opacity: 65%;
+}

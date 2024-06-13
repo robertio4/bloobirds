@@ -1,0 +1,51 @@
+.blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+}
+
+.fragmentHeader {
+  display: flex;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.fragmentHeader > p {
+  display: flex;
+}
+
+.editorBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.titleSection {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.searchSection {
+  margin-bottom: 12px;
+}
+
+.highlight {
+  background-color: #ffe8b2;
+}
+
+.highlight:hover {
+  background-color: #ffbd19;
+  font-weight: bold;
+}
+
+.noResults {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  margin: 48px;
+  gap: 12px;
+}

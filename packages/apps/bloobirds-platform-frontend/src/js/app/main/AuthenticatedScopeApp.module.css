@@ -1,0 +1,16 @@
+._content {
+  display: flex;
+}
+
+.loader {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
+  margin-top: 24px;
+}

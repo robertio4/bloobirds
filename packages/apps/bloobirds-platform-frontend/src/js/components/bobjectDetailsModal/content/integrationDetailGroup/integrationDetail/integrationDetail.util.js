@@ -1,0 +1,22 @@
+export const poll = ({ fn, validate, interval, maxAttempts }) => {
+  let attempts = 0;
+
+  const executePoll = async (resolve, reject) => {
+    try {
+      const result = await fn();
+      attempts++;
+
+      if (validate(result)) {
+        return resolve(result);
+      } else if (maxAttempts && attempts === maxAttempts) {
+        return reject(new Error('Exceeded max attempts'));
+      } else {
+        setTimeout(executePoll, interval, resolve, reject);
+      }
+    } catch (e) {
+      reject(e);
+    }
+  };
+
+  return new Promise(executePoll);
+};

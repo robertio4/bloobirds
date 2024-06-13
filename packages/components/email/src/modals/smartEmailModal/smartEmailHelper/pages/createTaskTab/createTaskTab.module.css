@@ -1,0 +1,107 @@
+.container{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: 24px 24px 0 24px;
+  box-sizing: border-box;
+}
+
+.header{
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.titleHeader{
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  box-sizing: border-box;
+  padding-bottom: 16px;
+}
+
+.divider{
+  width: 100%;
+  text-align: center;
+  border-top: 1px solid #D4E0F1;
+  align-self: center;
+}
+
+.infoHeader{
+  box-sizing: border-box;
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dateDescription{
+  display: flex;
+  justify-content: flex-start;
+  gap: 4px;
+}
+
+.objectDescription{
+  display: flex;
+  justify-content: flex-start;
+  gap: 4px;
+}
+
+
+.date{
+  display: flex;
+  justify-content: flex-start;
+  gap: 12px;
+  align-items: center;
+}
+
+.object {
+  display: flex;
+  justify-content: flex-start;
+  gap: 12px;
+  align-items: center;
+
+}
+
+.textArea {
+  border: none;
+  resize: none;
+  font-family: var(--fontFamily);
+  box-shadow: none;
+  height: 100%;
+  outline: none;
+  margin-top: 16px;
+  margin-bottom: 16px;
+  color: var(--peanut) !important;
+}
+
+.textArea:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: transparent;
+}
+
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.dateButton {
+  cursor: pointer;
+}
+
+.assigned_to {
+  display: flex;
+  margin: 4px 0;
+  align-items: center;
+}
+
+.assigned_to_title {
+  display: flex;
+  margin-right: 12px;
+  align-items: center;
+  gap: 4px;
+}

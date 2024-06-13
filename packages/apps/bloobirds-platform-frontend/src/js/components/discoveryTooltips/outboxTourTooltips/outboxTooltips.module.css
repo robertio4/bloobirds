@@ -1,0 +1,59 @@
+._anchor_wrapper {
+    position: relative;
+    top: -20px;
+}
+
+._automated_emails_wrapper {
+    z-index: 1;
+    position: absolute;
+    top: 285px;
+    left: 40%;
+}
+
+._automated_bulk_wrapper {
+    z-index: 1;
+    position: relative;
+    left: 5%;
+}
+
+._scheduled_emails_wrapper {
+    z-index: 1;
+    position: absolute;
+    left: 42%;
+    top: 265px;
+}
+
+._scheduled_actions_wrapper {
+    z-index: 1;
+    position: relative;
+    right: 2%;
+}
+
+._scheduled_no_emails_wrapper {
+    z-index: 1;
+    position: relative;
+    left: 50%;
+    top: 20px;
+    width: 24px;
+}
+
+._image {
+    margin-bottom: -42px;
+}
+
+._scheduled_actions_image > div {
+    margin-top: -16px;
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+    align-items: center;
+    justify-content: center;
+}
+
+._scheduled_actions_image > div > p {
+    width: 218px;
+}
+
+._primary_button {
+    border-color: var(--white);
+}

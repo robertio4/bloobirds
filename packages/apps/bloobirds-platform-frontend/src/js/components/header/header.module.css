@@ -1,0 +1,87 @@
+._container {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  box-shadow: 0px 2px 8px rgba(197, 209, 221, 0.321296);
+  background-color: var(--white);
+  height: 48px;
+  padding: 0 40px;
+}
+
+._left_column {
+  display: flex;
+  align-items: center;
+  margin-right: 30px;
+}
+
+._left_column_dialer_open {
+  margin-right: 8px;
+}
+
+._bloobirds_logo {
+  height: 25px;
+}
+
+._account_name_wrapper {
+  margin-left: 24px;
+}
+
+._account_name_wrapper_is_open_dialer {
+  margin-left: 16px;
+}
+
+._account_name_wrapper_is_open_dialer > p {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 120px;
+}
+
+._middle_column {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  font-size: 18px;
+  flex-grow: 1;
+}
+
+._tabs_wrapper {
+  display: flex;
+  justify-content: space-evenly;
+  min-width: 300px;
+  width: 100%;
+  max-width: 500px;
+}
+
+._tab_AI_analysis_active > div[data-test='Nav-HeaderAiAnalysis'] {
+  color: var(--purple) !important;
+}
+
+._tab_AI_analysis_active > div[data-test='Nav-HeaderAiAnalysis'] path {
+  fill: var(--softPurple) !important;
+}
+
+._tab_AI_analysis_active > div[data-test='Nav-HeaderAiAnalysis']::after {
+  background-image: radial-gradient(
+    125.86% 100% at 50% 100%,
+    #dcfff1 0%,
+    #9acfff 9.46%,
+    #5519ff 56.75%
+  ) !important;
+}
+
+._is_dialer_open {
+  margin-left: 348px;
+}
+
+._is_dialer_open_small {
+  padding: 0 16px;
+}
+
+._menuDivider {
+  border-bottom: 1px solid #c5d1dd;
+  width: auto;
+  margin: 16px 0 4px;
+}

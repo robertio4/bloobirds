@@ -1,0 +1,16 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 4px 0;
+}
+
+.section {
+  display: flex;
+  align-items: center;
+  margin: 8px 0;
+}
+
+.section > * {
+  margin: 0 4px;
+}

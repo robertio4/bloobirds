@@ -1,0 +1,39 @@
+.header {
+  padding: 16px;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.container {
+  background-color: white;
+  position: relative;
+}
+
+.editor {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  position: relative;
+  user-select: none;
+  padding-bottom: 16px;
+}
+
+.editor a {
+  pointer-events: none;
+}
+
+.footer {
+  padding: 20px 32px;
+  justify-content: flex-end;
+}
+
+.warningBanner p {
+  width: 90%;
+}
+
+.attachments > div {
+  margin: 8px;
+}

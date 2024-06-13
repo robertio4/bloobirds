@@ -1,0 +1,117 @@
+.iaCallout {
+  display: flex;
+  flex-direction: column;
+  border-radius: 4px;
+  background: linear-gradient(270deg, #dcfff1 0%, #e2e5ff 65.49%),
+    linear-gradient(0deg, #9aa4ff, #9aa4ff);
+  margin: 8px 0;
+  padding: 8px;
+  gap: 8px;
+  align-self: stretch;
+}
+
+.suggestedEntitiesHeader {
+  justify-content: space-between;
+  align-items: center;
+  display: flex;
+}
+
+.suggestedEntitiesHeaderTitle {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.suggestedEntitiesHeader > button {
+  height: 24px;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  border-color: white;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.calloutButton {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--extra-purple-light, #9aa4ff);
+  box-shadow: 0 0 4px 0 rgba(17, 38, 234, 0.25);
+  height: 52px;
+  cursor: pointer;
+  min-width: 109px;
+  flex: 1;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.calloutButton > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.disabled {
+  border: 1px solid var(--extra-purple-very-soft, #e2e5ff);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.error {
+  border-radius: 8px;
+  border: 1px solid var(--extra-meeting-very-soft, #ffb2c2);
+}
+
+.smallButton {
+  min-width: 88px;
+}
+
+.calloutButtonRefresh {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+}
+
+.errorBlock {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.counter {
+  display: flex;
+  min-width: 12px;
+  min-height: 12px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 40px;
+  background: var(--extra-Purple-very-soft, #e2e5ff);
+  position: absolute;
+  top: 4px;
+  right: 4px;
+}
+
+.suggestedEntitiesHeaderButton {
+  border-color: var(--lightPurple);
+  height: 24px;
+  width: 34px;
+  transition: width 0.8s ease;
+}
+
+.suggestedEntitiesHeaderButtonHoverEs {
+  width: 230px;
+}
+
+.suggestedEntitiesHeaderButtonHoverEn {
+  width: 160px;
+}

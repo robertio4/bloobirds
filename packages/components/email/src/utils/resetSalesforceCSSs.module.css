@@ -1,0 +1,18 @@
+.salesforceReset {
+}
+
+.salesforceReset table {
+    width: inherit;
+}
+
+.salesforceReset td,
+.salesforceReset th {
+    text-align: revert-layer;
+    padding: unset;
+}
+
+.salesforceReset img {
+    height: unset;
+    max-width: unset;
+    vertical-align: unset;
+}

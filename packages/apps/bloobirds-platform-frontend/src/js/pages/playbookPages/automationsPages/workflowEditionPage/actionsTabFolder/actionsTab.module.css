@@ -1,0 +1,39 @@
+._workflow_page__container {
+  display: flex;
+  justify-content: center;
+}
+
+._back__button {
+  margin-bottom: 36px;
+}
+
+._workflow__form__container {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+}
+
+._workflow__form__header {
+  display: flex;
+  justify-content: space-between;
+  width: 800px;
+}
+._workflow__form__items {
+  display: flex;
+  justify-self: center;
+  flex-direction: column;
+  padding: 40px 100px;
+}
+
+._workflow__form__content > ._add_step_button {
+  justify-content: center;
+  margin-top: 38px;
+  margin-bottom: 32px;
+}
+._right__actions {
+  display: flex;
+  align-items: center;
+}
+._right__actions > * {
+  margin-left: 8px !important;
+}

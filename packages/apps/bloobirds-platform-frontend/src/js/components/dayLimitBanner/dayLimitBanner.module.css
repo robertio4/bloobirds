@@ -1,0 +1,19 @@
+._banner_link {
+  color: var(--bloobirds);
+  cursor: pointer;
+}
+
+._banner_link:hover {
+  text-decoration: underline;
+}
+
+._banner_icon {
+  margin-right: 20px;
+}
+
+._banner_container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 0;
+}

@@ -1,0 +1,247 @@
+{
+  "name": "bloobirds-platform-frontend",
+  "version": "2.200.28",
+  "description": "Bloobirds front-end",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "serve": "serve build --no-clipboard --listen ${PORT:-3000}",
+    "start": "webpack serve",
+    "start:local": "cross-env NODE_ENV=development ENV=local REACT_APP_VERSION=$npm_package_version webpack serve",
+    "start:dev": "cross-env NODE_ENV=development ENV=development REACT_APP_VERSION=$npm_package_version webpack serve",
+    "start:staging": "cross-env NODE_ENV=development ENV=staging REACT_APP_VERSION=$npm_package_version webpack serve",
+    "start:production": "cross-env NODE_ENV=production ENV=production REACT_APP_VERSION=$npm_package_version webpack serve",
+    "build": "cross-env NODE_ENV=production REACT_APP_VERSION=$npm_package_version webpack",
+    "build:local": "cross-env NODE_ENV=production ENV=local REACT_APP_VERSION=$npm_package_version webpack",
+    "build:dev": "cross-env NODE_ENV=production ENV=development REACT_APP_VERSION=$npm_package_version webpack",
+    "build:staging": "cross-env NODE_ENV=production ENV=staging REACT_APP_VERSION=$npm_package_version webpack",
+    "build:production": "cross-env NODE_ENV=production ENV=production REACT_APP_VERSION=$npm_package_version webpack",
+    "lint:fix": "eslint ./src --cache --fix && echo \"eslint: no lint errors\"",
+    "lint": "eslint ./src --cache && echo \"eslint: no lint errors\"",
+    "prettier:check": "npm --silent prettier:files | xargs prettier --list-different",
+    "prettier:ci": "prettier --list-different",
+    "prettier:files": "find ./src -name \"*.js\" -o -name \"*.d.ts\" -o -name \"*.tsx\" | grep -v -f .eslintignore",
+    "prettier": "npm --silent prettier:files | xargs prettier --write",
+    "test:unit:watch": "jest -c jest.config.js --watch",
+    "test:unit": "jest -c jest.config.js",
+    "test:unit:coverage": "jest -c jest.config.js --coverage --coverageReporters='text'"
+  },
+  "devDependencies": {
+    "@babel/core": "7.17.5",
+    "@babel/plugin-proposal-optional-chaining": "7.16.7",
+    "@babel/plugin-transform-modules-commonjs": "^7.17.7",
+    "@babel/plugin-transform-runtime": "7.16.7",
+    "@babel/preset-env": "7.16.11",
+    "@babel/preset-react": "7.16.7",
+    "@babel/preset-typescript": "^7.16.7",
+    "@babel/runtime": "7.16.7",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.5.7",
+    "@testing-library/cypress": "^7.0.6",
+    "@testing-library/dom": "^8.0.0",
+    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/react": "^12.0.0",
+    "@testing-library/react-hooks": "^7.0.0",
+    "@testing-library/user-event": "^13.1.9",
+    "@types/faker": "^5.5.8",
+    "@types/imap-simple": "^4.2.5",
+    "@types/mailparser": "^3.0.3",
+    "@types/mixpanel-browser": "2.35.7",
+    "@types/node": "^16.6.1",
+    "@types/node-fetch": "2.5.12",
+    "@types/nodemailer": "6.4.4",
+    "@types/react": "^17.0.14",
+    "@types/react-dom": "17.0.10",
+    "@types/react-router": "5.1.17",
+    "@types/react-router-dom": "^5.3.2",
+    "@types/use-sync-external-store": "^0.0.3",
+    "@types/video.js": "^7.3.58",
+    "babel-loader": "8.2.3",
+    "clean-webpack-plugin": "3.0.0",
+    "cross-env": "^7.0.2",
+    "css-loader": "5.1.2",
+    "cypress": "^8.2.0",
+    "cypress-file-upload": "^5.0.8",
+    "cypress-localstorage-commands": "^1.5.0",
+    "cypress-real-events": "^1.5.1",
+    "faker": "^5.5.3",
+    "file-loader": "^6.0.0",
+    "html-webpack-plugin": "5.5.0",
+    "husky": "^1.1.4",
+    "identity-obj-proxy": "^3.0.0",
+    "imap-simple": "^5.1.0",
+    "jest-transform-css": "^2.1.0",
+    "mailparser": "^3.3.0",
+    "node-fetch": "^2.6.7",
+    "nodemailer": "^6.6.3",
+    "path": "0.12.7",
+    "react-refresh": "0.14.0",
+    "react-test-renderer": "^17.0.2",
+    "serve": "11.3.0",
+    "source-map-loader": "3.0.0",
+    "style-loader": "2.0.0",
+    "svg-url-loader": "7.1.1",
+    "tsconfig-paths-webpack-plugin": "^4.1.0",
+    "url-loader": "4.1.1",
+    "webpack": "5.77.0",
+    "webpack-cli": "5.0.1",
+    "webpack-dev-server": "4.13.1"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.11.5",
+    "@bloobirds-it/activity-feed": "*",
+    "@bloobirds-it/add-to-calendar": "*",
+    "@bloobirds-it/banner": "*",
+    "@bloobirds-it/bobjects": "*",
+    "@bloobirds-it/cadence": "*",
+    "@bloobirds-it/confetti": "*",
+    "@bloobirds-it/dialer": "*",
+    "@bloobirds-it/email": "*",
+    "@bloobirds-it/general-search-bar": "*",
+    "@bloobirds-it/hooks": "*",
+    "@bloobirds-it/internationalization": "*",
+    "@bloobirds-it/meeting": "*",
+    "@bloobirds-it/quick-log-modal": "*",
+    "@bloobirds-it/rich-text-editor": "*",
+    "@bloobirds-it/tasks": "*",
+    "@bloobirds-it/types": "*",
+    "@bloobirds-it/utils": "*",
+    "@bloobirds-it/wizard-modal-context": "*",
+    "@bloobirds-it/wizard-modal-controller": "*",
+    "@integration-app/sdk": "^0.16.17",
+    "@material-ui/core": "4.12.4",
+    "@material-ui/lab": "4.0.0-alpha.58",
+    "@material-ui/styles": "4.11.4",
+    "@svgr/webpack": "^6.0.0",
+    "@tanstack/react-virtual": "^3.0.0-beta.18",
+    "@videojs/themes": "^1.0.1",
+    "@xstate/react": "^3.0.1",
+    "aircall-everywhere": "^1.7.1",
+    "calendarize": "^1.1.1",
+    "classnames": "^2.3.1",
+    "country-code-lookup": "^0.0.20",
+    "cypress-tags": "^0.3.0",
+    "date-fns": "2.0.0-alpha.37",
+    "events": "^2.1.0",
+    "google-protobuf": "^3.12.1",
+    "js-sha512": "^0.8.0",
+    "libphonenumber-js": "^1.10.31",
+    "lodash": "^4.17.20",
+    "md5": "^2.3.0",
+    "mixpanel-browser": "^2.41.0",
+    "numeral": "^2.0.6",
+    "object-hash": "^2.2.0",
+    "postcss-modules-values": "^3.0.0",
+    "prism-react-renderer": "^1.1.1",
+    "prop-types": "^15.7.2",
+    "query-string": "^6.13.6",
+    "react": "^17.0.2",
+    "react-beautiful-dnd": "^13.1.0",
+    "react-color": "^2.18.1",
+    "react-dom": "^17.0.2",
+    "react-draggable": "^4.4.4",
+    "react-dropzone": "^11.2.0",
+    "react-hook-form": "6.15.8",
+    "react-infinite-scroll-component": "^5.1.0",
+    "react-redux": "^7.2.0",
+    "react-router": "5.1.0",
+    "react-router-dom": "5.1.0",
+    "redux": "^4.0.5",
+    "redux-devtools-extension": "^2.13.8",
+    "slate": "^0.88.1",
+    "slate-history": "^0.86.0",
+    "slate-hyperscript": "^0.77.0",
+    "slate-react": "^0.88.2",
+    "styled-components": "^5.3.6",
+    "twilio-client": "^1.14.0",
+    "use-query-params": "^1.1.9",
+    "use-sync-external-store": "1.2.0",
+    "util": "^0.10.4",
+    "uuid": "^7.0.3",
+    "video.js": "^8.10.0",
+    "videojs-wavesurfer": "^3.10.0",
+    "wavesurfer-react": "^2.2.2",
+    "xlsx": "^0.17.0",
+    "xstate": "^4.11.0"
+  },
+  "author": "Bloobirds IT",
+  "license": "ISC",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "jscpd": {
+    "threshold": 0.1,
+    "reporters": [
+      "html",
+      "console"
+    ],
+    "format": [
+      "javascript"
+    ],
+    "ignore": [
+      "**/message_pb.js"
+    ],
+    "minLines": 15,
+    "maxLines": 5000,
+    "absolute": true,
+    "gitignore": true
+  },
+  "release": {
+    "branches": [
+      "production",
+      {
+        "name": "staging",
+        "prerelease": "preprod"
+      }
+    ],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "issuePrefixes": [
+              "BG-",
+              "P21-",
+              "QA-"
+            ],
+            "issueUrlFormat": "https://bloobirds.atlassian.net/browse/{{prefix}}{{id}}"
+          },
+          "parserOpts": {
+            "noteKeywords": [
+              "BREAKING CHANGE",
+              "BREAKING CHANGES",
+              "BREAKING"
+            ]
+          }
+        }
+      ],
+      [
+        "@semantic-release/changelog",
+        {
+          "changelogFile": "docs/CHANGELOG.md"
+        }
+      ],
+      "@semantic-release/npm",
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "docs/CHANGELOG.md",
+            "package.json"
+          ]
+        }
+      ],
+      "@semantic-release/github"
+    ]
+  }
+}

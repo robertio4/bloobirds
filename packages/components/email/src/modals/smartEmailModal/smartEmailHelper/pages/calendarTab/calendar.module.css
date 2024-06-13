@@ -1,0 +1,97 @@
+._container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  height: 100%;
+  width: 100%;
+}
+
+._filters_wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  justify-content: flex-start;
+  width: 100%;
+  padding: 20px 24px 0 24px
+}
+
+._calendar_wrapper {
+  width: 100%;
+  height: 60vh;
+  padding: 10px 24px;
+}
+
+._calendar_wrapper > div {
+  width: 100%;
+}
+
+._calendar_wrapper > div > div {
+  height: 490px;
+  gap: 8px;
+  padding-right: 6px
+}
+
+._calendar_wrapper > div > div:last-child > div > div > div:last-child > div {
+  border-right: none;
+}
+
+._main_filters_container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+._main_filters_container > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+._left_main_filters {
+  gap: 4px;
+}
+
+._today_button {
+  margin-right: 4px;
+  font-size: 12px;
+  font-weight: 300;
+  padding: 2px 5px;
+}
+
+._date_button {
+  cursor: pointer;
+}
+
+._event_type {
+  padding: 2px 8px;
+  border: 1px solid var(--bloobirds);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+._secondary_filters_container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+._calendar_select {
+  display: flex;
+  align-items: center;
+}
+
+._selector_anchor {
+  cursor: pointer;
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+._timezone_modal_opener {
+  margin-right: 8px;
+}

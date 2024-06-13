@@ -1,0 +1,7 @@
+.noLinks{
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  width: 500px;
+  margin: 16px auto;
+}

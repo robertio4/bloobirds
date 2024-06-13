@@ -1,0 +1,12 @@
+.list {
+  display: -webkit-inline-box;
+  padding: 7px;
+  gap: 12px;
+  border-top: 1px solid var(--lightestBloobirds);
+  border-bottom: 1px solid var(--lightestBloobirds);
+  min-width: 0;
+  overflow: scroll;
+  max-width: 690px;
+  width: 100%;
+  background-color: white;
+}

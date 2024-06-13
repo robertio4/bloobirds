@@ -1,0 +1,65 @@
+._business_asset_title {
+  display: flex;
+  align-items: center;
+}
+
+._pagination {
+  display: flex;
+  justify-content: end;
+  margin-right: 4px;
+  height: 24px;
+}
+
+.category_row {
+  border-bottom: 1px solid #e6e6e6;
+  border-top: 1px solid #e6e6e6;
+  height: 60px;
+  box-sizing: border-box;
+  box-shadow: 0px 2px 4px rgba(92, 92, 255, 0.0837296);
+}
+
+.header_row {
+  border-bottom: 1px solid #e6e6e6;
+  box-shadow: 0px 2px 4px rgba(92, 92, 255, 0.0837296);
+  box-sizing: border-box;
+}
+
+.statusCell {
+  text-align: end;
+  padding-right: 16px;
+}
+
+.statusHeader {
+  text-align: end;
+}
+
+.descriptionCell {
+  overflow: clip;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.noProducts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 577px;
+  justify-content: center;
+}
+
+.noProducts > svg {
+  margin-bottom: 16px;
+}
+
+.noProducts > p {
+  margin-bottom: 20px;
+  line-height: 28px;
+}
+
+.link {
+  cursor: pointer;
+}
+
+.productName {
+  margin-left: 8px;
+}

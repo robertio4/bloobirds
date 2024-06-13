@@ -1,0 +1,27 @@
+.modal {
+  width: 300px !important;
+  background-color: var(--white);
+}
+
+.header {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.content {
+  padding: 16px 24px;
+  padding-top: 0;
+}
+
+.customButton {
+  margin-top: 8px;
+  justify-content: center;
+}
+
+.shortcuts {
+  display: grid;
+  grid-auto-flow: row;
+  row-gap: 4px;
+}

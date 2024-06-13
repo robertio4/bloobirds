@@ -1,0 +1,296 @@
+.modal__container input {
+  box-shadow: none !important;
+  height: 16px;
+  padding-left: 0;
+}
+
+.modal__container input:first-child {
+  height: 22px;
+}
+
+.titleInput input {
+  height: 22px;
+}
+
+._header__container {
+  width: 100%;
+  padding: 32px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  background-color: white;
+  height: 10%;
+}
+
+._form_column {
+  width: 310px;
+  padding-right: 8px;
+  margin-right: 22px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  max-height: 75vh;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+._form_column input {
+  height: 19px;
+}
+
+._header__info {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+}
+
+._header__info button {
+  margin-right: 8px;
+}
+
+._header_right_actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 12px;
+  margin-left: 16px;
+}
+
+._header__date_picker {
+  width: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+._header__spacer {
+  flex-grow: 1;
+}
+
+._date_picker *::placeholder {
+  color: var(--softPeanut);
+  opacity: 1;
+  font-size: 12px;
+}
+
+._calendar {
+  flex-shrink: 0;
+  box-sizing: border-box;
+  margin-right: 24px;
+  border: 1px solid var(--verySoftPeanut);
+  width: 72px;
+}
+
+._calendar > header {
+  box-sizing: border-box;
+  background-color: var(--tomato);
+  margin: -1px;
+}
+
+._calendar > div {
+  padding: 4px;
+}
+
+._body {
+  padding: 0 32px;
+  background: var(--white);
+  display: flex;
+  flex-grow: 1;
+  height: 70%;
+}
+
+.footer {
+  height: 9%;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+._main_row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+._event_info {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-grow: 1;
+}
+
+._row_header {
+  display: flex;
+  align-items: center;
+  margin: 8px 0;
+}
+
+._row_header > svg {
+  margin-right: 10px;
+}
+
+._event_row_header > svg {
+  margin-right: 4px;
+}
+
+._calendar_select {
+  height: 26px;
+}
+
+._calendar_select > div > div {
+  border: 1px solid var(--lightPeanut);
+}
+
+._date_picker {
+  display: flex;
+  width: 100%;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+._date_picker > div {
+  border: 0;
+}
+
+._date_picker > div:nth-child(2) > div {
+  flex-direction: row-reverse;
+  max-height: 24px;
+}
+
+._date_picker > div > div > div {
+  max-height: 24px;
+}
+
+._event_row_header {
+  display: flex;
+  align-items: center;
+  margin-top: -4px;
+}
+
+._note_container {
+  margin: 0 24px;
+}
+
+._note_row {
+  margin-top: 24px;
+}
+
+._event_type_selector {
+  border-radius: 4px;
+  display: flex;
+}
+
+._event_type {
+  padding: 4px 12px;
+  border: 1px solid var(--bloobirds);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+._event_type > * {
+  margin-right: 4px;
+}
+
+._additionalFields_content {
+  display: flex;
+  flex-direction: column;
+  margin: 24px 0;
+}
+
+._additionalFields_content_title {
+  margin-bottom: 12px;
+}
+
+._additionalFields_content_title > div {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+._additionalFields_section {
+  margin-bottom: 12px;
+}
+
+._additionalFields_section > p {
+  margin-bottom: 12px;
+}
+
+._additionalFields_fields {
+  display: flex;
+  flex-direction: column;
+}
+
+._input_field > * {
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+._input_field {
+  width: 100%;
+}
+
+._timezone_selector {
+  color: var(--bloobirds);
+  text-decoration: underline;
+}
+
+._meetingType {
+  display: flex;
+  align-items: center;
+}
+
+._meetingType > div:first-child {
+  margin-right: 8px;
+}
+
+._footer_buttons_right {
+  display: flex;
+  align-items: center;
+}
+
+._footer_buttons_right > * {
+  margin-left: 8px;
+}
+
+._main_info_title {
+  display: flex;
+}
+
+.discovery_tooltip {
+  margin-left: 8px;
+}
+
+.searchLeads {
+  margin-bottom: 4px;
+}
+
+.inviteesNotSynced {
+  background-color: var(--verySoftBanana);
+  border: 1px solid var(--banana);
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  padding: 4px 0;
+}
+.titleForm {
+  margin-top: 8px;
+}
+
+.titleForm * {
+  font-size: 12px;
+}
+
+.inviteesList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.inviteesList > div {
+  margin: 0px;
+}
+
+._internal_note * {
+  font-size: 13px;
+}

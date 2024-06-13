@@ -1,0 +1,229 @@
+:global {
+  .recharts-tooltip-wrapper {
+    z-index: 10;
+  }
+}
+
+.salesforceStageSelector {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.funnelRoot {
+  display: flex;
+  flex-direction: column;
+  min-height: 800px;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid var(--veryLightBloobirds);
+}
+
+.funnelContent {
+  display: flex;
+  flex: 1;
+  padding: 24px 24px 36px;
+  justify-content: center;
+  align-items: center;
+}
+
+.header {
+  display: flex;
+  border-bottom: 1px solid var(--veryLightBloobirds);
+  height: 45px;
+  padding: 12px;
+  align-items: baseline;
+  box-sizing: border-box;
+  justify-content: space-between;
+}
+
+.headerHint{
+  display: flex;
+  width: 100% ;
+  box-sizing: border-box;
+  background-color: rgba(255, 232, 178, 0.4);
+  border: 1px solid rgba(255, 209, 102, 0.4);
+  border-top-right-radius: 2px;
+  border-top-left-radius: 2px;
+  align-items: center;
+  padding-right: 8px;
+}
+
+.headerHint_hint{
+  display: flex;
+  width: 100% ;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  line-height: 24px;
+}
+
+.header > div {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+}
+
+.header > div > p:first-child {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.header > div > p:last-child {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.header > div > p:last-child:hover {
+  overflow: visible;
+}
+
+.header svg {
+  margin-left: 6px;
+}
+
+.spinnerWrapper {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.funnelPanelSelect {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  margin-left: auto;
+  justify-self: right;
+}
+
+.funnelPanelSelectLabel {
+  margin-right: 6px;
+}
+
+.funnelPanelSelect > p {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+._chart_title_wrapper {
+  display: flex;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+._chart_top_wrapper {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.noResults {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+}
+
+.stepsRoot {
+  width: 245px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.stepsButtons {
+  display: flex;
+  margin-top: 34px;
+  width: 100%;
+  justify-content: space-evenly;
+  margin-bottom: 24px;
+}
+
+.sliderRoot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 24px;
+}
+
+.sliderLabel {
+}
+
+.sliderInputWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.sliderInput {
+  -webkit-appearance: none;
+  margin-right: 4px;
+  margin-left: 4px;
+  height: 6px;
+  border-radius: 10px;
+  background: var(--lightBloobirds);
+  background-image: linear-gradient(var(--bloobirds), var(--bloobirds));
+  background-size: 0 100%;
+  background-repeat: no-repeat;
+}
+
+/* Input Thumb */
+.sliderInput::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: var(--bloobirds);
+  cursor: ew-resize;
+}
+
+.sliderInput::-moz-range-thumb {
+  -webkit-appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: var(--bloobirds);
+  cursor: ew-resize;
+}
+
+.sliderInput::-ms-thumb {
+  -webkit-appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: var(--bloobirds);
+  cursor: ew-resize;
+}
+
+/* Input Track */
+.sliderInput::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  box-shadow: none;
+  border: none;
+  background: transparent;
+}
+
+.sliderInput::-moz-range-track {
+  -webkit-appearance: none;
+  box-shadow: none;
+  border: none;
+  background: transparent;
+}
+
+.sliderInput::-ms-track {
+  -webkit-appearance: none;
+  box-shadow: none;
+  border: none;
+  background: transparent;
+}
+
+.tooltipWrapper > div {
+  display: block;
+}

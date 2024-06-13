@@ -1,0 +1,15 @@
+
+> @bloobirds-it/internationalization@0.0.1 build
+> npm run clean && npm run build:prod
+
+
+> @bloobirds-it/internationalization@0.0.1 clean
+> rimraf dist
+
+
+> @bloobirds-it/internationalization@0.0.1 build:prod
+> tsc && cross-env NODE_ENV=production rollup -c=../../rollup.config.js
+
+[36m
+[1m/Users/robertorf/Workspace/frontend-monorepo/packages/internationalization/src/index.tsx[22m → [1mdist/index.js, dist/index.es.js[22m...[39m
+[32mcreated [1mdist/index.js, dist/index.es.js[22m in [1m1s[22m[39m

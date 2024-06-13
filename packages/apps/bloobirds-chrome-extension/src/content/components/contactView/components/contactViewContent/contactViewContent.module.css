@@ -1,0 +1,14 @@
+.content_container {
+  display: flex;
+  background-color: var(--lighterGray);
+  height: 100%;
+  padding: 15px;
+  overflow: overlay;
+  overscroll-behavior-y: contain;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.content_container_full {
+  padding: 0;
+}

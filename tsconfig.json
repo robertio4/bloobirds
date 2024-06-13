@@ -1,0 +1,40 @@
+{
+  "awesomeTypescriptLoaderOptions": {
+    "ignoreDiagnostics": [7005]
+  },
+  "compilerOptions": {
+    "noEmit": true,
+    "baseUrl": ".",
+    "allowJs": false,
+    "target": "esnext",
+    "module": "esnext",
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "types": ["vite/client", "node", "chrome", "jest", "react"],
+    "noFallthroughCasesInSwitch": true,
+    "allowSyntheticDefaultImports": true,
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "forceConsistentCasingInFileNames": true,
+    "typeRoots": ["./src/global.d.ts", "node_modules/@types", "./node_modules"]
+  },
+  "include": [
+    "packages/*/src",
+    "packages/**/src",
+    "packages/*/vite.config.ts",
+    "packages/**/vite.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/__tests__/**/*",
+    "**/lib/**/*",
+    "**/build/**/*",
+    "**/dist/**/*",
+    "**/*.spec*",
+    "/**/node_modules",
+    "/dist",
+    "/**/dist"
+  ]
+}

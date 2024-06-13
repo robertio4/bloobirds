@@ -1,0 +1,57 @@
+.container {
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+
+.container div[class^='CardHoverButtons-module_container'] {
+  gap: 8px;
+  padding: 7px 7px 7px 16px !important;
+}
+
+._icons {
+  flex-shrink: 0;
+  margin-right: 9px;
+}
+
+._icons > svg {
+  margin-right: 2px;
+}
+
+._title {
+  flex-shrink: 1;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+._icon_wrapper {
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+._datetime {
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+
+._time {
+  margin-left: 4px;
+}
+
+._bobject_name {
+  flex-shrink: 1;
+  font-size: 14px;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  margin-left: 8px;
+}
+
+._bobject_name > svg {
+  margin-right: 2px;
+  min-width: 20px;
+  min-height: 20px;
+}

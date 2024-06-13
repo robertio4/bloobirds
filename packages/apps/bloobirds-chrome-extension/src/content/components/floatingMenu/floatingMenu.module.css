@@ -1,0 +1,121 @@
+.container {
+  display: none;
+  border: 1px solid #9acfff;
+  box-sizing: border-box;
+  box-shadow: 0 2px 20px rgba(25, 145, 255, 0.15);
+  border-radius: 8px;
+  background-color: white;
+  animation: popup 150ms ease-in-out;
+  --artdeco-reset-forms-input-padding: initial;
+  --artdeco-reset-form-position-relative: initial;
+  --artdeco-reset-form-vertical-align-middle: initial;
+  --artdeco-reset-form-display-block: initial;
+  --artdeco-reset-form-black-90: initial;
+  --artdeco-reset-form-label-margin: initial;
+  --artdeco-reset-form-label-opacity: initial;
+  --artdeco-reset-form-webkit-appearance-textfield: initial;
+  --artdeco-reset-form-webkit-appearance-none: initial;
+  --artdeco-reset-form-height-auto: initial;
+  --artdeco-reset-form-padding-top-point-seven-rem: initial;
+  --artdeco-reset-form-rc-pointer-events: initial;
+  --artdeco-reset-form-rc-opacity: initial;
+  --artdeco-reset-form-rc-margin: initial;
+  --artdeco-reset-form-rc-position: initial;
+  --artdeco-reset-form-rc-before-after-content: initial;
+  --artdeco-reset-checkbox-rc-after-content: initial;
+  --artdeco-reset-form-rc-label-display-block: initial;
+  --artdeco-reset-form-rc-label-line-height-2-rem: initial;
+  --artdeco-reset-form-rc-label-margin-bottom-zero: initial;
+  --artdeco-reset-form-rc-label-padding-zero: initial;
+  --artdeco-reset-form-rc-label-position-relative: initial;
+  --artdeco-reset-form-rc-label-padding-left-2point8-rem: initial;
+  --artdeco-reset-forms-input-transition-duration: initial;
+  --artdeco-reset-forms-input-transition-property: initial;
+  --artdeco-reset-forms-input-box-shadow: initial;
+  --artdeco-reset-forms-input-border-radius: 4px;
+  --artdeco-reset-forms-input-border: initial;
+  --artdeco-reset-forms-input-width: initial;
+  --artdeco-reset-forms-input-height: initial;
+  --artdeco-reset-forms-input-box-sizing: border-box;
+  --artdeco-reset-forms-input-background-color: initial;
+  --artdeco-reset-forms-input-color: initial;
+  --artdeco-reset-forms-input-placeholder-color: var(--softPeanut);
+  --artdeco-reset-forms-input-blue: initial;
+  --artdeco-reset-forms-input-focus-box-shadow: initial;
+  --artdeco-reset-forms-input-disabled-hover-border-color: initial;
+  --artdeco-reset-forms-input-disabled-opacity: initial;
+  --artdeco-reset-forms-input-error: initial;
+  --artdeco-reset-forms-font-weight: initial;
+  --artdeco-reset-forms-font-size: initial;
+  --artdeco-reset-forms-line-height: initial;
+  --artdeco-reset-forms-select-appearance-none: initial;
+  --artdeco-reset-forms-select-box-shadow-none: initial;
+  --artdeco-reset-forms-select-outline-zero: initial;
+  --artdeco-reset-forms-select-height-3point2-rem: initial;
+  --artdeco-reset-forms-select-background-transparent: initial;
+  --artdeco-reset-forms-select-position-relative: initial;
+  --artdeco-reset-forms-select-zindex-two: initial;
+  --artdeco-reset-forms-select-background-image: initial;
+  --artdeco-reset-forms-select-border-box: initial;
+  --artdeco-reset-forms-select-border-zero: initial;
+  --artdeco-reset-forms-select-width-100-percent: initial;
+  --artdeco-reset-forms-select-border-radius-point2rem: initial;
+  --artdeco-reset-forms-select-border: initial;
+  --artdeco-reset-forms-select-padding: initial;
+  --artdeco-reset-forms-select-transition: initial;
+  --artdeco-reset-forms-select-disabled-opacity: initial;
+  --artdeco-reset-forms-select-hover-border-color: initial;
+  --artdeco-reset-forms-select-focus-border-color: initial;
+  --artdeco-reset-forms-select-focus-box-shadow: initial;
+  --artdeco-reset-base-margin-zero: initial;
+  --artdeco-reset-base-padding-zero: initial;
+  --artdeco-reset-base-border-zero: initial;
+  --artdeco-reset-base-font-size-hundred-percent: initial;
+  --artdeco-reset-base-font-weight-bold: initial;
+  --artdeco-reset-base-font-style-italic: initial;
+  --artdeco-reset-base-outline-zero: initial;
+  --artdeco-reset-base-outline-none: initial;
+  --artdeco-reset-base-line-height-one: initial;
+  --artdeco-reset-base-display-block: initial;
+  --artdeco-reset-base-list-style-none: initial;
+  --artdeco-reset-base-quotes-none: initial;
+  --artdeco-reset-base-vertical-align-baseline: initial;
+  --artdeco-reset-base-vertical-align-middle: initial;
+  --artdeco-reset-base-background-transparent: initial;
+  --artdeco-reset-base-opacity-zero: initial;
+  --artdeco-reset-base-top-zero: initial;
+  --artdeco-reset-base-position-absolute: initial;
+  --artdeco-reset-base-text-decoration-none: initial;
+  --artdeco-reset-base-text-decoration-line-through: initial;
+  --artdeco-reset-base-border-collapse-collapse: initial;
+  --artdeco-reset-base-get-color-black: initial;
+  --artdeco-reset-base-background-color-ff9: initial;
+  --artdeco-reset-base-border-spacing-zero: initial;
+  --artdeco-reset-base-cursor-help: initial;
+  --artdeco-reset-base-content-none: initial;
+  --artdeco-reset-base-left-minus-hundred-px: initial;
+  --artdeco-reset-base-border-thickness-1-px: initial;
+  --artdeco-reset-base-border-style-dotted: initial;
+}
+
+@keyframes popup {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.bubbleView {
+  display: inline-block;
+  width: 320px;
+}
+
+.sidePeekView {
+  display: flex;
+  flex-direction: column;
+  border-radius: 0px;
+  z-index: 999;
+  box-shadow: 0px 8px 8px #94a5b4;
+}

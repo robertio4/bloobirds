@@ -1,0 +1,308 @@
+.home__container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: calc(100vh - 152px);
+  margin: 24px;
+  overflow: hidden;
+  max-width: 2200px;
+}
+
+.title__container {
+  padding: 8px 0;
+}
+
+.content__container {
+  display: flex;
+  width: 100%;
+  margin-top: 8px;
+  min-height: calc(100vh - 152px);
+  overflow: hidden;
+}
+
+.leftContent__container {
+  width: 28%;
+}
+
+._start_button {
+  margin-right: 8px;
+}
+
+.sliderRotate {
+  transform: rotate(90deg);
+}
+
+.column__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.column__title {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 2px;
+}
+
+.column__title > * {
+  padding: 0 4px;
+}
+
+.centerContent__container {
+  display: flex;
+  flex-direction: column;
+  padding: 0 8px;
+  width: 46%;
+}
+
+.centerContent__container:first-child {
+  align-items: end;
+}
+
+.dropdownItem__container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 4px;
+}
+
+.item {
+  padding: 8px 4px;
+}
+
+.rightContent__container {
+  padding: 0 0 0 8px;
+  width: 24%;
+}
+
+.pipelineChart {
+  padding: 16px 8px;
+}
+
+.noData {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-width: 100%;
+}
+
+.sortable {
+  background-color: transparent !important;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.sortable > div {
+  margin-bottom: 8px;
+}
+
+.sortable::-webkit-scrollbar {
+  width: 0;
+}
+
+.statisticsContainer {
+  display: flex;
+  width: 90%;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.statisticsContainerSkeleton {
+  display: flex;
+  width: 90%;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 1145px) {
+  .statisticsContainer > div {
+    flex: 40%;
+    max-width: 40%;
+  }
+}
+
+.spinner {
+  display: flex;
+  justify-content: center;
+  margin: 24px;
+}
+
+.noTasks {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 12px;
+  height: 50%;
+}
+
+.noTasks > * {
+  margin: 16px;
+}
+
+.task_list {
+  overflow-y: auto;
+  height: 93%;
+  padding-right: 8px;
+}
+
+.notifications_list {
+  overflow-y: auto;
+  height: 95%;
+}
+
+.notifications_list::-webkit-scrollbar {
+  width: 0;
+}
+
+._tasks_dropdown_title {
+  margin: 6px 12px;
+}
+
+._tasks_dropdown_title_sales {
+  margin-top: 20px;
+}
+
+._tasks_item {
+  width: 120px;
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+._tasks_item_big {
+  width: 200px;
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.heading_text {
+  margin-bottom: 4px;
+}
+
+._show_more {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  margin-top: 7px;
+}
+
+._time_marker {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+._time_marker_line {
+  background-color: var(--tomato);
+  height: 1px;
+  width: 100%;
+}
+
+._time_marker_bullet {
+  background-color: var(--tomato);
+  width: 9px;
+  height: 9px;
+  border-radius: 9px;
+  display: block;
+}
+
+.overdue_item {
+  border-top: 1px solid var(--softPeanut);
+}
+
+.temporary_disapear {
+  display: none;
+}
+
+.notAllowed {
+  cursor: not-allowed;
+}
+
+.skeleton {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.statisticPairContainer {
+  display: flex;
+}
+
+@media (max-width: 1010px) {
+  .title_text {
+    display: none;
+  }
+}
+
+@media (max-width: 795px) {
+  .chevron {
+    display: none;
+  }
+}
+
+.startButton {
+  white-space: nowrap;
+}
+
+._button_spinner {
+  margin: 1px;
+  height: 16px;
+}
+
+.chart_container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.notifications_filters {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.quotes {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 60%;
+}
+
+.quotes > * {
+  margin-bottom: 8px;
+}
+
+.spinnerDots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.block_rightContent {
+  margin-right: 8px;
+}
+
+._ad_block_emailAuto {
+  display: flex;
+  align-items: center;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+}
+
+._ad_block_emailAuto:first-child {
+  margin-left: 4px;
+}
+
+._ad_block_emailAuto > * {
+  margin-right: 4px;
+}

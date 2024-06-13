@@ -1,0 +1,49 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.icon {
+  margin-right: 4px;
+}
+
+.title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--lighterGray);
+  box-shadow: 0 2px 4px rgba(25, 145, 255, 0.09);
+  border-radius: 4px 4px 0 0;
+  height: 36px;
+  padding-left: 12px;
+}
+
+.title_text_container {
+  display: flex;
+  align-items: center;
+}
+
+.title_text {
+  margin-right: 4px;
+}
+
+.content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px 8px;
+  background: var(--white);
+  border: 1px solid var(--veryLightBloobirds);
+}
+
+.selector_container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 8px;
+}
+
+.selector {
+  margin-right: 4px;
+}

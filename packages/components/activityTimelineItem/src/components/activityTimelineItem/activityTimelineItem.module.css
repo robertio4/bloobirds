@@ -1,0 +1,249 @@
+.activityHeader {
+  display: flex;
+  gap: 4px;
+}
+
+.activityHeader > div {
+  display: flex;
+  max-width: 100%;
+}
+
+.activityHeaderTitleWrapper {
+  overflow: hidden;
+}
+
+.activityHeaderTitleWrapper > div {
+  max-width: 100%;
+}
+
+.activityHeaderTitle {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+
+.activityHeaderTitleEllipsis {
+  flex-shrink: 1;
+}
+
+.activityHeaderTitleSidePeek {
+  font-size: 14px;
+  padding-bottom: 4px;
+}
+
+.activityHeaderSubtitle {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-left: 4px;
+  flex-shrink: 1;
+}
+
+.timeline_item_wrapper {
+  transition: all 0.5s ease-out;
+}
+
+.timeline_item_wrapper > li {
+  padding-left: 14px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.timeline_item_wrapper > li > div:first-child > div:nth-child(2) > div {
+  width: 20px;
+  height: 20px;
+}
+
+.timeline_item_wrapper_sidePeek > li {
+  padding: 3px 16px;
+}
+
+.timeline_item_wrapper_sidePeek > li > div:nth-child(2) > div:first-child > div * {
+  font-size: 13px;
+}
+
+.timeline_item_wrapper_sidePeek > li > div:nth-child(2) > div:first-child > div > div:last-child {
+  margin-left: 8px !important;
+}
+
+.timeline_item_wrapper_sidePeek > li > div:first-child > div:nth-child(2) > div {
+  width: 24px;
+  height: 24px;
+}
+
+.timeline_item_wrapper_sidePeek > li > div:first-child > div:nth-child(2) > div > svg {
+  width: 18px;
+  height: 18px;
+}
+
+.attachmentDropdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 4px 10px;
+}
+
+.attachmentDropdown > div {
+  width: 100%;
+}
+
+.attachmentClip {
+  position: relative;
+  top: -2px;
+}
+
+.meetingDurationInfo {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  margin-left: 4px;
+}
+
+.leadName {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.leadName > svg {
+  min-width: 12px;
+}
+
+.ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rightIconsContainer {
+  display: flex;
+  gap: 2px;
+}
+
+.rightIconsContainer > div > button {
+  padding: 2px 3px;
+}
+
+.descriptionContainer {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.descriptionContainer > div:last-child {
+  /* display: flex; */
+  gap: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.descriptionContainer > div:last-child > span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  padding-right: 22px;
+  display: contents;
+}
+
+.bouncedEmail {
+  margin-right: 4px;
+  max-height: 10px;
+}
+
+.descriptionContainerSidePeek {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  padding-right: 22px;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.descriptionContainer b {
+  margin-right: 4px;
+}
+
+/* .descriptionContainerSidePeek p,
+.descriptionContainerSidePeek b,
+.descriptionContainerSidePeek div {
+  display: inline-block;
+  margin-right: 5px;
+} */
+
+.descriptionContainerSidePeek::first-line {
+  padding-bottom: 2px;
+}
+
+.descriptionContainerSidePeek * {
+  font-size: 13px;
+}
+
+.descriptionContainerSidePeek > div:last-child {
+  display: block;
+  overflow: initial;
+}
+
+.descriptionContainerSidePeek > div:first-child {
+  float: left;
+  margin-right: 4px;
+  display: flex;
+}
+
+.descriptionContainerSidePeek > div:last-child > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  padding-right: 22px;
+  white-space: normal;
+}
+
+.descriptionContainer > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.callIcon svg {
+  height: 20px !important;
+  width: 20px !important;
+}
+
+.rightIcons {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.emailIconSize svg {
+  height: 18px !important;
+  width: 18px !important;
+}
+
+.rightIcon svg {
+  height: 16px !important;
+  width: 16px !important;
+}
+
+.meetingDuration > div > p {
+  white-space: nowrap;
+}
+
+.caseIcon > p {
+  display: inline-block;
+}
+
+.caseIconMargin {
+  margin-bottom: -9px;
+  margin-right: -8px;
+}
+
+.caseItem {
+  display: flex;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+.aiAnalysisIcon {
+  display: flex;
+}

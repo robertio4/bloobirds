@@ -1,0 +1,70 @@
+._header {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  padding-bottom: 16px;
+}
+
+._header > p {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+._tittle {
+  font-size: 18px;
+}
+
+._filtersIcon {
+  position: relative;
+}
+
+._filtersTouched::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  right: 1px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--verySoftTomato, #FFB2C2);
+  border: 1px solid var(--lightestGray, #FBFBFB);
+}
+
+._subhomeHeaderTitle {
+    display: flex;
+    align-items: center;
+   gap: 4px;
+}
+
+._filters_handling_wrapper{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+._refresh_icon{
+  width: 22px;
+  height: 22px;
+  position: absolute;
+  right: 42px;
+  top: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+._create_task_button {
+  width: 22px;
+  height: 22px;
+  position: absolute;
+  right: 16px;
+  top: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+._clear_button{
+  margin-bottom: -3px;
+}

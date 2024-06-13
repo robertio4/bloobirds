@@ -1,0 +1,16 @@
+._steps__section {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+}
+._step {
+  padding-right: 104px;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 32px;
+}
+._step__text {
+  align-self: center;
+  margin-right: 24px;
+  margin-left: 104px;
+}

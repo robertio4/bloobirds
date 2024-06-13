@@ -1,0 +1,30 @@
+._item_wrapper {
+  width: 520px;
+  max-height: 200px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+._company__info {
+  margin-left: 8px;
+}
+
+._company__website {
+  display: flex;
+  align-items: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+._company__website > * {
+  margin-right: 4px;
+}
+
+._company__icon {
+  flex-shrink: 0;
+}
+
+.noResults {
+  margin-left: 8px;
+}

@@ -1,0 +1,137 @@
+.content {
+  margin-bottom: 8px;
+  padding: 0 14px;
+}
+
+.contentHeader {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.contentHeader p {
+  margin-bottom: 8px;
+}
+
+.contentHeader p.leadPhrase {
+  margin-bottom: 34px;
+}
+
+.icons {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.icons > svg {
+  margin-right: 8px;
+}
+
+.iconWithLabel {
+  padding: 12px 16px 8px 16px;
+  background-color: var(--peanut);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.iconWithLabel > p {
+  margin-bottom: 0;
+}
+
+.actionButtons > div:nth-child(1),
+.actionButtons > button:nth-child(1) {
+  margin-right: 16px;
+}
+
+.section {
+  margin-bottom: 20px;
+}
+
+.leadSection {
+  margin-bottom: 34px;
+}
+
+.title {
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  margin-bottom: 3px;
+}
+
+.list {
+  margin-top: 16px;
+  max-height: 222px;
+  overflow-y: auto;
+}
+
+.card {
+  padding: 6px 8px;
+  background: var(--white);
+  border: 1px solid var(--veryLightBloobirds);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  margin-top: -1px;
+  justify-content: space-between;
+}
+
+.card:nth-child(1) {
+  margin-top: 0;
+}
+
+.cardLeft {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox {
+  margin-right: 20px;
+  display: flex;
+}
+
+.checkbox > div {
+  padding: 0;
+}
+
+.checkbox > div > span {
+  width: 20px;
+  height: 20px;
+}
+
+.checkbox > div:hover {
+  background-color: var(--white);
+}
+
+.checkboxDisabled {
+  opacity: 0.5;
+}
+
+.nameWrapper {
+  margin-left: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.nameWrapper > div {
+  justify-content: flex-start;
+}
+
+.nameWrapper span {
+  font-family: var(--fontFamily);
+}
+
+.stageWrapper {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+.labelsWrapper {
+  display: flex;
+}
+.labelsWrapper > * {
+  padding-left: 8px;
+}

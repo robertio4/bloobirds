@@ -1,0 +1,22 @@
+.container {
+  margin-top: 8px;
+  margin-right: 1px;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+}
+
+.empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: auto;
+  width: 100%;
+  margin: 8px 8px;
+}
+
+.skeleton {
+  padding: 8px 6px 0 6px;
+}

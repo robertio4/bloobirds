@@ -1,0 +1,26 @@
+name: Node CI
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Grant private repo access
+        run: echo "${{ secrets.NPMRC_GITHUB }}" > .npmrc
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12
+          registry-url: https://npm.pkg.github.com/
+          scope: "@bloobirds-it"
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+      - name: Run Linters
+        run: yarn lint
+      - name: Build Package
+        run: yarn build

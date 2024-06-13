@@ -1,0 +1,22 @@
+._container {
+  height: 100%;
+  background-size: 100% 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url('../../../../assets/login-aside-708x1024.png');
+}
+
+._description_container {
+  height: 100%;
+  max-height: 238px;
+  width: 445px;
+}
+
+._description_container > span > svg > path {
+  fill: var(--bloobirds);
+}
+
+._text_wrapper {
+  margin: 24px 0;
+}

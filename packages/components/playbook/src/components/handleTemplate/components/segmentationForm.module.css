@@ -1,0 +1,44 @@
+.container {
+  width: calc(100% + 10px);
+  padding-right: 10px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.container::-webkit-scrollbar {
+  margin-left: 8px;
+  color: black;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 8px;
+  margin: 8px 0 16px;
+}
+
+.title {
+  width: 100%;
+}
+
+.sectionContent {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 0 4px;
+  gap: 8px;
+}
+
+.withoutTitle {
+  padding: 0;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  gap: 8px;
+  align-items: center;
+}

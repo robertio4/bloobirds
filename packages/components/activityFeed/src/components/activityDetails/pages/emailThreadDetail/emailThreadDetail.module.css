@@ -1,0 +1,83 @@
+.container {
+  padding-top: 4px;
+  height: 100%;
+  justify-content: space-between;
+  display: flex;
+  flex-direction: column;
+}
+
+.container * {
+  font-size: 13px;
+}
+
+.emailDetail_container {
+  margin-top: 2px;
+  height: 93%;
+  overflow: auto;
+  box-sizing: border-box;
+  flex: 1;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+}
+
+.htmlBody {
+  padding: 10px 20px;
+}
+
+.htmlBody > * {
+  font-size: 10px;
+}
+
+.htmlBody > div {
+  max-width: 350px !important;
+}
+
+.htmlBody > div * {
+  max-width: 350px !important;
+}
+
+.htmlBody > div ul,
+.htmlBody > div ol {
+  padding-left: 16px !important;
+}
+
+.openedClickedElement {
+  margin-top: 8px;
+}
+
+._text_message {
+  overflow: auto;
+  overscroll-behavior-y: contain;
+}
+
+.htmlBody ul {
+  margin-top: 4px;
+  list-style-type: disc;
+  margin-left: 15px;
+}
+
+.htmlBody ol {
+  margin-top: 4px;
+  list-style-type: decimal;
+  margin-left: 15px;
+}
+
+.htmlBody ul ul,
+.htmlBody ol ul {
+  list-style-type: circle;
+  margin-left: 15px;
+}
+
+.htmlBody ol ol,
+.htmlBody ul ol {
+  list-style-type: lower-latin;
+  margin-left: 15px;
+}
+
+.htmlBody > div:first-child img {
+  max-width: 100% !important;
+  height: auto !important;
+}

@@ -1,0 +1,11 @@
+._status_wrapper {
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+._status_text {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}

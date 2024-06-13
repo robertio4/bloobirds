@@ -1,0 +1,261 @@
+._container {
+  width: 328px;
+  border: solid 1px var(--veryLightBloobirds);
+  min-height: 435px;
+  display: flex;
+  box-shadow: 0 2px 4px 0 rgba(25, 145, 255, 0.08);
+  box-sizing: border-box;
+  align-items: center;
+  border-radius: 4px;
+  flex-direction: column;
+  background-color: var(--white);
+  padding: 16px;
+  position: relative;
+
+  height: 100%;
+}
+
+._container_distinction::before {
+  content: '';
+  position: absolute;
+  height: 100%;
+  top: 0;
+  left: 0;
+  width: 4px;
+  z-index: 1;
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
+
+._container_sales::before {
+  background-color: var(--peanut);
+}
+
+._container_prospect::before {
+  background-color: var(--verySoftGrape);
+}
+
+._lead_container {
+  min-height: 460px;
+}
+
+._info__container {
+  display: flex;
+  margin-left: auto;
+  align-items: center;
+  position: absolute;
+  right: 12px;
+}
+
+._mr_rating__container {
+  margin-left: 4px;
+}
+
+._circular_badge__container {
+  margin-bottom: 10px;
+}
+
+._lead_dropdown_element {
+  margin-left: 4px;
+}
+
+._circular_badge__badge {
+  box-shadow: 0 4px 4px rgb(0 0 0 / 25%);
+  border-radius: 50%;
+}
+
+._opt_out_sign {
+  width: 24px;
+}
+
+._name_wrapper {
+  display: flex;
+  align-content: center;
+  margin-bottom: 16px;
+}
+
+._name__container {
+  display: flex;
+  align-items: center;
+}
+
+._name_text__container {
+  margin-left: 8px;
+  flex-direction: row;
+}
+
+._name_text__container > p {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 250px;
+  margin-right: 8px;
+  overflow: hidden;
+}
+
+._name_text__container:hover {
+  cursor: pointer;
+}
+
+._edit_icon {
+  visibility: hidden;
+}
+
+._edit_icon__visible {
+  visibility: visible;
+}
+
+._status__container {
+  margin-bottom: 16px;
+}
+
+._status__container__clickable {
+  cursor: pointer;
+}
+
+._status__container__clickable:hover {
+  opacity: 65%;
+}
+
+._assignTo__container {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+._assignTo__container > div {
+  margin-right: 5px;
+}
+
+._fields__container {
+  display: flex;
+  align-items: flex-start;
+  width: 235px;
+  padding-left: 30px;
+  flex-direction: column;
+  overflow-y: hidden;
+  max-height: 200px;
+}
+
+._fields__container:hover {
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
+
+._field__container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+._link_field_container {
+  margin-bottom: 6px;
+}
+
+._field__container > div > svg {
+  margin-right: 4px;
+}
+
+._field_link {
+  font-size: 14px;
+  color: var(--bloobirds);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 210px;
+}
+
+._warning__dot {
+  background-color: var(--extraMeeting);
+  border-radius: 50%;
+  height: 10px;
+  width: 10px;
+  min-width: 10px;
+  min-height: 10px;
+}
+
+._inactive__container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--lightPeanut);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  height: 36px;
+  box-shadow: 0 -3px 6px var(--lighterGray);
+}
+
+._inactive__container_pointer {
+  cursor: pointer;
+}
+
+._circular_badge__button {
+  position: absolute;
+  top: -44px;
+  right: 0;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+._circular_badge__button_hovered {
+  margin-bottom: 20px;
+}
+
+._tag__container {
+  max-width: 80%;
+  padding: 8px 16px;
+  background: var(--lightestBloobirds);
+  border-radius: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 16px;
+}
+
+._tag__content > span {
+  margin-top: -4px;
+  margin-bottom: 4px;
+  display: block;
+}
+
+._contextual__menu {
+  margin-left: 4px;
+}
+
+.link {
+  margin-bottom: 8px;
+}
+
+._copy_component {
+  display: flex;
+  align-self: flex-start;
+}
+
+._copy_component > * > button {
+  align-self: flex-start;
+}
+
+._link_copy_component {
+  height: 20px;
+}
+
+._link_copy_component > * > button {
+  align-self: center;
+}
+
+._copy_icon {
+  margin-left: 6px;
+  opacity: 0;
+}
+
+._show_icon {
+  opacity: 100;
+}
+
+.link:hover {
+  cursor: pointer;
+}

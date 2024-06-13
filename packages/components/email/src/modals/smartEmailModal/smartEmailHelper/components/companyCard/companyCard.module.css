@@ -1,0 +1,164 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  border: 1px solid var(--veryLightBloobirds);
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--lightPeanut);
+}
+
+.header > div[class^="infoCardTemplate-module__copy_component"] {
+  align-items: center;
+}
+
+.company_title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 205px;
+}
+
+.company_title_short {
+  max-width: 135px;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.mainInfo_container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 16px 0 4px 0;
+}
+
+.mainInfo {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.mainInfo_header {
+  display: flex;
+  gap: 4px;
+}
+
+.mainInfo_body {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.mainInfo_body > div[class^="infoCardTemplate-module__copy_component"] {
+  align-items: center;
+}
+
+.mainInfo_value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 165px;
+}
+
+.mainInfo_value_short {
+  max-width: 127px;
+}
+
+.mainInfo_value_with_buttons {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 125px;
+}
+
+.mainInfo_value_with_buttons_short {
+  max-width: 98px;
+}
+
+.chemistry_text {
+  cursor: default;
+}
+
+.chemistry_dropdown {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chemistry_dropdown > ul {
+  margin: 0;
+  padding: 0;
+}
+
+.matching_list_element {
+  display: flex;
+  gap: 4px;
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
+
+.matching_list_text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.company_card_skeleton {
+  max-height: 175px;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 16px;
+  border: 1px solid var(--verySoftPeanut);
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.company_card_skeleton > span {
+  margin: auto;
+}
+
+._skeleton {
+  padding: 15px 15px 0 15px;
+}
+
+.skeleton_header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+}
+
+.skeleton_body {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0 0 0;
+}
+
+.skeleton_body > div {
+  width: 50%;
+  margin-bottom: 3px;
+}

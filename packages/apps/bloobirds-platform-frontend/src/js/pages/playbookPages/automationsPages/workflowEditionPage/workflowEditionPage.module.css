@@ -1,0 +1,142 @@
+.workflow_page__container {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  align-items: stretch;
+  margin-bottom: 60px;
+}
+
+.workflow_editor__container {
+  padding: 48px 64px 0 0;
+  width: 100%;
+  background-color: var(--lighterGray);
+  overflow-y: auto;
+}
+
+._section_container {
+  margin-left: 20px;
+}
+
+._handle_unsaved_changes {
+  display: flex;
+  justify-content: space-between;
+}
+
+._handle_unsaved_changes > button {
+  margin-left: 16px;
+  width: 117px;
+}
+
+._section_container > div {
+  margin-top: 16px;
+}
+
+._section_container > p {
+  margin-bottom: 8px;
+}
+
+._edit_permission_section {
+  margin-top: 40px;
+  margin-bottom: 56px;
+}
+
+._back__button {
+  margin-bottom: 36px;
+  margin-left: 24px;
+}
+
+._confirm__button {
+  width: 178px;
+}
+
+._settings_modal_buttons {
+  display: flex;
+  justify-content: right;
+}
+
+._settings_modal_buttons > button {
+  margin-left: 16px;
+  width: 170px;
+}
+
+._banner_wrapper {
+  width: 100%;
+}
+
+._banner_wrapper > div {
+  justify-content: center;
+  height: 40px;
+}
+
+._workflow__form__container {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+}
+
+._workflow__form__header {
+  display: flex;
+  justify-content: space-between;
+  width: 800px;
+}
+
+._workflow__form__name {
+  display: flex;
+  flex-direction: row;
+  cursor: default;
+}
+
+._workflow__form__name_unlocked {
+  cursor: pointer;
+}
+
+._workflow__form__name > p {
+  align-self: center;
+}
+
+._workflow__form__items {
+  display: flex;
+  justify-self: center;
+  flex-direction: column;
+  padding: 40px 100px;
+  width: 600px;
+}
+
+._save_bar {
+  display: flex;
+  justify-content: flex-end;
+  position: fixed;
+  height: 40px;
+  width: 100%;
+  padding: 10px 0;
+  background-color: var(--purple);
+  z-index: 2;
+  bottom: 0;
+  right: 0;
+}
+
+._save_bar > div {
+  margin-right: 40px;
+}
+
+._cancel_button {
+  border: white 1px solid;
+  border-radius: 4px;
+  height: 30px;
+  padding-top: 7px;
+}
+
+._workflow__form__content > ._add_step_button {
+  justify-content: center;
+  margin-top: 38px;
+  margin-bottom: 32px;
+}
+
+._right__actions {
+  display: flex;
+  align-items: center;
+}
+
+._right__actions > * {
+  margin-left: 8px !important;
+}

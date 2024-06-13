@@ -1,0 +1,193 @@
+._actions__container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+._actions__container > * {
+  margin: 6px;
+}
+
+._card_ray {
+  gap: 0;
+}
+
+._logs_timeline {
+  height: 754px;
+  overflow-y: scroll;
+}
+
+._loading_logs {
+  justify-content: center;
+  align-items: center;
+  padding: 180px 0;
+  display: flex;
+}
+
+._logs_container {
+  width: 726px;
+  box-sizing: border-box;
+  background-color: white;
+  border-radius: 4px;
+  border: 1px solid var(--verySoftCondition);
+  padding: 24px 20px;
+  margin-top: -1px;
+  margin-bottom: 20px;
+}
+
+._log_timeline {
+  padding: 0 4px;
+}
+
+._loading_logs > p {
+  margin-left: 8px;
+}
+
+._card {
+  background-color: var(--white);
+  margin-bottom: 40px;
+  max-width: 1280px;
+  padding-top: 1em;
+}
+
+._card_header {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 32px;
+  flex-direction: column;
+}
+
+._skeleton_card {
+  display: flex;
+  flex-direction: row;
+}
+
+._card_header > * {
+  flex-shrink: 0;
+}
+
+._card_header_text {
+  width: 80%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-left: 8px;
+}
+
+._card__cell_name {
+  width: 40vw;
+}
+
+._card__cell_author {
+  width: 5vw;
+}
+
+._card__cell_label {
+  width: 5vw;
+}
+
+.filters_container {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 45px;
+  padding-left: 36px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  background-color: var(--verySoftPurple);
+  justify-content: flex-start;
+  margin: 0 -32px 20px -32px;
+}
+
+.filters_separator {
+  width: 0;
+  height: 24px;
+  margin-left: 16px;
+  margin-right: 8px;
+  border-left: 1px solid #d4e0f1;
+}
+
+._filter__container {
+  margin: 0 8px 0 8px;
+}
+
+.filters_title__container {
+  margin-right: 10px;
+}
+
+._filter__input {
+  margin-right: 10px;
+}
+
+._card__cell_status {
+  justify-content: flex-end;
+}
+
+._title__container {
+  display: flex;
+  align-items: center;
+}
+
+._main_info__text {
+  margin-bottom: 16px;
+}
+
+._main_info__input {
+  margin: 8px 0 36px;
+}
+
+._main_info__section {
+  margin: 0 15px;
+}
+
+._log_text_block_span {
+  display: inline;
+  white-space: break-spaces;
+}
+
+._log_text_block {
+  display: flex;
+  white-space: break-spaces;
+}
+
+._compound_text_block {
+  display: flex;
+  flex-direction: column;
+  white-space: break-spaces;
+}
+
+._no_results__contents {
+  box-sizing: border-box;
+  padding: 150px 227px 150px 227px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: white;
+}
+
+._no_logs_placeholder {
+  box-sizing: border-box;
+  padding: 202px 227px 332px 227px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: white;
+}
+
+._no_logs_placeholder_title {
+  width: 500px;
+}
+
+._no_logs_placeholder_subtitle {
+  width: 500px;
+}
+
+._no_results__img {
+  margin-bottom: 20px;
+}
+
+._bobjectName {
+  color: var(--bloobirds);
+  display: inline;
+  cursor: pointer;
+}

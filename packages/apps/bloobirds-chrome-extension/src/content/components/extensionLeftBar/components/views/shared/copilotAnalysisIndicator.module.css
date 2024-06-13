@@ -1,0 +1,8 @@
+.copilot_analysis_indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1px;
+  border-radius: 4px;
+  background: var(--gradient-AI-Purple-green-Light, linear-gradient(270deg, #DCFFF1 0%, #E2E5FF 65.49%));
+}

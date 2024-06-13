@@ -1,0 +1,8 @@
+._container {
+  position: relative;
+}
+._counter {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+}

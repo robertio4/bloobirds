@@ -1,0 +1,29 @@
+.input > div > input {
+    font-size: 12px;
+    padding: 4px 8px;
+    max-height: 24px;
+    box-shadow: none !important;
+}
+
+.input > div > div > input,
+.input > div > input:focus {
+    box-shadow: none !important;
+}
+
+.input > div > input,
+.input:hover > div > input,
+.input:focus > div > input,
+.input > div > input:focus {
+    border: 1px solid var(--softPeanut) !important;
+}
+
+.error > div > input,
+.error:hover > div > input,
+.error:focus > div > input,
+.error > div > input:focus {
+    border: 1px solid var(--tomato) !important;
+}
+
+.baseInput {
+    box-shadow: none !important;
+}

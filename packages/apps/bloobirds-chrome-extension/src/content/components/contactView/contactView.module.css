@@ -1,0 +1,103 @@
+.header__container {
+  display: flex;
+  height: 44px;
+  justify-content: space-between;
+}
+
+.tab__container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  border-top: 1px solid var(--lightPeanut);
+  box-shadow: 2px -7px 12px -7px var(--verySoftPeanut) inset;
+  cursor: pointer;
+  gap: 6px;
+}
+
+.tab__container:not(:first-child) {
+  border-left: 1px solid rgb(0, 119, 181, 0.1);
+}
+
+.tab__container:last-child {
+  border-right: none;
+}
+
+.tab__container__selected {
+  box-shadow: none;
+}
+
+.noteDropdown {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  width: 200px;
+}
+
+.noteDropdown > *:first-child {
+  margin-bottom: 8px;
+}
+
+.openAircallDialer,
+.openAircallDialer:hover {
+  padding: 8px 16px;
+  text-decoration: none;
+}
+
+.noteOptions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.leadsTitle {
+  margin-bottom: 12px;
+}
+
+.leadsTitleSidePeek {
+  font-size: 13px;
+}
+
+.leadsList {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.overviewContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 12px;
+  padding: 12px;
+}
+
+.overviewContainerSidePeek {
+  gap: 16px;
+  padding: 16px;
+}
+
+.tab__container__noSync,
+.tab__container__sync {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--banana);
+}
+
+.tab__container__sync {
+  background-color: var(--extraCall);
+}
+
+.dropdown_contact_action_item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.dropdown_contact_action_item:hover {
+  background-color: var(--lighterGray);
+}

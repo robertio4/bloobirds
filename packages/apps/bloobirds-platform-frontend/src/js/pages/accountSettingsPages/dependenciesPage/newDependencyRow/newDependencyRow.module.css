@@ -1,0 +1,46 @@
+.__bobject_text {
+  margin-left: 8px;
+  margin-right: 4px;
+  line-height: 0;
+}
+
+.__checkItem__element > div {
+  justify-content: start;
+}
+
+._container {
+  height: auto;
+  max-height: 300px;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+._item {
+  width: 100%;
+  top: 0;
+  position: absolute;
+}
+._input {
+  width: 170px;
+  margin-bottom: 5px;
+}
+._input > div {
+  text-decoration: none;
+}
+
+._relative {
+  width: 100%;
+  position: relative;
+}
+
+._save__button {
+  padding-right: 6px;
+  padding-left: 6px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}

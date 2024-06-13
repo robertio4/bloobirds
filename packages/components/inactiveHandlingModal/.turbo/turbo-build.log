@@ -1,0 +1,17 @@
+
+> @bloobirds-it/inactive-handling@0.0.0 build
+> npm run build:prod
+
+
+> @bloobirds-it/inactive-handling@0.0.0 build:prod
+> tsc && cross-env NODE_ENV=production rollup -c=../../../rollup.config.js
+
+[36m
+[1m/Users/robertorf/Workspace/frontend-monorepo/packages/components/inactiveHandlingModal/src/index.tsx[22m → [1mdist/index.js, dist/index.es.js[22m...[39m
+Browserslist: caniuse-lite is outdated. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+[1m[33m(!) Circular dependencies[39m[22m
+src/components/inactiveHandlingModal.tsx -> src/hooks/index.ts -> src/hooks/useInactiveHandlingModalData.ts -> src/components/inactiveHandlingModal.tsx
+src/components/inactiveHandlingModal.tsx -> src/components/ActionForm.tsx -> src/components/inactiveHandlingModal.tsx
+[32mcreated [1mdist/index.js, dist/index.es.js[22m in [1m1.1s[22m[39m

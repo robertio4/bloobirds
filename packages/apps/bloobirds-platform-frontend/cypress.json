@@ -1,0 +1,11 @@
+{
+  "screenshotOnRunFailure": true,
+  "video": false,
+  "watchForFileChanges": false,
+  "defaultCommandTimeout": 15000,
+  "numTestsKeptInMemory": 9,
+  "projectId": "8kq68w",
+  "baseUrl": "http://localhost:3000",
+  "viewportHeight": 1080,
+  "viewportWidth": 1920
+}

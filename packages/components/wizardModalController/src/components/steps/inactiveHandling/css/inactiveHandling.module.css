@@ -1,0 +1,19 @@
+._modal_content {
+  box-sizing: border-box;
+  padding: 32px 58px 15px;
+}
+
+._modal_footer {
+  box-sizing: border-box;
+  padding: 0 32px 40px 32px;
+}
+
+._modal_content > div > section > div {
+  display: flex;
+  flex-direction: column;
+}
+
+._sections_container {
+  display: flex;
+  height: 272px;
+}

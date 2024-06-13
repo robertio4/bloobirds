@@ -1,0 +1,55 @@
+.modal_header {
+  background: var(--verySoftPurple) !important;
+  align-items: center;
+  height: 60px;
+}
+
+.modal_title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal_text {
+  line-height: 24px;
+  margin-bottom: 12px;
+}
+
+.modal_text_delete {
+  line-height: 24px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.cadences {
+  margin-top: 8px;
+}
+
+.cadence {
+  padding-left: 60px;
+  margin-bottom: 4px;
+  gap: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: space-between;
+  padding: 8px 28px 0;
+}
+
+.button_end {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: flex-end;
+  padding: 8px 28px 0;
+}
+
+.buttons_right {
+  display: flex;
+  gap: 16px;
+}

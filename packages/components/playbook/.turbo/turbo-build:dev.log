@@ -1,0 +1,12 @@
+
+> @bloobirds-it/playbook@0.0.0 build:dev
+> cross-env NODE_ENV=development rollup -c=../../../rollup.config.js
+
+[36m
+[1m/Users/robertorf/Workspace/frontend-monorepo/packages/components/playbook/src/index.tsx[22m → [1mdist/index.js[22m...[39m
+[1m[33m(!) Circular dependencies[39m[22m
+src/components/handleTemplate/components/templateForm.tsx -> src/components/handleTemplate/components/templateFormFields/mainContentFormEditor.tsx -> src/components/handleTemplate/components/templateForm.tsx
+src/components/handleTemplate/components/templateForm.tsx -> src/components/handleTemplate/components/templateFormFields/nameFormEditor.tsx -> src/components/handleTemplate/components/templateForm.tsx
+src/components/handleTemplate/components/templateForm.tsx -> src/components/handleTemplate/components/templateFormFields/templateFormFieldsByType.tsx -> src/components/handleTemplate/components/templateForm.tsx
+src/components/handleTemplate/components/templateForm.tsx -> src/components/handleTemplate/components/templateFormHeader.tsx -> src/components/handleTemplate/components/templateForm.tsx
+[32mcreated [1mdist/index.js[22m in [1m5.3s[22m[39m

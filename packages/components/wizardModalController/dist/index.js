@@ -1,0 +1,11764 @@
+import React, { useState, useEffect, useRef, useMemo, useCallback, createElement, createContext, useContext, useLayoutEffect } from 'react';
+import { useWizardContext, EVENTS, STEPS as STEPS$1, STEPS_PROPS, WIZARD_MODALS } from '@bloobirds-it/wizard-modal-context';
+import { useTranslation, Trans } from 'react-i18next';
+import { useVisible, Dropdown, SearchInput, Item, Text, ModalContent, ModalFooter, Button, Spinner, createToast, TextArea, DateTimePicker, MultiSelect, CheckItem, Select, Input, Checkbox, ModalSection, Icon, IconButton, Label, RadioGroup, Radio, ChipGroup, Chip, useToasts, Tooltip, Callout, Skeleton, ShortTermRelativeDatePicker, useHover, CardButton, Modal, ModalHeader, ModalTitle, ModalCloseIcon } from '@bloobirds-it/flamingo-ui';
+import { useDebounce, useDataModel, useActiveUserId, useUserHelpers, useIsB2CAccount, useUserTimeZone, useCustomTasks, useActiveAccountId, useActiveUserSettings, useNotifications, useObjectCreationSettings, useSalesforceDataModel, useBobject, useCadenceInfo, useMeetingReportResult, usePicklist, useQualifyingQuestions, useDebouncedCallback, useIsNoStatusPlanAccount, useStatus, useBaseSetEmailVariablesValues, useMinimizableModals, checkIsOverdue, useOpenSkipTaskModal, useSkipModal, useQuickLogActivity, useUserSettings, useFullSalesEnabled, useCopilotEnabled, useMarkAsReported } from '@bloobirds-it/hooks';
+import { api, injectReferencesSearchProcess, getValueFromLogicRole, injectReferencesGetProcess, getFieldByLogicRole, getIsSales, getFieldTextById, getTextFromLogicRole, segToTime, getFieldById, getFieldsByType, isHtml, isLead, toSentenceCase, getOpportunityById, isContactSalesforce, isCompany, isOpportunity, getCurrentSalesforceStatusField, getBobjectFromLogicRole, getReferencedBobject, getNameFieldLRFromBobjectType, keepPreviousResponse, ellipsis, formatDate, add, getUserTimeZone, getSobjectTypeFromBobject, isScheduledTask, isCadenceTask, isCallTask, isEmailTask, isAutomatedEmailTask, isLinkedinMessageTask, isMeetingTypeTask, openWhatsAppWeb, EMAIL_MODE, injectReferencedBobjects, removeScrollOfBox, recoverScrollOfBox, companyUrl, leadUrl } from '@bloobirds-it/utils';
+import { useMachine } from '@xstate/react';
+import { ConfigureCadenceStep, StopCadenceModal, CadenceControlModal, RescheduleCadence } from '@bloobirds-it/cadence';
+import { ChangeStatusModal as ChangeStatusModal$1 } from '@bloobirds-it/change-status';
+import { LEAD_FIELDS_LOGIC_ROLE, ACTIVITY_FIELDS_LOGIC_ROLE, CALL_RESULTS_LOGIC_ROLE, BobjectTypes, ACTIVITY_DIRECTION, COMPANY_FIELDS_LOGIC_ROLE, PITCH_DONE_VALUES_LOGIC_ROLE, UserHelperKeys, CUSTOM_TASK_LOGIC_ROLE, REPORTED_VALUES_LOGIC_ROLE, TASK_FIELDS_LOGIC_ROLE, TASK_TYPE, TASK_STATUS_VALUE_LOGIC_ROLE, TASK_ACTION_VALUE, TASK_PRIORITY_VALUE, MIXPANEL_EVENTS, ACTIVITY_TYPES, COMPANY_SALES_STATUS_VALUES_LOGIC_ROLE, LEAD_SALES_STATUS_VALUES_LOGIC_ROLE, COMPANY_STAGE_LOGIC_ROLE, COMPANY_STATUS_LOGIC_ROLE, LEAD_STATUS_LOGIC_ROLE, SALESFORCE_LOGIC_ROLES, OPPORTUNITY_FIELDS_LOGIC_ROLE, FIELDS_LOGIC_ROLE, SALES_STATUS_VALUES_LOGIC_ROLES, STATUS_VALUES_LOGIC_ROLES, OPPORTUNITY_STATUS_LOGIC_ROLE, UserPermission, ACTIVITY_TYPES_VALUES_LOGIC_ROLE, MessagesEvents, LEAD_STAGE_LOGIC_ROLE, TemplateStage, TASK_ACTION, CRM, EventTypes, DIRECTION_VALUES_LOGIC_ROLE, ACTIVITY_MODE } from '@bloobirds-it/types';
+import mixpanel from 'mixpanel-browser';
+import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
+import { useController, useForm, useFormContext, FormProvider } from 'react-hook-form';
+import { useGetI18nSpacetime, getI18nSpacetimeLng } from '@bloobirds-it/internationalization';
+import { isToday, addYears, isBefore } from 'date-fns';
+import spacetime from 'spacetime';
+import { CustomDateDialog, AssignedToSelector, BobjectSelector as BobjectSelector$1, RescheduleModal } from '@bloobirds-it/bobjects';
+import useSWR, { useSWRConfig } from 'swr';
+import { useRichTextEditorPlugins, deserialize, RichTextEditor, EditorToolbar, EditorToolbarControlsSection, EditorToolbarFontStylesSection, EditorToolbarTextMarksSection, EditorToolbarListsSection, serialize } from '@bloobirds-it/rich-text-editor';
+import clsx from 'clsx';
+import { createMachine } from 'xstate';
+import { useSpring, config, animated } from '@react-spring/web';
+import { CrmUpdatesContent, useBuildCRMUpdates } from '@bloobirds-it/copilot';
+import sortBy from 'lodash/sortBy';
+import { ActivityFeed } from '@bloobirds-it/activity-feed';
+import { Note } from '@bloobirds-it/notes';
+import { CSSTransition } from 'react-transition-group';
+import range from 'lodash/range';
+import { TaskTypeSelector, PrioritySelector, TaskFeedErrorPage } from '@bloobirds-it/tasks';
+import { useActiveUserSettings as useActiveUserSettings$1, useActivities } from '@bloobirds-it/hooks/src';
+import { OPPORTUNITY_STATUS_LOGIC_ROLE as OPPORTUNITY_STATUS_LOGIC_ROLE$1 } from '@bloobirds-it/types/src';
+import { useEventSubscription } from '@bloobirds-it/plover';
+import { motion, AnimatePresence } from 'framer-motion';
+import startCase from 'lodash/startCase';
+
+function styleInject(css, ref) {
+  if (ref === void 0) ref = {};
+  var insertAt = ref.insertAt;
+  if (!css || typeof document === 'undefined') {
+    return;
+  }
+  var head = document.head || document.getElementsByTagName('head')[0];
+  var style = document.createElement('style');
+  style.type = 'text/css';
+  if (insertAt === 'top') {
+    if (head.firstChild) {
+      head.insertBefore(style, head.firstChild);
+    } else {
+      head.appendChild(style);
+    }
+  } else {
+    head.appendChild(style);
+  }
+  if (style.styleSheet) {
+    style.styleSheet.cssText = css;
+  } else {
+    style.appendChild(document.createTextNode(css));
+  }
+}
+
+var css_248z$y = ".addLeadToActivity-module__content__wraper__Wks2g {\n    display: flex;\n    flex-direction: column;\n    gap: 16px;\n    padding: 0 60px 0;\n    position: relative;\n    background-color: var(--white);\n}\n\n.addLeadToActivity-module__info__wrapper__dLZvV {\n    margin-top: 16px;\n    margin-bottom: 24px;\n}\n\n.addLeadToActivity-module__info__wrapper__dLZvV > div > svg {\n    margin: 28px 32px 28px 16px;\n    padding: 0 !important;\n}\n\n.addLeadToActivity-module__autocomplete__wrapper__O4sfP {\n    margin-bottom: 30px;\n}\n\n.addLeadToActivity-module__autocomplete__wrapper__O4sfP input,\n.addLeadToActivity-module__autocomplete__wrapper__O4sfP input:hover,\n.addLeadToActivity-module__autocomplete__wrapper__O4sfP input:focus {\n    height: 24px;\n    box-shadow: none;\n    outline: none;\n    border: none;\n}\n\n.addLeadToActivity-module__confirm__button__nA-6R > button {\n    margin-left: 15px;\n}\n\n.addLeadToActivity-module__search_container__YSNZ7 {\n    max-height: 200px;\n    overflow-y: auto;\n    overflow-x: hidden;\n}\n\n.addLeadToActivity-module_item__3UrwG {\n    width: 460px;\n}\n\n.addLeadToActivity-module__lead__info__-Ztdc {\n    margin-left: 8px;\n}\n\n.addLeadToActivity-module__lead__company__oTvHj {\n    display: flex;\n    align-items: center;\n}\n\n.addLeadToActivity-module__lead__company__oTvHj > * {\n    margin-right: 4px;\n}\n\n.addLeadToActivity-module__company__icon__gUjgD {\n    flex-shrink: 0;\n}\n\n.addLeadToActivity-module_skip_button__M6-eW {\n    margin-left: auto;\n    margin-right: 16px;\n}\n\n.addLeadToActivity-module_back_button__aFFS1 {\n    margin-left: 0;\n    margin-right: auto;\n}\n\n";
+var styles$y = {"_content__wraper":"addLeadToActivity-module__content__wraper__Wks2g","_info__wrapper":"addLeadToActivity-module__info__wrapper__dLZvV","_autocomplete__wrapper":"addLeadToActivity-module__autocomplete__wrapper__O4sfP","_confirm__button":"addLeadToActivity-module__confirm__button__nA-6R","_search_container":"addLeadToActivity-module__search_container__YSNZ7","item":"addLeadToActivity-module_item__3UrwG","_lead__info":"addLeadToActivity-module__lead__info__-Ztdc","_lead__company":"addLeadToActivity-module__lead__company__oTvHj","_company__icon":"addLeadToActivity-module__company__icon__gUjgD","skip_button":"addLeadToActivity-module_skip_button__M6-eW","back_button":"addLeadToActivity-module_back_button__aFFS1"};
+styleInject(css_248z$y);
+
+function _typeof$Q(obj) { "@babel/helpers - typeof"; return _typeof$Q = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$Q(obj); }
+function _defineProperty$P(obj, key, value) { key = _toPropertyKey$P(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$P(arg) { var key = _toPrimitive$P(arg, "string"); return _typeof$Q(key) === "symbol" ? key : String(key); }
+function _toPrimitive$P(input, hint) { if (_typeof$Q(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$Q(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$J(arr, i) { return _arrayWithHoles$J(arr) || _iterableToArrayLimit$J(arr, i) || _unsupportedIterableToArray$J(arr, i) || _nonIterableRest$J(); }
+function _nonIterableRest$J() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$J(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$J(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$J(o, minLen); }
+function _arrayLikeToArray$J(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$J(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$J(arr) { if (Array.isArray(arr)) return arr; }
+var SearchLeads = function SearchLeads(_ref) {
+  var accountId = _ref.accountId,
+    onLeadIdChange = _ref.onLeadIdChange;
+  var _useVisible = useVisible(false),
+    ref = _useVisible.ref,
+    visible = _useVisible.visible,
+    setVisible = _useVisible.setVisible;
+  var _useState = useState([]),
+    _useState2 = _slicedToArray$J(_useState, 2),
+    options = _useState2[0],
+    setOptions = _useState2[1];
+  var _useState3 = useState(''),
+    _useState4 = _slicedToArray$J(_useState3, 2),
+    searchValue = _useState4[0],
+    setSearchValue = _useState4[1];
+  var _useState5 = useState(null),
+    _useState6 = _slicedToArray$J(_useState5, 2),
+    selectedValue = _useState6[0],
+    setSelectedValue = _useState6[1];
+  var debounceSearchValue = useDebounce(searchValue, 200);
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  useEffect(function () {
+    if (debounceSearchValue) {
+      api.post("/bobjects/".concat(accountId, "/Lead/search"), {
+        injectReferences: true,
+        query: _defineProperty$P({}, LEAD_FIELDS_LOGIC_ROLE.FULL_NAME, [debounceSearchValue]),
+        formFields: true,
+        pageSize: 1000
+      }).then(function (payload) {
+        // Fetch all leads and bring the company to print the name
+        var payloadWithReferences = injectReferencesSearchProcess(payload === null || payload === void 0 ? void 0 : payload.data);
+        var newOptions = payloadWithReferences.contents.map(function (lead) {
+          return {
+            id: lead.id.value,
+            name: getValueFromLogicRole(lead, LEAD_FIELDS_LOGIC_ROLE.FULL_NAME),
+            email: getValueFromLogicRole(lead, LEAD_FIELDS_LOGIC_ROLE.EMAIL),
+            jobTitle: getValueFromLogicRole(lead, LEAD_FIELDS_LOGIC_ROLE.JOB_TITLE),
+            bobject: lead
+          };
+        });
+        setOptions(newOptions);
+      });
+    }
+  }, [debounceSearchValue]);
+  useEffect(function () {
+    setVisible(options.length > 0 && selectedValue !== searchValue);
+  }, [options.length, selectedValue, searchValue]);
+  var handleSelect = function handleSelect(value) {
+    var selectedLead = options.find(function (option) {
+      return option.id === value;
+    });
+    onLeadIdChange(selectedLead === null || selectedLead === void 0 ? void 0 : selectedLead.bobject);
+    setSearchValue(selectedLead === null || selectedLead === void 0 ? void 0 : selectedLead.name);
+    setSelectedValue(selectedLead === null || selectedLead === void 0 ? void 0 : selectedLead.name);
+  };
+  return /*#__PURE__*/jsx(Dropdown, {
+    ref: ref,
+    width: "100%",
+    visible: visible,
+    arrow: false,
+    anchor: /*#__PURE__*/jsx("div", {
+      style: {
+        width: '100%'
+      },
+      children: /*#__PURE__*/jsx(SearchInput, {
+        color: "bloobirds",
+        size: "small",
+        width: "100%",
+        placeholder: t('common.searchLeads'),
+        value: searchValue,
+        onChange: setSearchValue
+      })
+    }),
+    children: /*#__PURE__*/jsx("div", {
+      className: styles$y._search_container,
+      children: options.map(function (option) {
+        return /*#__PURE__*/jsx(Item, {
+          onClick: handleSelect,
+          className: styles$y.item,
+          value: option.id,
+          icon: "person",
+          iconColor: "softPeanut",
+          children: /*#__PURE__*/jsxs("div", {
+            className: styles$y._lead__info,
+            children: [/*#__PURE__*/jsx(Text, {
+              color: "peanut",
+              size: "m",
+              weight: "medium",
+              ellipsis: 30,
+              children: option === null || option === void 0 ? void 0 : option.name
+            }), /*#__PURE__*/jsxs(Text, {
+              color: "softPeanut",
+              size: "s",
+              inline: true,
+              className: styles$y._lead__company,
+              children: [option === null || option === void 0 ? void 0 : option.email, (option === null || option === void 0 ? void 0 : option.email) && (option === null || option === void 0 ? void 0 : option.jobTitle) && ' | ', (option === null || option === void 0 ? void 0 : option.jobTitle) || '']
+            })]
+          })
+        }, option.id);
+      })
+    })
+  });
+};
+
+function _typeof$P(obj) { "@babel/helpers - typeof"; return _typeof$P = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$P(obj); }
+function _defineProperty$O(obj, key, value) { key = _toPropertyKey$O(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$O(arg) { var key = _toPrimitive$O(arg, "string"); return _typeof$P(key) === "symbol" ? key : String(key); }
+function _toPrimitive$O(input, hint) { if (_typeof$P(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$P(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$I(arr, i) { return _arrayWithHoles$I(arr) || _iterableToArrayLimit$I(arr, i) || _unsupportedIterableToArray$I(arr, i) || _nonIterableRest$I(); }
+function _nonIterableRest$I() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$I(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$I(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$I(o, minLen); }
+function _arrayLikeToArray$I(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$I(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$I(arr) { if (Array.isArray(arr)) return arr; }
+var AddLeadToActivity = function AddLeadToActivity(_ref) {
+  var handleBack = _ref.handleBack,
+    handleSkip = _ref.handleSkip,
+    buttonsConfig = _ref.buttonsConfig,
+    wizardKey = _ref.wizardKey,
+    handleNext = _ref.handleNext,
+    send = _ref.send;
+  var _useWizardContext = useWizardContext(),
+    getWizardProperties = _useWizardContext.getWizardProperties,
+    accountId = _useWizardContext.accountId,
+    addMetaToWizardProperties = _useWizardContext.addMetaToWizardProperties;
+  var _getWizardProperties = getWizardProperties(wizardKey),
+    activity = _getWizardProperties.bobject;
+  var _useState = useState(false),
+    _useState2 = _slicedToArray$I(_useState, 2),
+    isSubmitting = _useState2[0],
+    setIsSubmitting = _useState2[1];
+  var _useState3 = useState(null),
+    _useState4 = _slicedToArray$I(_useState3, 2),
+    lead = _useState4[0],
+    setLead = _useState4[1];
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards.steps.addLeadToActivityModal'
+    }),
+    t = _useTranslation.t;
+  var _useTranslation2 = useTranslation('translation', {
+      keyPrefix: 'wizards.common'
+    }),
+    commonT = _useTranslation2.t;
+  var assignLead = function assignLead() {
+    var _activity$id, _lead$id;
+    setIsSubmitting(true);
+    api.patch("/bobjects/".concat(activity === null || activity === void 0 ? void 0 : (_activity$id = activity.id) === null || _activity$id === void 0 ? void 0 : _activity$id.value, "/raw"), {
+      contents: _defineProperty$O({}, ACTIVITY_FIELDS_LOGIC_ROLE.LEAD, lead === null || lead === void 0 ? void 0 : (_lead$id = lead.id) === null || _lead$id === void 0 ? void 0 : _lead$id.value),
+      params: {}
+    }).then(function () {
+      var _activity$id2;
+      setIsSubmitting(false);
+      if (lead) {
+        createToast({
+          message: t('toast.success'),
+          type: 'success'
+        });
+      }
+      api.get("/bobjects/".concat(activity === null || activity === void 0 ? void 0 : (_activity$id2 = activity.id) === null || _activity$id2 === void 0 ? void 0 : _activity$id2.value, "/form?injectReferences=true"), {}).then(function (updatedActivity) {
+        if (updatedActivity !== null && updatedActivity !== void 0 && updatedActivity.data) {
+          var activityBobjectUpdated = injectReferencesGetProcess(updatedActivity === null || updatedActivity === void 0 ? void 0 : updatedActivity.data);
+          addMetaToWizardProperties(wizardKey, {
+            referenceBobject: lead,
+            bobject: activityBobjectUpdated
+          });
+        }
+        handleNext === null || handleNext === void 0 ? void 0 : handleNext();
+      });
+      send === null || send === void 0 ? void 0 : send('UPDATE_REFERENCE_BOBJECT', {
+        referenceBobjectSelected: lead
+      });
+    })["catch"](function () {
+      createToast({
+        message: t('toast.error'),
+        type: 'error'
+      });
+    });
+  };
+  var showSkipButton = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton : false;
+  var hasPreviousStep = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep : true;
+  var openCadenceControlOnClose = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip : false;
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsx(ModalContent, {
+      children: /*#__PURE__*/jsxs("div", {
+        className: styles$y._content__wraper,
+        children: [/*#__PURE__*/jsx(Text, {
+          size: "m",
+          color: "softPeanut",
+          children: t('subtitle')
+        }), /*#__PURE__*/jsx("div", {
+          className: styles$y._autocomplete__wrapper,
+          children: /*#__PURE__*/jsx(SearchLeads, {
+            accountId: accountId,
+            onLeadIdChange: setLead
+          })
+        })]
+      })
+    }), /*#__PURE__*/jsxs(ModalFooter, {
+      children: [hasPreviousStep && /*#__PURE__*/jsx(Button, {
+        variant: "clear",
+        onClick: handleBack,
+        className: styles$y.back_button,
+        children: (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.previousButtonTitle) || commonT('back')
+      }), showSkipButton && /*#__PURE__*/jsx(Button, {
+        variant: "secondary",
+        onClick: function onClick() {
+          return handleSkip(openCadenceControlOnClose);
+        },
+        className: styles$y.skip_button,
+        children: commonT('skipWizard')
+      }), /*#__PURE__*/jsx(Button, {
+        dataTest: "Form-Save",
+        onClick: assignLead,
+        children: isSubmitting ? /*#__PURE__*/jsx(Spinner, {
+          color: "white",
+          size: 14,
+          name: "loadingCircle"
+        }) : (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.nextButtonTitle) || commonT('next')
+      })]
+    })]
+  });
+};
+
+var useActivityRelatedInfo = function useActivityRelatedInfo(wizardKey) {
+  var _getFieldByLogicRole, _getFieldByLogicRole2, _getFieldByLogicRole3;
+  var _useWizardContext = useWizardContext(),
+    getWizardProperties = _useWizardContext.getWizardProperties,
+    addMetaToWizardProperties = _useWizardContext.addMetaToWizardProperties;
+  var dataModel = useDataModel();
+  var _getWizardProperties = getWizardProperties(wizardKey),
+    activity = _getWizardProperties.bobject,
+    referenceBobject = _getWizardProperties.referenceBobject,
+    activityLead = _getWizardProperties.activityLead,
+    activityCompany = _getWizardProperties.activityCompany,
+    activityOpportunity = _getWizardProperties.activityOpportunity,
+    referenceBobjectIsSales = _getWizardProperties.referenceBobjectIsSales;
+  activityLead = activityLead || ((_getFieldByLogicRole = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.LEAD)) === null || _getFieldByLogicRole === void 0 ? void 0 : _getFieldByLogicRole.referencedBobject);
+  activityCompany = activityCompany || ((_getFieldByLogicRole2 = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.COMPANY)) === null || _getFieldByLogicRole2 === void 0 ? void 0 : _getFieldByLogicRole2.referencedBobject);
+  activityOpportunity = activityOpportunity || ((_getFieldByLogicRole3 = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.OPPORTUNITY)) === null || _getFieldByLogicRole3 === void 0 ? void 0 : _getFieldByLogicRole3.referencedBobject);
+  referenceBobject = referenceBobject || activityLead || activityCompany;
+  referenceBobjectIsSales = referenceBobjectIsSales || (referenceBobject ? getIsSales(dataModel, referenceBobject) : false);
+  addMetaToWizardProperties(wizardKey, {
+    activityCompany: activityCompany,
+    activityLead: activityLead,
+    activityOpportunity: activityOpportunity,
+    referenceBobjectIsSales: referenceBobjectIsSales,
+    referenceBobject: referenceBobject
+  });
+  return {
+    activityCompany: activityCompany,
+    activityLead: activityLead,
+    activityOpportunity: activityOpportunity,
+    referenceBobjectIsSales: referenceBobjectIsSales,
+    referenceBobject: referenceBobject
+  };
+};
+
+var css_248z$x = ".bobjectForm-module__form__content__V-2AJ {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 20px;\n  margin-left: 15px;\n}\n\n.bobjectForm-module__field__wrapper__p3bfA {\n  width: 47%;\n}\n\n.bobjectForm-module_skip_button__-nnEo {\n  margin-left: auto;\n  margin-right: 16px;\n}\n\n.bobjectForm-module_back_button__ya5NW {\n  margin-left: 0px;\n  margin-right: auto;\n}\n";
+var styles$x = {"_form__content":"bobjectForm-module__form__content__V-2AJ","_field__wrapper":"bobjectForm-module__field__wrapper__p3bfA","skip_button":"bobjectForm-module_skip_button__-nnEo","back_button":"bobjectForm-module_back_button__ya5NW"};
+styleInject(css_248z$x);
+
+function _typeof$O(obj) { "@babel/helpers - typeof"; return _typeof$O = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$O(obj); }
+function ownKeys$D(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$D(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$D(Object(source), !0).forEach(function (key) { _defineProperty$N(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$D(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$N(obj, key, value) { key = _toPropertyKey$N(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$N(arg) { var key = _toPrimitive$N(arg, "string"); return _typeof$O(key) === "symbol" ? key : String(key); }
+function _toPrimitive$N(input, hint) { if (_typeof$O(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$O(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var BobjectFormField = function BobjectFormField(_ref) {
+  var _dataModelField, _dataModelField2;
+  var label = _ref.label,
+    name = _ref.name,
+    defaultValue = _ref.defaultValue,
+    control = _ref.control,
+    fieldBobjectType = _ref.fieldBobjectType,
+    required = _ref.required,
+    handleOnChange = _ref.handleOnChange,
+    _ref$size = _ref.size,
+    size = _ref$size === void 0 ? 'medium' : _ref$size;
+  var dataModel = useDataModel();
+  var dataModelField = dataModel === null || dataModel === void 0 ? void 0 : dataModel.findFieldByLogicRole(name);
+  if (!dataModelField) {
+    dataModelField = dataModel === null || dataModel === void 0 ? void 0 : dataModel.findFieldById(name);
+  }
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards.steps.bobjectForm'
+    }),
+    t = _useTranslation.t;
+  var type = (_dataModelField = dataModelField) === null || _dataModelField === void 0 ? void 0 : _dataModelField.fieldType;
+  var picklistValues = (_dataModelField2 = dataModelField) === null || _dataModelField2 === void 0 ? void 0 : _dataModelField2.values;
+  var formField = null;
+  useEffect(function () {
+    onChange(type !== 'DATE' && type !== 'DATETIME' ? defaultValue : new Date(defaultValue));
+  }, [defaultValue]);
+  var _useController = useController({
+      control: control,
+      name: name,
+      defaultValue: defaultValue,
+      rules: {
+        required: {
+          value: type != 'boolean' ? required : false,
+          message: t('requiredMessage')
+        }
+      }
+    }),
+    _useController$field = _useController.field,
+    value = _useController$field.value,
+    onChangeController = _useController$field.onChange,
+    error = _useController.fieldState.error;
+  var onChange = function onChange(value) {
+    handleOnChange === null || handleOnChange === void 0 ? void 0 : handleOnChange(name, value, fieldBobjectType);
+    onChangeController(value);
+  };
+  switch (type) {
+    case 'TEXT':
+    case 'EMAIL':
+    case 'URL':
+    case 'DOUBLE':
+      formField = /*#__PURE__*/jsx(Input, {
+        width: "100%",
+        name: name,
+        placeholder: "".concat(label).concat(required ? ' *' : ''),
+        onChange: onChange,
+        type: type === 'EMAIL' ? 'email' : type === 'URL' ? 'url' : 'text',
+        error: error === null || error === void 0 ? void 0 : error.message,
+        defaultValue: defaultValue,
+        value: value,
+        size: size
+      });
+      break;
+    case 'PICKLIST':
+      formField = /*#__PURE__*/jsxs(Select, {
+        width: "100%",
+        placeholder: "".concat(label).concat(required ? ' *' : ''),
+        onChange: onChange,
+        value: value,
+        error: error === null || error === void 0 ? void 0 : error.message,
+        autocomplete: picklistValues.length > 6,
+        size: size,
+        defaultValue: defaultValue,
+        children: [/*#__PURE__*/jsx(Item, {
+          value: "",
+          children: t('none')
+        }), picklistValues.map(function (answer) {
+          return /*#__PURE__*/jsx(Item, {
+            value: answer.id,
+            label: answer.name,
+            children: answer.name
+          }, answer.id);
+        })]
+      });
+      break;
+    case 'boolean':
+      formField = /*#__PURE__*/jsx(Checkbox, {
+        size: 'small',
+        disableHoverStyle: true,
+        onClick: onChange,
+        defaultChecked: !!defaultValue,
+        children: /*#__PURE__*/jsx(Text, {
+          size: "m",
+          children: label
+        })
+      });
+      break;
+    case 'MULTI_PICKLIST':
+      formField = /*#__PURE__*/jsx(MultiSelect, {
+        autocomplete: picklistValues.length > 6,
+        size: "medium",
+        placeholder: "".concat(label).concat(required ? ' *' : ''),
+        onChange: onChange,
+        error: error === null || error === void 0 ? void 0 : error.message,
+        value: value,
+        width: "100%",
+        children: picklistValues.map(function (answer) {
+          return /*#__PURE__*/jsx(CheckItem, {
+            value: answer.id,
+            label: answer.name,
+            children: answer.name
+          }, answer.id);
+        })
+      });
+      break;
+    case 'DATE':
+    case 'DATETIME':
+      formField = /*#__PURE__*/jsx(DateTimePicker, _objectSpread$D({
+        width: "100%",
+        withTimePicker: type == 'DATETIME',
+        placeholder: "".concat(label).concat(required ? ' *' : ''),
+        onChange: onChange,
+        error: error === null || error === void 0 ? void 0 : error.message
+      }, defaultValue !== undefined && {
+        defaultValue: new Date(defaultValue)
+      }));
+      break;
+    case 'textarea':
+      formField = /*#__PURE__*/jsx(TextArea, {
+        onChange: onChange,
+        defaultValue: defaultValue,
+        placeholder: "".concat(label).concat(required ? ' *' : ''),
+        width: "100%",
+        minRows: 3,
+        maxRows: 3,
+        error: error === null || error === void 0 ? void 0 : error.message,
+        value: value
+      });
+      break;
+  }
+  return formField;
+};
+
+function _slicedToArray$H(arr, i) { return _arrayWithHoles$H(arr) || _iterableToArrayLimit$H(arr, i) || _unsupportedIterableToArray$H(arr, i) || _nonIterableRest$H(); }
+function _nonIterableRest$H() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$H(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$H(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$H(o, minLen); }
+function _arrayLikeToArray$H(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$H(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$H(arr) { if (Array.isArray(arr)) return arr; }
+var BobjectForm = function BobjectForm(_ref) {
+  var handleBack = _ref.handleBack,
+    handleSkip = _ref.handleSkip,
+    buttonsConfig = _ref.buttonsConfig,
+    wizardKey = _ref.wizardKey,
+    handleNext = _ref.handleNext,
+    machineContext = _ref.machineContext,
+    customObjectConfig = _ref.customObjectConfig;
+  var _useWizardContext = useWizardContext(),
+    getWizardProperties = _useWizardContext.getWizardProperties,
+    accountId = _useWizardContext.accountId;
+  var _getWizardProperties = getWizardProperties(wizardKey),
+    referenceBobject = _getWizardProperties.referenceBobject;
+  var _useState = useState(false),
+    _useState2 = _slicedToArray$H(_useState, 2),
+    isSubmitting = _useState2[0],
+    setIsSubmitting = _useState2[1];
+  var _useState3 = useState(null),
+    _useState4 = _slicedToArray$H(_useState3, 2),
+    selectedOpportunityObject = _useState4[0],
+    setSelectedOpportunityObject = _useState4[1];
+  var _useActivityRelatedIn = useActivityRelatedInfo(wizardKey),
+    activityCompany = _useActivityRelatedIn.activityCompany;
+  var userId = useActiveUserId();
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards.steps.bobjectForm'
+    }),
+    t = _useTranslation.t;
+  var _useTranslation2 = useTranslation('translation', {
+      keyPrefix: 'wizards.common'
+    }),
+    commonT = _useTranslation2.t;
+  useEffect(function () {
+    if (machineContext !== null && machineContext !== void 0 && machineContext.selectedOpportunity) {
+      var opportunityId = machineContext.selectedOpportunity.split('/')[2];
+      api.get("/bobjects/".concat(accountId, "/Opportunity/").concat(opportunityId, "/form")).then(function (opportunity) {
+        console.log('[BOBJECT FORM] opportunityBobject', opportunity);
+        setSelectedOpportunityObject(opportunity === null || opportunity === void 0 ? void 0 : opportunity.data);
+      });
+    }
+  }, [machineContext === null || machineContext === void 0 ? void 0 : machineContext.selectedOpportunity]);
+  var _useForm = useForm(),
+    control = _useForm.control,
+    handleSubmit = _useForm.handleSubmit;
+  var createOrUpdateBobject = function createOrUpdateBobject(formData) {
+    setIsSubmitting(true);
+    if (selectedOpportunityObject) {
+      var _selectedOpportunityO;
+      api.patch("/bobjects/".concat(accountId, "/Opportunity/").concat(selectedOpportunityObject === null || selectedOpportunityObject === void 0 ? void 0 : (_selectedOpportunityO = selectedOpportunityObject.id) === null || _selectedOpportunityO === void 0 ? void 0 : _selectedOpportunityO.objectId, "/raw"), formData).then(function () {
+        return onComplete();
+      })["catch"](function (e) {
+        var _e$response, _e$response$data, _e$response2, _e$response2$data;
+        createToast({
+          message: t('toasts.errorUpdating', {
+            error: e !== null && e !== void 0 && (_e$response = e.response) !== null && _e$response !== void 0 && (_e$response$data = _e$response.data) !== null && _e$response$data !== void 0 && _e$response$data.message ? ": ".concat(e === null || e === void 0 ? void 0 : (_e$response2 = e.response) === null || _e$response2 === void 0 ? void 0 : (_e$response2$data = _e$response2.data) === null || _e$response2$data === void 0 ? void 0 : _e$response2$data.message) : '.'
+          }),
+          type: 'error'
+        });
+        setIsSubmitting(false);
+      });
+    } else {
+      var _referenceBobject$id;
+      formData.OPPORTUNITY__AUTHOR = userId;
+      formData.OPPORTUNITY__ASSIGNED_TO = userId;
+      formData.OPPORTUNITY__LEAD_PRIMARY_CONTACT = referenceBobject === null || referenceBobject === void 0 ? void 0 : (_referenceBobject$id = referenceBobject.id) === null || _referenceBobject$id === void 0 ? void 0 : _referenceBobject$id.value;
+      if (activityCompany) {
+        var _activityCompany$id;
+        formData.OPPORTUNITY__COMPANY = activityCompany === null || activityCompany === void 0 ? void 0 : (_activityCompany$id = activityCompany.id) === null || _activityCompany$id === void 0 ? void 0 : _activityCompany$id.value;
+      }
+      api.post("/bobjects/".concat(accountId, "/Opportunity"), {
+        contents: formData,
+        params: {
+          duplicateValidation: true
+        }
+      }).then(function (response) {
+        var _response$data;
+        if (response !== null && response !== void 0 && (_response$data = response.data) !== null && _response$data !== void 0 && _response$data.objectId) {
+          var _response$data2, _response$data3;
+          api.get("/bobjects/".concat(response === null || response === void 0 ? void 0 : (_response$data2 = response.data) === null || _response$data2 === void 0 ? void 0 : _response$data2.accountId, "/Opportunity/").concat(response === null || response === void 0 ? void 0 : (_response$data3 = response.data) === null || _response$data3 === void 0 ? void 0 : _response$data3.objectId, "/form")).then(function (opportunity) {
+            setSelectedOpportunityObject(opportunity === null || opportunity === void 0 ? void 0 : opportunity.data);
+            onComplete(opportunity === null || opportunity === void 0 ? void 0 : opportunity.data);
+          });
+        } else {
+          onComplete();
+        }
+      })["catch"](function (e) {
+        var _e$response3, _e$response3$data, _e$response4, _e$response4$data;
+        createToast({
+          message: t('toasts.errorCreating', {
+            error: e !== null && e !== void 0 && (_e$response3 = e.response) !== null && _e$response3 !== void 0 && (_e$response3$data = _e$response3.data) !== null && _e$response3$data !== void 0 && _e$response3$data.message ? ": ".concat(e === null || e === void 0 ? void 0 : (_e$response4 = e.response) === null || _e$response4 === void 0 ? void 0 : (_e$response4$data = _e$response4.data) === null || _e$response4$data === void 0 ? void 0 : _e$response4$data.message) : '.'
+          }),
+          type: 'error'
+        });
+        setIsSubmitting(false);
+      });
+    }
+    function onComplete() {
+      var oppObject = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      setIsSubmitting(false);
+      handleNext(oppObject || selectedOpportunityObject);
+    }
+  };
+  var showSkipButton = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton : false;
+  var hasPreviousStep = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep : true;
+  var openCadenceControlOnClose = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip : false;
+  var columns = [[], []];
+  customObjectConfig === null || customObjectConfig === void 0 ? void 0 : customObjectConfig.bloobirdsFields.forEach(function (field, index) {
+    return columns[index % 2].push(field);
+  });
+  return (!(machineContext !== null && machineContext !== void 0 && machineContext.selectedOpportunity) || selectedOpportunityObject) && /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsx(ModalContent, {
+      children: /*#__PURE__*/jsx(ModalSection, {
+        size: "m",
+        title: customObjectConfig !== null && customObjectConfig !== void 0 && customObjectConfig.descriptionHeader || selectedOpportunityObject ? t('editTitle') : t('createTitle'),
+        children: /*#__PURE__*/jsx("div", {
+          className: styles$x._form__content,
+          children: customObjectConfig === null || customObjectConfig === void 0 ? void 0 : customObjectConfig.bloobirdsFields.map(function (field, index) {
+            var defaultValue = getValueFromLogicRole(selectedOpportunityObject, field.name) || getFieldTextById(selectedOpportunityObject, field.name);
+            return /*#__PURE__*/jsx("div", {
+              className: styles$x._field__wrapper,
+              children: /*#__PURE__*/jsx(BobjectFormField, {
+                name: field.name,
+                label: field.label,
+                required: field.required,
+                defaultValue: defaultValue,
+                control: control
+              })
+            }, index);
+          })
+        })
+      })
+    }), /*#__PURE__*/jsxs(ModalFooter, {
+      children: [hasPreviousStep && /*#__PURE__*/jsx(Button, {
+        variant: "clear",
+        onClick: handleBack,
+        className: styles$x.back_button,
+        children: (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.previousButtonTitle) || commonT('back')
+      }), showSkipButton && /*#__PURE__*/jsx(Button, {
+        variant: "secondary",
+        onClick: function onClick() {
+          return handleSkip(openCadenceControlOnClose);
+        },
+        className: styles$x.skip_button,
+        children: commonT('skipWizard')
+      }), /*#__PURE__*/jsx(Button, {
+        dataTest: "Form-Save",
+        onClick: handleSubmit(createOrUpdateBobject),
+        children: isSubmitting ? /*#__PURE__*/jsx(Spinner, {
+          color: "white",
+          size: 14,
+          name: "loadingCircle"
+        }) : (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.nextButtonTitle) || commonT('next')
+      })]
+    })]
+  });
+};
+
+function _typeof$N(obj) { "@babel/helpers - typeof"; return _typeof$N = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$N(obj); }
+function ownKeys$C(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$C(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$C(Object(source), !0).forEach(function (key) { _defineProperty$M(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$C(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$M(obj, key, value) { key = _toPropertyKey$M(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$M(arg) { var key = _toPrimitive$M(arg, "string"); return _typeof$N(key) === "symbol" ? key : String(key); }
+function _toPrimitive$M(input, hint) { if (_typeof$N(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$N(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _toConsumableArray$4(arr) { return _arrayWithoutHoles$4(arr) || _iterableToArray$5(arr) || _unsupportedIterableToArray$G(arr) || _nonIterableSpread$4(); }
+function _nonIterableSpread$4() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray$5(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function _arrayWithoutHoles$4(arr) { if (Array.isArray(arr)) return _arrayLikeToArray$G(arr); }
+function _slicedToArray$G(arr, i) { return _arrayWithHoles$G(arr) || _iterableToArrayLimit$G(arr, i) || _unsupportedIterableToArray$G(arr, i) || _nonIterableRest$G(); }
+function _nonIterableRest$G() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$G(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$G(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$G(o, minLen); }
+function _arrayLikeToArray$G(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$G(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$G(arr) { if (Array.isArray(arr)) return arr; }
+var useCallResultStepData = function useCallResultStepData(activity, dataModel, contextCallResultStepData) {
+  var contextCallResult = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
+  var initialState;
+  if (contextCallResultStepData) {
+    initialState = contextCallResultStepData;
+  } else {
+    var callResultField = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.CALL_RESULT);
+    var isCorrectContact = callResultField.valueLogicRole === CALL_RESULTS_LOGIC_ROLE.CORRECT_CONTACT || contextCallResult === CALL_RESULTS_LOGIC_ROLE.CORRECT_CONTACT;
+    initialState = {
+      callResult: {
+        fieldId: callResultField.name,
+        value: callResultField.value,
+        logicRole: contextCallResult || callResultField.valueLogicRole,
+        isCorrectContact: isCorrectContact
+      },
+      pitch: {
+        done: false,
+        template: null
+      }
+    };
+  }
+  var _useState = useState(initialState),
+    _useState2 = _slicedToArray$G(_useState, 2),
+    callResultStepData = _useState2[0],
+    setCallResultStepData = _useState2[1];
+  var getCallResultPicklistValues = function getCallResultPicklistValues(dataModel) {
+    var _dataModel$findValues, _dataModel$findValues2;
+    if (!dataModel) return [];
+    return (_dataModel$findValues = dataModel.findValuesByFieldLogicRole(ACTIVITY_FIELDS_LOGIC_ROLE.CALL_RESULT)) === null || _dataModel$findValues === void 0 ? void 0 : (_dataModel$findValues2 = _dataModel$findValues.reduce(function (acc, callResult) {
+      if (!callResult.isEnabled) return acc;
+      var isCorrectContact = callResult.logicRole === CALL_RESULTS_LOGIC_ROLE.CORRECT_CONTACT;
+      return [].concat(_toConsumableArray$4(acc), [_objectSpread$C(_objectSpread$C({}, callResult), isCorrectContact ? {
+        isCorrectContact: true
+      } : {})]);
+    }, [])) === null || _dataModel$findValues2 === void 0 ? void 0 : _dataModel$findValues2.sort(function (a, b) {
+      return a.ordering < b.ordering ? -1 : 1;
+    });
+  };
+  var callResultsPicklistValues = getCallResultPicklistValues(dataModel);
+  return {
+    callResultsPicklistValues: callResultsPicklistValues,
+    callResultStepData: callResultStepData,
+    setCallResultStepData: setCallResultStepData
+  };
+};
+
+function _typeof$M(obj) { "@babel/helpers - typeof"; return _typeof$M = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$M(obj); }
+function ownKeys$B(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$B(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$B(Object(source), !0).forEach(function (key) { _defineProperty$L(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$B(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$L(obj, key, value) { key = _toPropertyKey$L(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$L(arg) { var key = _toPrimitive$L(arg, "string"); return _typeof$M(key) === "symbol" ? key : String(key); }
+function _toPrimitive$L(input, hint) { if (_typeof$M(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$M(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$F(arr, i) { return _arrayWithHoles$F(arr) || _iterableToArrayLimit$F(arr, i) || _unsupportedIterableToArray$F(arr, i) || _nonIterableRest$F(); }
+function _nonIterableRest$F() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$F(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$F(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$F(o, minLen); }
+function _arrayLikeToArray$F(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$F(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$F(arr) { if (Array.isArray(arr)) return arr; }
+//TODO refactor if time
+var patchBobject = function patchBobject(bobjectId, data) {
+  return api.patch("/bobjects/".concat(bobjectId, "/raw"), data);
+};
+var createNextStep = function createNextStep(_ref) {
+  var accountId = _ref.accountId,
+    body = _ref.body;
+  return api.post("/bobjects/".concat(accountId, "/Task"), body);
+};
+var useContactFlowData = function useContactFlowData() {
+  var _useUserHelpers = useUserHelpers(),
+    save = _useUserHelpers.save;
+  function handleSubmit(_ref2) {
+    var _bobjectChanges$Bobje;
+    var activity = _ref2.activity,
+      data = _ref2.data,
+      bobjectChanges = _ref2.bobjectChanges,
+      nextStepData = _ref2.nextStepData;
+    var activityFieldsToUpdate = bobjectChanges === null || bobjectChanges === void 0 ? void 0 : (_bobjectChanges$Bobje = bobjectChanges[BobjectTypes.Activity]) === null || _bobjectChanges$Bobje === void 0 ? void 0 : _bobjectChanges$Bobje.fields;
+    if (bobjectChanges) {
+      Object.entries(bobjectChanges).forEach(function (_ref3) {
+        var _ref4 = _slicedToArray$F(_ref3, 2),
+          key = _ref4[0],
+          value = _ref4[1];
+        if (key === BobjectTypes.Activity) return;
+        if (value) {
+          var idValue = value.idValue,
+            fields = value.fields;
+          if (idValue) {
+            patchBobject(idValue, fields).then(function () {
+              window.dispatchEvent(new CustomEvent('ACTIVE_BOBJECT_UPDATED', {
+                detail: {
+                  type: key
+                }
+              }));
+            });
+          }
+        }
+      });
+    }
+    if (activity !== null && activity !== void 0 && activity.id) {
+      patchBobject(activity === null || activity === void 0 ? void 0 : activity.id.value, _objectSpread$B(_objectSpread$B({}, data), activityFieldsToUpdate !== null && activityFieldsToUpdate !== void 0 ? activityFieldsToUpdate : {})).then(function () {
+        // @ts-ignore
+        save('CALL_AND_REPORT_RESULT');
+
+        //mutate activity and launch side effects
+        window.dispatchEvent(new CustomEvent('ACTIVE_BOBJECT_UPDATED', {
+          detail: {
+            type: BobjectTypes.Activity
+          }
+        }));
+      });
+    }
+    if (nextStepData) {
+      return createNextStep(nextStepData).then(function (response) {
+        window.dispatchEvent(new CustomEvent('ACTIVE_BOBJECT_UPDATED', {
+          detail: {
+            type: BobjectTypes.Task
+          }
+        }));
+        return response;
+      });
+    }
+  }
+  return {
+    handleSubmit: handleSubmit,
+    patchActivity: patchBobject
+  };
+};
+
+var css_248z$w = ".callInfo-module__call_info__j9X2m {\n  display: flex;\n  margin-bottom: 16px;\n}\n\n.callInfo-module__icon__wrapper__MMKLd {\n  background-color: var(--verySoftMelon);\n  border-radius: 24px;\n  position: relative;\n  display: block;\n  flex-shrink: 0;\n  height: 36px;\n  width: 36px;\n  margin: auto 0;\n  margin-right: 8px;\n}\n\n.callInfo-module__icon__wrapper__MMKLd > svg {\n  margin-left: 4px;\n  margin-top: 5px;\n}\n\n.callInfo-module__icon_direction__CGunQ {\n  position: absolute;\n  top: 0px;\n  right: 6px;\n}\n\n.callInfo-module__card__body__DDhHa {\n  flex-shrink: 0;\n  margin: 0 12px;\n  display: flex;\n  flex-direction: column;\n  white-space: pre-line;\n}\n\n.callInfo-module__card__body__DDhHa > p {\n  margin-bottom: 4px;\n}\n\n.callInfo-module__card__info__sgTCh {\n  display: flex;\n  width: 220px;\n  flex-direction: column;\n  align-items: flex-end;\n  margin-left: auto;\n}\n\n.callInfo-module__record_button__yGPUw > button {\n  display: flex;\n}\n\n.callInfo-module__loading_wrapper__GJmBf {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin: 30px 0;\n}\n";
+var styles$w = {"_call_info":"callInfo-module__call_info__j9X2m","_icon__wrapper":"callInfo-module__icon__wrapper__MMKLd","_icon_direction":"callInfo-module__icon_direction__CGunQ","_card__body":"callInfo-module__card__body__DDhHa","_card__info":"callInfo-module__card__info__sgTCh","_record_button":"callInfo-module__record_button__yGPUw","_loading_wrapper":"callInfo-module__loading_wrapper__GJmBf"};
+styleInject(css_248z$w);
+
+var getActivityData = function getActivityData(activity) {
+  var _getFieldByLogicRole, _getFieldByLogicRole2;
+  var company = (_getFieldByLogicRole = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.COMPANY)) === null || _getFieldByLogicRole === void 0 ? void 0 : _getFieldByLogicRole.referencedBobject;
+  var companyName = company && getValueFromLogicRole(company, COMPANY_FIELDS_LOGIC_ROLE.NAME);
+  var date = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.TIME);
+  var direction = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.DIRECTION);
+  var durationInSeconds = getValueFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.CALL_DURATION);
+  var lead = (_getFieldByLogicRole2 = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.LEAD)) === null || _getFieldByLogicRole2 === void 0 ? void 0 : _getFieldByLogicRole2.referencedBobject;
+  var leadName = lead && getValueFromLogicRole(lead, LEAD_FIELDS_LOGIC_ROLE.FULL_NAME);
+  var phone = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.CALL_LEAD_PHONE_NUMBER);
+  var record = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.CALL_RECORD_URL);
+  return {
+    companyName: companyName,
+    leadName: leadName,
+    date: date,
+    direction: direction,
+    duration: durationInSeconds ? segToTime(durationInSeconds, 'hhh mmm sss') : null,
+    phone: phone,
+    record: record
+  };
+};
+var CallInfo = function CallInfo(_ref) {
+  var activity = _ref.activity;
+  var activityData = getActivityData(activity);
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  var _useTranslation2 = useTranslation('translation', {
+      keyPrefix: 'dates'
+    }),
+    dateT = _useTranslation2.t;
+  var isB2CAccount = useIsB2CAccount();
+  var iconDirection = ACTIVITY_DIRECTION.INCOMING !== (activityData === null || activityData === void 0 ? void 0 : activityData.direction) ? 'arrowTopRight' : 'arrowDownLeft';
+  return activityData !== null && activityData !== void 0 && activityData.date ? /*#__PURE__*/jsx(Fragment, {
+    children: /*#__PURE__*/jsxs("div", {
+      className: styles$w._call_info,
+      children: [/*#__PURE__*/jsxs("div", {
+        className: styles$w._icon__wrapper,
+        children: [/*#__PURE__*/jsx(Icon, {
+          name: "phone",
+          color: "melon",
+          size: 28
+        }), (activityData === null || activityData === void 0 ? void 0 : activityData.direction) && /*#__PURE__*/jsx("div", {
+          className: styles$w._icon_direction,
+          children: /*#__PURE__*/jsx(Icon, {
+            name: iconDirection,
+            color: "melon",
+            size: 12
+          })
+        })]
+      }), /*#__PURE__*/jsxs("div", {
+        className: styles$w._card__body,
+        children: [/*#__PURE__*/jsxs(Text, {
+          color: "darkGray",
+          size: "m",
+          ellipsis: 75,
+          children: [t('activityTimelineItem.item.' + (activityData === null || activityData === void 0 ? void 0 : activityData.direction) + 'Call'), ' ', /*#__PURE__*/jsx(Text, {
+            htmlTag: "span",
+            size: "m",
+            weight: "bold",
+            children: activityData === null || activityData === void 0 ? void 0 : activityData.phone
+          }), ' ', t('wizards.steps.callResult.at'), ' ',
+          // @ts-ignore
+          !isToday(activityData === null || activityData === void 0 ? void 0 : activityData.date) && /*#__PURE__*/jsx(Text, {
+            htmlTag: "span",
+            size: "m",
+            weight: "bold",
+            children: useGetI18nSpacetime(activityData === null || activityData === void 0 ? void 0 : activityData.date).format(dateT('shortMonth'))
+          }), ' ', /*#__PURE__*/jsx(Text, {
+            htmlTag: "span",
+            weight: "bold",
+            size: "m",
+            children: useGetI18nSpacetime(activityData === null || activityData === void 0 ? void 0 : activityData.date).format('{time}')
+          })]
+        }), /*#__PURE__*/jsxs(Text, {
+          color: "softPeanut",
+          size: "s",
+          ellipsis: 75,
+          children: [activityData !== null && activityData !== void 0 && activityData.leadName ? "".concat(t('wizards.steps.callResult.with'), " ").concat(activityData === null || activityData === void 0 ? void 0 : activityData.leadName, " ") : null, activityData !== null && activityData !== void 0 && activityData.companyName && !isB2CAccount ? "".concat(t('wizards.steps.callResult.from'), " ").concat(activityData === null || activityData === void 0 ? void 0 : activityData.companyName) : null]
+        })]
+      }), (activityData === null || activityData === void 0 ? void 0 : activityData.record) && /*#__PURE__*/jsx("div", {
+        className: styles$w._record_button,
+        children: /*#__PURE__*/jsx(IconButton, {
+          name: "voicemail",
+          size: 16,
+          onClick: function onClick(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            /*getSignedCallRecordingUrl()
+              .then(url => {
+                window.open(url, '_blank');
+              })
+              .catch(() => {
+                createToast({
+                  message: 'Failed to get the recording, it may have been deleted',
+                  type: 'error',
+                });
+              });*/
+          }
+        })
+      }), /*#__PURE__*/jsx("div", {
+        className: styles$w._card__info,
+        children: (activityData === null || activityData === void 0 ? void 0 : activityData.duration) && /*#__PURE__*/jsx(Text, {
+          size: "s",
+          weight: "medium",
+          children: activityData === null || activityData === void 0 ? void 0 : activityData.duration
+        })
+      })]
+    })
+  }) : /*#__PURE__*/jsx("div", {
+    className: styles$w._loading_wrapper,
+    children: /*#__PURE__*/jsx(Spinner, {
+      name: "loadingCircle"
+    })
+  });
+};
+
+var css_248z$v = ".callResult-module__labels__wrapper__tVObv {\n  display: flex;\n  flex-direction: column;\n  flex-wrap: wrap;\n  max-height: 250px;\n  align-content: space-around;\n}\n\n.callResult-module__label__content__xL4fP {\n  display: flex;\n  flex-direction: column;\n  width: 225px;\n  margin-bottom: 12px;\n}\n\n.callResult-module__label__content__xL4fP > div {\n  font-size: 12px;\n  line-height: 14px;\n}\n\n.callResult-module__section__wrapper__yjtnn {\n  margin-bottom: 16px;\n}\n\n.callResult-module__section__wrapper__yjtnn:last-of-type {\n\n}\n\n.callResult-module__section_title_icon__Lh2hv {\n  margin-right: 8px;\n}\n\n.callResult-module__section_title_text__RHHy5 {\n  padding-top: 2px;\n}\n\n.callResult-module__section_title__wrapper__BFgkx {\n  display: flex;\n  margin-bottom: 24px;\n  box-sizing: border-box;\n}\n\n.callResult-module__section_pitch__wrapper__1N5p2 {\n  display: flex;\n  margin-bottom: 24px;\n  box-sizing: border-box;\n}\n\n.callResult-module__chips__wrapper__-r849 {\n  height: 52px;\n  display: flex;\n  align-items: center;\n}\n\n.callResult-module__buttons__wrapper__cUxlD {\n  justify-content: flex-end;\n  display: flex;\n  width: 100%;\n}\n\n.callResult-module__pitch__wrapper__Jrq0K {\n  margin-top: 8px;\n  display: flex;\n  align-items: center;\n}\n\n.callResult-module__pitch_select__wrapper__R4aUu {\n  margin-left: 15px;\n  flex: 1;\n}\n\n.callResult-module__phone_input_container__4mLIU {\n  display: flex;\n  flex-direction: column;\n  margin-bottom: 12px;\n  align-items: center;\n}\n\n.callResult-module__phone_edit_header__rYuiy {\n  margin-bottom: 24px;\n}\n\n.callResult-module__phone_field_wrapper__AZDxs {\n  align-content: center;\n  margin-left: 16px;\n  margin-bottom: 16px;\n  flex: 1;\n}\n\n.callResult-module__update_property_wrapper__gEMaX {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  margin-bottom: 16px;\n  justify-content: center;\n}\n\n.callResult-module__update_property_wrapper__gEMaX > div {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  width: 50%;\n  margin: 0 auto;\n}\n\n.callResult-module__no_answer_close_text__Tfat7 {\n  margin-left: 8px;\n  align-self: center;\n}\n\n.callResult-module_skip_button__0vapq {\n  margin-left: auto;\n  margin-right: 16px;\n}\n\n.callResult-module_back_button__Fjrot {\n  margin-left: 0;\n  margin-right: auto;\n}\n";
+var styles$v = {"_labels__wrapper":"callResult-module__labels__wrapper__tVObv","_label__content":"callResult-module__label__content__xL4fP","_section__wrapper":"callResult-module__section__wrapper__yjtnn","_section_title_icon":"callResult-module__section_title_icon__Lh2hv","_section_title_text":"callResult-module__section_title_text__RHHy5","_section_title__wrapper":"callResult-module__section_title__wrapper__BFgkx","_section_pitch__wrapper":"callResult-module__section_pitch__wrapper__1N5p2","_chips__wrapper":"callResult-module__chips__wrapper__-r849","_buttons__wrapper":"callResult-module__buttons__wrapper__cUxlD","_pitch__wrapper":"callResult-module__pitch__wrapper__Jrq0K","_pitch_select__wrapper":"callResult-module__pitch_select__wrapper__R4aUu","_phone_input_container":"callResult-module__phone_input_container__4mLIU","_phone_edit_header":"callResult-module__phone_edit_header__rYuiy","_phone_field_wrapper":"callResult-module__phone_field_wrapper__AZDxs","_update_property_wrapper":"callResult-module__update_property_wrapper__gEMaX","_no_answer_close_text":"callResult-module__no_answer_close_text__Tfat7","skip_button":"callResult-module_skip_button__0vapq","back_button":"callResult-module_back_button__Fjrot"};
+styleInject(css_248z$v);
+
+var getPitchDonePicklistValues = function getPitchDonePicklistValues(dataModel) {
+  var _dataModel$findValues;
+  var pitchDonePicklistValues = dataModel === null || dataModel === void 0 ? void 0 : (_dataModel$findValues = dataModel.findValuesByFieldLogicRole(ACTIVITY_FIELDS_LOGIC_ROLE.PITCH_DONE)) === null || _dataModel$findValues === void 0 ? void 0 : _dataModel$findValues.sort(function (a, b) {
+    return a.value < b.value ? -1 : 1;
+  });
+  return {
+    pitchDonePicklistValues: pitchDonePicklistValues
+  };
+};
+var calculateFirstColumnSize = function calculateFirstColumnSize(elements) {
+  if (!elements) return;
+  var calculateHalfNumber = function calculateHalfNumber(elements) {
+    var isExactHalf = elements.length % 2 === 0;
+    return isExactHalf ? elements.length / 2 : Math.floor(elements.length / 2) + 1;
+  };
+  var halfNumber = calculateHalfNumber(elements);
+  return halfNumber >= 6 ? halfNumber : 6;
+};
+
+function _typeof$L(obj) { "@babel/helpers - typeof"; return _typeof$L = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$L(obj); }
+function _slicedToArray$E(arr, i) { return _arrayWithHoles$E(arr) || _iterableToArrayLimit$E(arr, i) || _unsupportedIterableToArray$E(arr, i) || _nonIterableRest$E(); }
+function _nonIterableRest$E() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$E(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$E(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$E(o, minLen); }
+function _arrayLikeToArray$E(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$E(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$E(arr) { if (Array.isArray(arr)) return arr; }
+function ownKeys$A(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$A(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$A(Object(source), !0).forEach(function (key) { _defineProperty$K(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$A(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$K(obj, key, value) { key = _toPropertyKey$K(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$K(arg) { var key = _toPrimitive$K(arg, "string"); return _typeof$L(key) === "symbol" ? key : String(key); }
+function _toPrimitive$K(input, hint) { if (_typeof$L(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$L(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var CallResultColumn = function CallResultColumn(activity, callResultStepData, setCallResultStepData, result) {
+  var _getFieldByLogicRole, _getFieldByLogicRole2, _callResultStepData$c, _callResultStepData$c2;
+  var hasLogicRole = !!(result !== null && result !== void 0 && result.logicRole);
+  var pitchInfo = (_getFieldByLogicRole = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.PITCH)) === null || _getFieldByLogicRole === void 0 ? void 0 : _getFieldByLogicRole.value;
+  var pitchDone = ((_getFieldByLogicRole2 = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.PITCH_DONE)) === null || _getFieldByLogicRole2 === void 0 ? void 0 : _getFieldByLogicRole2.valueLogicRole) || PITCH_DONE_VALUES_LOGIC_ROLE.NO;
+  return /*#__PURE__*/jsx("div", {
+    className: styles$v._label__content,
+    children: /*#__PURE__*/jsx(Label, {
+      value: result.logicRole,
+      dataTest: result.logicRole,
+      uppercase: false,
+      inline: false,
+      align: "center",
+      onClick: function onClick() {
+        setCallResultStepData(_objectSpread$A(_objectSpread$A({}, callResultStepData), {}, {
+          callResult: {
+            fieldId: result.id,
+            value: result.value,
+            logicRole: result.logicRole || result.id,
+            isCorrectContact: result.isCorrectContact
+          },
+          pitch: {
+            done: pitchDone,
+            // @ts-ignore
+            template: pitchInfo
+          }
+        }));
+      },
+      selected: hasLogicRole ? result.logicRole === (callResultStepData === null || callResultStepData === void 0 ? void 0 : (_callResultStepData$c = callResultStepData.callResult) === null || _callResultStepData$c === void 0 ? void 0 : _callResultStepData$c.logicRole) : result.id === (callResultStepData === null || callResultStepData === void 0 ? void 0 : (_callResultStepData$c2 = callResultStepData.callResult) === null || _callResultStepData$c2 === void 0 ? void 0 : _callResultStepData$c2.logicRole),
+      children: result.name
+    })
+  }, "call-result-".concat(result.id));
+};
+var CallResultSelector = function CallResultSelector(_ref) {
+  var callResultsPicklistValues = _ref.callResultsPicklistValues,
+    activity = _ref.activity,
+    callResultStepDataHandler = _ref.callResultStepDataHandler;
+  var _callResultStepDataHa = _slicedToArray$E(callResultStepDataHandler, 2),
+    callResultStepData = _callResultStepDataHa[0],
+    setCallResultStepData = _callResultStepDataHa[1];
+  var firstColumnSize = calculateFirstColumnSize(callResultsPicklistValues);
+  return /*#__PURE__*/jsx("div", {
+    className: styles$v._labels__wrapper,
+    style: {
+      maxHeight: firstColumnSize > 6 ? 315 : 250
+    },
+    children: callResultsPicklistValues !== null && callResultsPicklistValues !== void 0 && callResultsPicklistValues.length ? /*#__PURE__*/jsxs(Fragment, {
+      children: [/*#__PURE__*/jsx("div", {
+        children: callResultsPicklistValues.slice(0, firstColumnSize).map(function (element) {
+          return CallResultColumn(activity, callResultStepData, setCallResultStepData, element);
+        })
+      }), /*#__PURE__*/jsx("div", {
+        children: callResultsPicklistValues.slice(firstColumnSize, callResultsPicklistValues.length + 1).map(function (element) {
+          return CallResultColumn(activity, callResultStepData, setCallResultStepData, element);
+        })
+      })]
+    }) : /*#__PURE__*/jsx(Spinner, {
+      name: "loadingCircle"
+    })
+  });
+};
+
+var css_248z$u = ".recallSection-module_wrapper__lDClz{\n    margin: 8px 0;\n}\n\n.recallSection-module_container__Qmrts {\n    display: flex;\n    align-items: center;\n    flex-direction: column;\n    gap: 8px;\n}\n\n.recallSection-module_container__Qmrts > p,\n.recallSection-module_container__Qmrts > div[class*=\"Checkbox\"] {\n    width: 100%;\n}\n\n.recallSection-module_radioGroup__Rf5b5 {\n    width: 60%;\n}\n\n.recallSection-module_radioGroup__Rf5b5 > div {\n    display: flex;\n    flex-direction: column;\n    gap: 8px;\n\n}\n\n.recallSection-module_button__DzAqD {\n    width: 100%;\n    padding: 0 8px;\n    display: flex;\n    justify-content: space-between;\n    align-items: baseline;\n    transition: all 100ms ease-in-out;\n    cursor: pointer;\n    border-radius: 4px;\n}\n\n.recallSection-module_customButton__JAnhp {\n    margin: 8px 0;\n    justify-content: center;\n}\n";
+var styles$u = {"wrapper":"recallSection-module_wrapper__lDClz","container":"recallSection-module_container__Qmrts","radioGroup":"recallSection-module_radioGroup__Rf5b5","button":"recallSection-module_button__DzAqD","customButton":"recallSection-module_customButton__JAnhp"};
+styleInject(css_248z$u);
+
+function _slicedToArray$D(arr, i) { return _arrayWithHoles$D(arr) || _iterableToArrayLimit$D(arr, i) || _unsupportedIterableToArray$D(arr, i) || _nonIterableRest$D(); }
+function _nonIterableRest$D() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$D(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$D(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$D(o, minLen); }
+function _arrayLikeToArray$D(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$D(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$D(arr) { if (Array.isArray(arr)) return arr; }
+var RecallDateOptions;
+(function (RecallDateOptions) {
+  RecallDateOptions["In1Hours"] = "IN_1_HOUR";
+  RecallDateOptions["In2Hours"] = "IN_2_HOURS";
+  RecallDateOptions["In4Hours"] = "IN_4_HOURS";
+  RecallDateOptions["TomorrowMorning"] = "TOMORROW_MORNING";
+  RecallDateOptions["TomorrowAfternoon"] = "TOMORROW_AFTERNOON";
+  RecallDateOptions["Custom"] = "CUSTOM";
+})(RecallDateOptions || (RecallDateOptions = {}));
+var RecallDatePicker = function RecallDatePicker(_ref) {
+  var _filterOptions;
+  var activityDateTime = _ref.activityDateTime,
+    taskDate = _ref.taskDate,
+    taskDateOnChange = _ref.taskDateOnChange,
+    _ref$disabled = _ref.disabled,
+    disabled = _ref$disabled === void 0 ? false : _ref$disabled,
+    savedDefaultValue = _ref.savedDefaultValue;
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards.steps.callResult.recall'
+    }),
+    t = _useTranslation.t;
+  var _useTranslation2 = useTranslation('translation', {
+      keyPrefix: 'dates'
+    }),
+    datesT = _useTranslation2.t,
+    i18n = _useTranslation2.i18n;
+  var lang = i18n.language;
+  var userTimeZone = useUserTimeZone();
+  var _useUserHelpers = useUserHelpers(),
+    saveCustom = _useUserHelpers.saveCustom;
+  var _useState = useState(false),
+    _useState2 = _slicedToArray$D(_useState, 2),
+    customDateVisible = _useState2[0],
+    setCustomDateVisible = _useState2[1];
+  var _useState3 = useState(savedDefaultValue || RecallDateOptions.In2Hours),
+    _useState4 = _slicedToArray$D(_useState3, 2),
+    selectedOption = _useState4[0],
+    setSelectedOption = _useState4[1];
+  var handleSave = function handleSave(optionSelected) {
+    var _filterOptions$option;
+    if (disabled) {
+      return;
+    }
+    saveCustom({
+      key: UserHelperKeys.WIZARDS_RECALL_DATETIME,
+      data: optionSelected
+    });
+    setSelectedOption(optionSelected);
+    taskDateOnChange((_filterOptions$option = filterOptions(activityDateTime)[optionSelected]) === null || _filterOptions$option === void 0 ? void 0 : _filterOptions$option.date);
+  };
+  var handleCustomSave = function handleCustomSave(date) {
+    if (date) {
+      taskDateOnChange(date);
+    }
+    setSelectedOption(RecallDateOptions.Custom);
+  };
+  useEffect(function () {
+    var _filterOptions$savedD;
+    taskDateOnChange((_filterOptions$savedD = filterOptions(activityDateTime)[savedDefaultValue]) === null || _filterOptions$savedD === void 0 ? void 0 : _filterOptions$savedD.date);
+  }, [savedDefaultValue]);
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsxs("div", {
+      onClick: function onClick(event) {
+        event.stopPropagation();
+        event.preventDefault();
+      },
+      className: styles$u.radioGroup,
+      children: [/*#__PURE__*/jsx(RadioGroup, {
+        value: selectedOption,
+        onChange: handleSave,
+        disabled: disabled,
+        children: Object.keys(filterOptions(activityDateTime)).filter(function (key) {
+          return key !== RecallDateOptions.Custom;
+        }).map(function (key) {
+          var _filterOptions$key = filterOptions(activityDateTime)[key],
+            label = _filterOptions$key.label,
+            date = _filterOptions$key.date;
+          return /*#__PURE__*/jsx(Radio, {
+            value: key,
+            size: "small",
+            disabled: disabled,
+            children: /*#__PURE__*/jsxs("div", {
+              className: styles$u.button,
+              children: [/*#__PURE__*/jsx(Text, {
+                color: "peanut",
+                size: "s",
+                children: t(label)
+              }), /*#__PURE__*/jsx(Text, {
+                color: "bloobirds",
+                size: "s",
+                children: getI18nSpacetimeLng(lang, date)["goto"](userTimeZone).format(datesT('monthShortWithTime'))
+              })]
+            })
+          }, key);
+        })
+      }), /*#__PURE__*/jsx(Button, {
+        className: styles$u.customButton,
+        expand: true,
+        variant: selectedOption === RecallDateOptions.Custom ? 'primary' : 'clear',
+        size: "small",
+        color: disabled ? 'softPeanut' : 'bloobirds',
+        uppercase: false,
+        disabled: disabled,
+        iconLeft: "calendar",
+        onClick: function onClick(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          setCustomDateVisible(true);
+        },
+        children: selectedOption === RecallDateOptions.Custom && taskDate ? getI18nSpacetimeLng(lang, taskDate).format(datesT('monthShortWithTime')) : t((_filterOptions = filterOptions(activityDateTime)) === null || _filterOptions === void 0 ? void 0 : _filterOptions[RecallDateOptions.Custom].label)
+      })]
+    }), customDateVisible && /*#__PURE__*/jsx(CustomDateDialog, {
+      onCancel: function onCancel() {
+        return setCustomDateVisible(false);
+      },
+      onSubmit: function onSubmit(date) {
+        handleCustomSave(date);
+        setCustomDateVisible(false);
+      },
+      customButtonText: t('okButton')
+    })]
+  });
+};
+
+function _typeof$K(obj) { "@babel/helpers - typeof"; return _typeof$K = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$K(obj); }
+function ownKeys$z(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$z(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$z(Object(source), !0).forEach(function (key) { _defineProperty$J(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$z(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _slicedToArray$C(arr, i) { return _arrayWithHoles$C(arr) || _iterableToArrayLimit$C(arr, i) || _unsupportedIterableToArray$C(arr, i) || _nonIterableRest$C(); }
+function _nonIterableRest$C() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$C(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$C(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$C(o, minLen); }
+function _arrayLikeToArray$C(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$C(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$C(arr) { if (Array.isArray(arr)) return arr; }
+function _defineProperty$J(obj, key, value) { key = _toPropertyKey$J(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$J(arg) { var key = _toPrimitive$J(arg, "string"); return _typeof$K(key) === "symbol" ? key : String(key); }
+function _toPrimitive$J(input, hint) { if (_typeof$K(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$K(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var RecallSectionModes;
+(function (RecallSectionModes) {
+  RecallSectionModes["Required"] = "required";
+  RecallSectionModes["Recommended"] = "recommended";
+  RecallSectionModes["Optional"] = "optional";
+})(RecallSectionModes || (RecallSectionModes = {}));
+var filterOptions = function filterOptions(date) {
+  return _defineProperty$J(_defineProperty$J(_defineProperty$J(_defineProperty$J(_defineProperty$J(_defineProperty$J({}, RecallDateOptions.In1Hours, {
+    label: 'options.in1Hour',
+    date: spacetime(date !== null && date !== void 0 ? date : new Date()).add(1, 'hour').toNativeDate()
+  }), RecallDateOptions.In2Hours, {
+    label: 'options.in2Hours',
+    date: spacetime(date !== null && date !== void 0 ? date : new Date()).add(2, 'hour').toNativeDate()
+  }), RecallDateOptions.In4Hours, {
+    label: 'options.in4Hours',
+    date: spacetime(date !== null && date !== void 0 ? date : new Date()).add(4, 'hour').toNativeDate()
+  }), RecallDateOptions.TomorrowMorning, {
+    label: 'options.tomorrowMorning',
+    date: spacetime(date !== null && date !== void 0 ? date : new Date()).startOf('day').add(1, 'day').add(9, 'hour').toNativeDate()
+  }), RecallDateOptions.TomorrowAfternoon, {
+    label: 'options.tomorrowAfternoon',
+    date: spacetime(date !== null && date !== void 0 ? date : new Date()).startOf('day').add(1, 'day').add(15, 'hour').toNativeDate()
+  }), RecallDateOptions.Custom, {
+    label: 'options.custom',
+    dateString: undefined,
+    date: undefined
+  });
+};
+var RecallSection = function RecallSection(_ref2) {
+  var _options$savedDefault;
+  var mode = _ref2.mode,
+    recallRef = _ref2.recallRef,
+    activityDateTime = _ref2.activityDateTime,
+    callResultStepDataHandler = _ref2.callResultStepDataHandler;
+  var _callResultStepDataHa = _slicedToArray$C(callResultStepDataHandler, 2),
+    callResultStepData = _callResultStepDataHa[0],
+    setCallResultStepData = _callResultStepDataHa[1];
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards.steps.callResult.recall'
+    }),
+    t = _useTranslation.t;
+  var _useUserHelpers = useUserHelpers(),
+    get = _useUserHelpers.get;
+  var savedDefaultValue = get(UserHelperKeys.WIZARDS_RECALL_DATETIME);
+  var _useState = useState(mode !== RecallSectionModes.Optional),
+    _useState2 = _slicedToArray$C(_useState, 2),
+    checked = _useState2[0],
+    setChecked = _useState2[1];
+  var options = filterOptions(activityDateTime);
+  var _useState3 = useState(((_options$savedDefault = options[savedDefaultValue]) === null || _options$savedDefault === void 0 ? void 0 : _options$savedDefault.date) || spacetime(activityDateTime).add(1, 'hour').toNativeDate()),
+    _useState4 = _slicedToArray$C(_useState3, 2),
+    recallDate = _useState4[0],
+    setRecallDate = _useState4[1];
+  var handleSetDate = function handleSetDate(value) {
+    setRecallDate(value);
+    setCallResultStepData(_objectSpread$z(_objectSpread$z({}, callResultStepData), {}, {
+      recall: _objectSpread$z(_objectSpread$z({}, callResultStepData.recall), {}, {
+        date: value
+      })
+    }));
+  };
+  useEffect(function () {
+    var _options$savedDefault2;
+    setCallResultStepData(_objectSpread$z(_objectSpread$z({}, callResultStepData), {}, {
+      recall: _objectSpread$z(_objectSpread$z({}, callResultStepData.recall), {}, {
+        date: ((_options$savedDefault2 = options[savedDefaultValue]) === null || _options$savedDefault2 === void 0 ? void 0 : _options$savedDefault2.date) || recallDate,
+        checked: checked !== null && checked !== void 0 ? checked : mode !== RecallSectionModes.Optional
+      })
+    }));
+  }, [recallDate, savedDefaultValue, checked]);
+  useEffect(function () {
+    setChecked(mode !== RecallSectionModes.Optional);
+  }, [mode]);
+  var renderComponent = function renderComponent(mode) {
+    switch (mode) {
+      case RecallSectionModes.Required:
+        return /*#__PURE__*/jsxs("div", {
+          className: styles$u.container,
+          ref: recallRef,
+          children: [/*#__PURE__*/jsx(Text, {
+            size: "m",
+            children: t('sectionText')
+          }), /*#__PURE__*/jsx(RecallDatePicker, {
+            activityDateTime: activityDateTime,
+            taskDate: recallDate,
+            taskDateOnChange: handleSetDate,
+            savedDefaultValue: savedDefaultValue
+          })]
+        });
+      case RecallSectionModes.Recommended:
+      case RecallSectionModes.Optional:
+        return /*#__PURE__*/jsxs("div", {
+          className: styles$u.container,
+          ref: recallRef,
+          children: [/*#__PURE__*/jsx(Checkbox, {
+            checked: checked,
+            onClick: function onClick() {
+              setCallResultStepData(_objectSpread$z(_objectSpread$z({}, callResultStepData), {}, {
+                recall: _objectSpread$z(_objectSpread$z({}, callResultStepData.recall), {}, {
+                  checked: checked
+                })
+              }));
+              setChecked(!checked);
+            },
+            size: "small",
+            children: t('sectionText')
+          }), /*#__PURE__*/jsx(RecallDatePicker, {
+            activityDateTime: activityDateTime,
+            taskDate: recallDate,
+            taskDateOnChange: handleSetDate,
+            disabled: !checked,
+            savedDefaultValue: savedDefaultValue
+          })]
+        });
+      default:
+        return /*#__PURE__*/jsx(Fragment, {});
+    }
+  };
+  return /*#__PURE__*/jsx("div", {
+    className: styles$u.wrapper,
+    children: renderComponent(mode)
+  });
+};
+
+var UpdatePropertySection = function UpdatePropertySection(_ref) {
+  var _fields$filter;
+  var fields = _ref.fields,
+    bobjects = _ref.bobjects,
+    handleOnChange = _ref.handleOnChange,
+    propertyUpdateRef = _ref.propertyUpdateRef;
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards.steps.callResult.updateProperty'
+    }),
+    t = _useTranslation.t;
+  var _useForm = useForm(),
+    control = _useForm.control;
+  return /*#__PURE__*/jsxs("div", {
+    ref: propertyUpdateRef,
+    className: styles$v._update_property_wrapper,
+    children: [/*#__PURE__*/jsx(Text, {
+      size: "m",
+      weight: "medium",
+      color: "peanut",
+      children: t('title')
+    }), /*#__PURE__*/jsx("div", {
+      children: fields === null || fields === void 0 ? void 0 : (_fields$filter = fields.filter(function (field) {
+        return !!(bobjects !== null && bobjects !== void 0 && bobjects[field === null || field === void 0 ? void 0 : field.fieldBobjectType]);
+      })) === null || _fields$filter === void 0 ? void 0 : _fields$filter.map(function (field) {
+        var _getFieldById;
+        var defaultValue = getValueFromLogicRole(bobjects === null || bobjects === void 0 ? void 0 : bobjects[field === null || field === void 0 ? void 0 : field.fieldBobjectType], field.name) || ((_getFieldById = getFieldById(bobjects === null || bobjects === void 0 ? void 0 : bobjects[field === null || field === void 0 ? void 0 : field.fieldBobjectType], field.name)) === null || _getFieldById === void 0 ? void 0 : _getFieldById.value) || (field === null || field === void 0 ? void 0 : field.defaultValue);
+        return /*#__PURE__*/jsx(BobjectFormField, {
+          name: field.name,
+          label: field.label,
+          required: field.required,
+          fieldBobjectType: field.fieldBobjectType,
+          defaultValue: defaultValue,
+          control: control,
+          handleOnChange: handleOnChange,
+          size: "small"
+        }, field.name);
+      })
+    })]
+  });
+};
+
+function _typeof$J(obj) { "@babel/helpers - typeof"; return _typeof$J = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$J(obj); }
+function ownKeys$y(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$y(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$y(Object(source), !0).forEach(function (key) { _defineProperty$I(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$y(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$I(obj, key, value) { key = _toPropertyKey$I(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$I(arg) { var key = _toPrimitive$I(arg, "string"); return _typeof$J(key) === "symbol" ? key : String(key); }
+function _toPrimitive$I(input, hint) { if (_typeof$J(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$J(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var fetcher = function fetcher(url) {
+  return api.post("".concat(url, "?sort=name%2Casc"), {
+    type: 'PITCH',
+    segmentationValues: {}
+  }).then(function (response) {
+    return response === null || response === void 0 ? void 0 : response.data;
+  });
+};
+var useCallResult = function useCallResult(dataModel) {
+  var _useSWR = useSWR("/messaging/messagingTemplates/search", fetcher),
+    availablePitches = _useSWR.data;
+  var picklistValues = getPitchDonePicklistValues(dataModel);
+  var findPitchDoneNo = function findPitchDoneNo(pitches) {
+    return pitches.find(function (pitch) {
+      return pitch.logicRole === PITCH_DONE_VALUES_LOGIC_ROLE.NO;
+    });
+  };
+  var isPitchNo = function isPitchNo(pitch) {
+    var _findPitchDoneNo;
+    return ((_findPitchDoneNo = findPitchDoneNo(picklistValues === null || picklistValues === void 0 ? void 0 : picklistValues.pitchDonePicklistValues)) === null || _findPitchDoneNo === void 0 ? void 0 : _findPitchDoneNo.id) === (pitch === null || pitch === void 0 ? void 0 : pitch.id);
+  };
+  return _objectSpread$y(_objectSpread$y({}, picklistValues), {}, {
+    availablePitches: availablePitches,
+    isPitchNo: isPitchNo,
+    findPitchDoneNo: findPitchDoneNo
+  });
+};
+var useAvailablePhoneFields = function useAvailablePhoneFields(wizardKey, activityLead, activityCompany) {
+  var _useWizardContext = useWizardContext(),
+    getWizardProperties = _useWizardContext.getWizardProperties,
+    addMetaToWizardProperties = _useWizardContext.addMetaToWizardProperties;
+  var _getWizardProperties = getWizardProperties(wizardKey),
+    leadAvailablePhoneFields = _getWizardProperties.leadAvailablePhoneFields,
+    companyAvailablePhoneFields = _getWizardProperties.companyAvailablePhoneFields;
+  leadAvailablePhoneFields = leadAvailablePhoneFields || getFieldsByType(activityLead, 'PHONE');
+  companyAvailablePhoneFields = companyAvailablePhoneFields || getFieldsByType(activityCompany, 'PHONE');
+  addMetaToWizardProperties(wizardKey, {
+    leadAvailablePhoneFields: leadAvailablePhoneFields,
+    companyAvailablePhoneFields: companyAvailablePhoneFields
+  });
+  return {
+    leadAvailablePhoneFields: leadAvailablePhoneFields,
+    companyAvailablePhoneFields: companyAvailablePhoneFields
+  };
+};
+
+function _typeof$I(obj) { "@babel/helpers - typeof"; return _typeof$I = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$I(obj); }
+function ownKeys$x(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$x(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$x(Object(source), !0).forEach(function (key) { _defineProperty$H(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$x(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$H(obj, key, value) { key = _toPropertyKey$H(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$H(arg) { var key = _toPrimitive$H(arg, "string"); return _typeof$I(key) === "symbol" ? key : String(key); }
+function _toPrimitive$H(input, hint) { if (_typeof$I(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$I(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _toConsumableArray$3(arr) { return _arrayWithoutHoles$3(arr) || _iterableToArray$4(arr) || _unsupportedIterableToArray$B(arr) || _nonIterableSpread$3(); }
+function _nonIterableSpread$3() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray$4(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function _arrayWithoutHoles$3(arr) { if (Array.isArray(arr)) return _arrayLikeToArray$B(arr); }
+function _slicedToArray$B(arr, i) { return _arrayWithHoles$B(arr) || _iterableToArrayLimit$B(arr, i) || _unsupportedIterableToArray$B(arr, i) || _nonIterableRest$B(); }
+function _nonIterableRest$B() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$B(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$B(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$B(o, minLen); }
+function _arrayLikeToArray$B(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$B(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$B(arr) { if (Array.isArray(arr)) return arr; }
+var CallResult = function CallResult(_ref) {
+  var _userSettings$user, _getFieldsByType, _getFieldsByType2, _getFieldByLogicRole, _callResultStepData$p, _callResultStepData$p2, _callResultStepData$c, _Object$keys, _callResultStepData$c2, _Object$keys2, _callResultStepData$c3, _callResultStepData$c5, _callResultStepData$c7, _callResultStepData$r5, _callResultStepData$c8, _callResultStepData$c9, _callResultStepData$p3, _callResultStepData$p4, _callResultStepData$c10, _machineContext$selec4, _callResultStepData$c11, _callResultStepData$c12;
+  var handleBack = _ref.handleBack,
+    handleSkip = _ref.handleSkip,
+    buttonsConfig = _ref.buttonsConfig,
+    wizardKey = _ref.wizardKey,
+    send = _ref.send,
+    machineContext = _ref.machineContext;
+  var _useWizardContext = useWizardContext(),
+    getWizardProperties = _useWizardContext.getWizardProperties,
+    hasCustomWizardsEnabled = _useWizardContext.hasCustomWizardsEnabled;
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t,
+    i18n = _useTranslation.i18n;
+  var language = i18n.language;
+  var _getWizardProperties = getWizardProperties(wizardKey),
+    activity = _getWizardProperties.bobject,
+    handleClose = _getWizardProperties.handleClose;
+  var dataModel = useDataModel();
+  var _useActivityRelatedIn = useActivityRelatedInfo(wizardKey),
+    activityCompany = _useActivityRelatedIn.activityCompany,
+    activityLead = _useActivityRelatedIn.activityLead,
+    activityOpportunity = _useActivityRelatedIn.activityOpportunity;
+  var _useAvailablePhoneFie = useAvailablePhoneFields(wizardKey, activityLead, activityCompany),
+    companyAvailablePhoneFields = _useAvailablePhoneFie.companyAvailablePhoneFields,
+    leadAvailablePhoneFields = _useAvailablePhoneFie.leadAvailablePhoneFields;
+  var _useCallResult = useCallResult(dataModel),
+    isPitchNo = _useCallResult.isPitchNo,
+    availablePitches = _useCallResult.availablePitches,
+    pitchDonePicklistValues = _useCallResult.pitchDonePicklistValues;
+  var _useCallResultStepDat = useCallResultStepData(activity, dataModel, machineContext === null || machineContext === void 0 ? void 0 : machineContext.callResultStepData, machineContext === null || machineContext === void 0 ? void 0 : machineContext.callResult),
+    callResultStepData = _useCallResultStepDat.callResultStepData,
+    setCallResultStepData = _useCallResultStepDat.setCallResultStepData,
+    callResultsPicklistValues = _useCallResultStepDat.callResultsPicklistValues;
+  var _useCustomTasks = useCustomTasks({
+      disabled: false
+    }),
+    getCustomTaskByLogicRole = _useCustomTasks.getCustomTaskByLogicRole;
+  var recallCustomTask = getCustomTaskByLogicRole(CUSTOM_TASK_LOGIC_ROLE.RECALL);
+  var _useContactFlowData = useContactFlowData(),
+    handleSubmit = _useContactFlowData.handleSubmit;
+  var activeUserId = useActiveUserId();
+  var accountId = useActiveAccountId();
+  var _useActiveUserSetting = useActiveUserSettings(),
+    userSettings = _useActiveUserSetting.settings,
+    reloadUserSettings = _useActiveUserSetting.mutate;
+  var _useState = useState(userSettings === null || userSettings === void 0 ? void 0 : (_userSettings$user = userSettings.user) === null || _userSettings$user === void 0 ? void 0 : _userSettings$user.ccfCloseAtNoAnswer),
+    _useState2 = _slicedToArray$B(_useState, 2),
+    ccfCloseAtNoAnswerValue = _useState2[0],
+    setCcfCloseAtNoAnswerValue = _useState2[1];
+  var _useState3 = useState(false),
+    _useState4 = _slicedToArray$B(_useState3, 2),
+    recallCreated = _useState4[0],
+    setRecallCreated = _useState4[1];
+  var _useNotifications = useNotifications(),
+    removeNotificationByObjectId = _useNotifications.removeNotificationByObjectId;
+  function deleteRelatedNotification(activity) {
+    if (activity) {
+      var _activity$id;
+      removeNotificationByObjectId(activity === null || activity === void 0 ? void 0 : (_activity$id = activity.id) === null || _activity$id === void 0 ? void 0 : _activity$id.objectId);
+    }
+  }
+  function handleNext(selectedCallResult, needsClose) {
+    deleteRelatedNotification(activity);
+    needsClose ? handleClose() : function () {
+      mixpanel.track(MIXPANEL_EVENTS.CLICK_ON_NEXT_IN_WIZARD_STEP_ + 'CALL_RESULTS');
+      send(EVENTS.NEXT, {
+        callResult: selectedCallResult,
+        callResultStepData: callResultStepData,
+        recallCreated: recallCreated
+      });
+    }();
+  }
+  var originalLeadPhoneFields = (_getFieldsByType = getFieldsByType(activityLead, 'PHONE')) === null || _getFieldsByType === void 0 ? void 0 : _getFieldsByType.reduce(function (acc, phone) {
+    return [].concat(_toConsumableArray$3(acc), [{
+      label: phone.label,
+      id: phone.name,
+      logicRole: phone.logicRole,
+      text: phone.text
+    }]);
+  }, []);
+  var originalCompanyPhoneFields = (_getFieldsByType2 = getFieldsByType(activityCompany, 'PHONE')) === null || _getFieldsByType2 === void 0 ? void 0 : _getFieldsByType2.reduce(function (acc, phone) {
+    return [].concat(_toConsumableArray$3(acc), [{
+      label: phone.label,
+      id: phone.name,
+      logicRole: phone.logicRole,
+      text: phone.text
+    }]);
+  }, []);
+  var isPitchRequired = (_getFieldByLogicRole = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.PITCH)) === null || _getFieldByLogicRole === void 0 ? void 0 : _getFieldByLogicRole.required;
+  var activityDateTime = getValueFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.DATETIME);
+  var isPitchDone = (callResultStepData === null || callResultStepData === void 0 ? void 0 : (_callResultStepData$p = callResultStepData.pitch) === null || _callResultStepData$p === void 0 ? void 0 : _callResultStepData$p.done) === PITCH_DONE_VALUES_LOGIC_ROLE.YES;
+  var isMissingPitch = isPitchDone && isPitchRequired && !(callResultStepData !== null && callResultStepData !== void 0 && (_callResultStepData$p2 = callResultStepData.pitch) !== null && _callResultStepData$p2 !== void 0 && _callResultStepData$p2.template);
+  var _useState5 = useState({}),
+    _useState6 = _slicedToArray$B(_useState5, 2),
+    leadPhoneFields = _useState6[0],
+    setLeadPhoneFields = _useState6[1];
+  var _useState7 = useState({}),
+    _useState8 = _slicedToArray$B(_useState7, 2),
+    companyPhoneFields = _useState8[0],
+    setCompanyPhoneFields = _useState8[1];
+  var _useState9 = useState({}),
+    _useState10 = _slicedToArray$B(_useState9, 2),
+    newBobjectPropertyValue = _useState10[0],
+    setNewBobjectPropertyValue = _useState10[1];
+  var _useState11 = useState(_defineProperty$H(_defineProperty$H(_defineProperty$H(_defineProperty$H({}, BobjectTypes.Activity, false), BobjectTypes.Company, false), BobjectTypes.Lead, false), BobjectTypes.Opportunity, false)),
+    _useState12 = _slicedToArray$B(_useState11, 2),
+    bobjectChanges = _useState12[0],
+    setBobjectChanges = _useState12[1];
+  var isNoAnswer = (callResultStepData === null || callResultStepData === void 0 ? void 0 : (_callResultStepData$c = callResultStepData.callResult) === null || _callResultStepData$c === void 0 ? void 0 : _callResultStepData$c.logicRole) === CALL_RESULTS_LOGIC_ROLE.NO_ANSWER;
+  // const [notificationId] = useSharedState('notificationId');
+  // const removeNotification = useNotificationDelete();
+  var recallRef = useRef(null);
+  var propertyUpdateRef = useRef(null);
+  var showSkipButton = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton : false;
+  var hasPreviousStep = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep : false;
+  var openCadenceControlOnClose = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip : false;
+  var showRecallSection = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.recallResults) != undefined ? (_Object$keys = Object.keys((buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.recallResults) || {})) === null || _Object$keys === void 0 ? void 0 : _Object$keys.includes(callResultStepData === null || callResultStepData === void 0 ? void 0 : (_callResultStepData$c2 = callResultStepData.callResult) === null || _callResultStepData$c2 === void 0 ? void 0 : _callResultStepData$c2.logicRole) : false;
+  var showUpdatePropertySection = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.updatePropertyResults) != undefined ? (_Object$keys2 = Object.keys((buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.updatePropertyResults) || {})) === null || _Object$keys2 === void 0 ? void 0 : _Object$keys2.includes(callResultStepData === null || callResultStepData === void 0 ? void 0 : (_callResultStepData$c3 = callResultStepData.callResult) === null || _callResultStepData$c3 === void 0 ? void 0 : _callResultStepData$c3.logicRole) : false;
+  var recallMode = useMemo(function () {
+    var _buttonsConfig$recall, _callResultStepData$c4;
+    return showRecallSection && (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : (_buttonsConfig$recall = buttonsConfig.recallResults) === null || _buttonsConfig$recall === void 0 ? void 0 : _buttonsConfig$recall[callResultStepData === null || callResultStepData === void 0 ? void 0 : (_callResultStepData$c4 = callResultStepData.callResult) === null || _callResultStepData$c4 === void 0 ? void 0 : _callResultStepData$c4.logicRole]);
+  }, [showRecallSection, callResultStepData === null || callResultStepData === void 0 ? void 0 : (_callResultStepData$c5 = callResultStepData.callResult) === null || _callResultStepData$c5 === void 0 ? void 0 : _callResultStepData$c5.logicRole]);
+  var propertiesToUpdate = useMemo(function () {
+    var _buttonsConfig$update, _callResultStepData$c6;
+    return showUpdatePropertySection && (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : (_buttonsConfig$update = buttonsConfig.updatePropertyResults) === null || _buttonsConfig$update === void 0 ? void 0 : _buttonsConfig$update[callResultStepData === null || callResultStepData === void 0 ? void 0 : (_callResultStepData$c6 = callResultStepData.callResult) === null || _callResultStepData$c6 === void 0 ? void 0 : _callResultStepData$c6.logicRole]);
+  }, [showUpdatePropertySection, callResultStepData === null || callResultStepData === void 0 ? void 0 : (_callResultStepData$c7 = callResultStepData.callResult) === null || _callResultStepData$c7 === void 0 ? void 0 : _callResultStepData$c7.logicRole]);
+  var leadFullName = getValueFromLogicRole(activityLead, LEAD_FIELDS_LOGIC_ROLE.FULL_NAME) || getValueFromLogicRole(activityLead, LEAD_FIELDS_LOGIC_ROLE.EMAIL);
+  var companyName = getValueFromLogicRole(activityCompany, COMPANY_FIELDS_LOGIC_ROLE.NAME);
+  var getBobjectChanges = function getBobjectChanges(bobjectType, idValue, extraFields) {
+    var _newBobjectPropertyVa;
+    return bobjectChanges[bobjectType] ? _defineProperty$H({}, bobjectType, {
+      idValue: idValue,
+      fields: _objectSpread$x(_objectSpread$x({}, extraFields !== null && extraFields !== void 0 ? extraFields : {}), (_newBobjectPropertyVa = newBobjectPropertyValue === null || newBobjectPropertyValue === void 0 ? void 0 : newBobjectPropertyValue[bobjectType]) !== null && _newBobjectPropertyVa !== void 0 ? _newBobjectPropertyVa : {})
+    }) : {};
+  };
+  var saveAndNext = function saveAndNext() {
+    var _machineContext$wizar, _machineContext$wizar2, _activityCompany$id, _activityLead$id, _ref3, _ref3$id, _machineContext$selec, _activity$id2, _callResultStepData$r, _userSettings$user2;
+    var data = _defineProperty$H(_defineProperty$H(_defineProperty$H({}, ACTIVITY_FIELDS_LOGIC_ROLE.CALL_RESULT, callResultStepData === null || callResultStepData === void 0 ? void 0 : callResultStepData.callResult.logicRole), ACTIVITY_FIELDS_LOGIC_ROLE.PITCH, callResultStepData === null || callResultStepData === void 0 ? void 0 : callResultStepData.pitch.template), ACTIVITY_FIELDS_LOGIC_ROLE.PITCH_DONE, callResultStepData === null || callResultStepData === void 0 ? void 0 : callResultStepData.pitch.done);
+    if (!hasCustomWizardsEnabled || (machineContext === null || machineContext === void 0 ? void 0 : (_machineContext$wizar = machineContext.wizardConfig) === null || _machineContext$wizar === void 0 ? void 0 : _machineContext$wizar.markReportedAtStart) === true || (machineContext === null || machineContext === void 0 ? void 0 : (_machineContext$wizar2 = machineContext.wizardConfig) === null || _machineContext$wizar2 === void 0 ? void 0 : _machineContext$wizar2.markReportedAtStart) === undefined || isNoAnswer && ccfCloseAtNoAnswerValue) {
+      data[ACTIVITY_FIELDS_LOGIC_ROLE.REPORTED] = REPORTED_VALUES_LOGIC_ROLE.YES;
+    }
+    handleSubmit({
+      activity: activity,
+      data: data,
+      bobjectChanges: _objectSpread$x(_objectSpread$x(_objectSpread$x(_objectSpread$x({}, getBobjectChanges(BobjectTypes.Company, activityCompany === null || activityCompany === void 0 ? void 0 : (_activityCompany$id = activityCompany.id) === null || _activityCompany$id === void 0 ? void 0 : _activityCompany$id.value, companyPhoneFields)), getBobjectChanges(BobjectTypes.Lead, activityLead === null || activityLead === void 0 ? void 0 : (_activityLead$id = activityLead.id) === null || _activityLead$id === void 0 ? void 0 : _activityLead$id.value, leadPhoneFields)), getBobjectChanges(BobjectTypes.Opportunity, (_ref3 = (_machineContext$selec = machineContext === null || machineContext === void 0 ? void 0 : machineContext.selectedOpportunityObject) !== null && _machineContext$selec !== void 0 ? _machineContext$selec : activityOpportunity) === null || _ref3 === void 0 ? void 0 : (_ref3$id = _ref3.id) === null || _ref3$id === void 0 ? void 0 : _ref3$id.value)), getBobjectChanges(BobjectTypes.Activity, activity === null || activity === void 0 ? void 0 : (_activity$id2 = activity.id) === null || _activity$id2 === void 0 ? void 0 : _activity$id2.value))
+    });
+    if (showRecallSection && callResultStepData !== null && callResultStepData !== void 0 && (_callResultStepData$r = callResultStepData.recall) !== null && _callResultStepData$r !== void 0 && _callResultStepData$r.checked) {
+      var _getI18nSpacetimeLng, _callResultStepData$r2, _callResultStepData$r3, _machineContext$selec2;
+      var dataToCreate = _defineProperty$H(_defineProperty$H(_defineProperty$H(_defineProperty$H(_defineProperty$H(_defineProperty$H(_defineProperty$H(_defineProperty$H(_defineProperty$H({}, TASK_FIELDS_LOGIC_ROLE.TITLE, t('wizards.steps.callResult.recallTaskTitle') + ' - ' + ((_getI18nSpacetimeLng = getI18nSpacetimeLng(language, callResultStepData === null || callResultStepData === void 0 ? void 0 : (_callResultStepData$r2 = callResultStepData.recall) === null || _callResultStepData$r2 === void 0 ? void 0 : _callResultStepData$r2.date)) === null || _getI18nSpacetimeLng === void 0 ? void 0 : _getI18nSpacetimeLng.format(t('dates.monthShortWithTime')))), TASK_FIELDS_LOGIC_ROLE.TASK_TYPE, TASK_TYPE.NEXT_STEP), TASK_FIELDS_LOGIC_ROLE.ASSIGNED_TO, activeUserId), TASK_FIELDS_LOGIC_ROLE.STATUS, TASK_STATUS_VALUE_LOGIC_ROLE.TODO), TASK_FIELDS_LOGIC_ROLE.SCHEDULED_DATETIME, callResultStepData === null || callResultStepData === void 0 ? void 0 : (_callResultStepData$r3 = callResultStepData.recall) === null || _callResultStepData$r3 === void 0 ? void 0 : _callResultStepData$r3.date), TASK_FIELDS_LOGIC_ROLE.IS_ACTION_CUSTOM_TASK, TASK_ACTION_VALUE.CUSTOM_TASK_YES), TASK_FIELDS_LOGIC_ROLE.PRIORITY, TASK_PRIORITY_VALUE.NO_PRIORITY), TASK_FIELDS_LOGIC_ROLE.CUSTOM_TASK, recallCustomTask === null || recallCustomTask === void 0 ? void 0 : recallCustomTask.id), TASK_FIELDS_LOGIC_ROLE.REMINDER, 'TASK__REMINDER__YES');
+      if ((_machineContext$selec2 = machineContext === null || machineContext === void 0 ? void 0 : machineContext.selectedOpportunityObject) !== null && _machineContext$selec2 !== void 0 ? _machineContext$selec2 : activityOpportunity) {
+        var _ref4, _ref4$id, _machineContext$selec3;
+        dataToCreate[TASK_FIELDS_LOGIC_ROLE.OPPORTUNITY] = (_ref4 = (_machineContext$selec3 = machineContext === null || machineContext === void 0 ? void 0 : machineContext.selectedOpportunityObject) !== null && _machineContext$selec3 !== void 0 ? _machineContext$selec3 : activityOpportunity) === null || _ref4 === void 0 ? void 0 : (_ref4$id = _ref4.id) === null || _ref4$id === void 0 ? void 0 : _ref4$id.value;
+        dataToCreate[TASK_FIELDS_LOGIC_ROLE.LEAD] = null;
+      } else if (activityLead) {
+        var _activityLead$id2;
+        dataToCreate[TASK_FIELDS_LOGIC_ROLE.LEAD] = activityLead === null || activityLead === void 0 ? void 0 : (_activityLead$id2 = activityLead.id) === null || _activityLead$id2 === void 0 ? void 0 : _activityLead$id2.value;
+      } else if (activityCompany) {
+        var _activityCompany$id2;
+        dataToCreate[TASK_FIELDS_LOGIC_ROLE.COMPANY] = activityCompany === null || activityCompany === void 0 ? void 0 : (_activityCompany$id2 = activityCompany.id) === null || _activityCompany$id2 === void 0 ? void 0 : _activityCompany$id2.value;
+      }
+      api.post("/bobjects/".concat(accountId, "/Task"), {
+        contents: _objectSpread$x({}, dataToCreate),
+        params: {}
+      }).then(function () {
+        createToast({
+          message: t('wizards.steps.callResult.recall.toast'),
+          type: 'success'
+        });
+      });
+    }
+    if (isNoAnswer && (userSettings === null || userSettings === void 0 ? void 0 : (_userSettings$user2 = userSettings.user) === null || _userSettings$user2 === void 0 ? void 0 : _userSettings$user2.ccfCloseAtNoAnswer) !== ccfCloseAtNoAnswerValue) api.patch("/entities/users/".concat(activeUserId), {
+      ccfCloseAtNoAnswer: ccfCloseAtNoAnswerValue
+    }).then(function () {
+      reloadUserSettings();
+    });
+    handleNext(callResultStepData === null || callResultStepData === void 0 ? void 0 : callResultStepData.callResult.logicRole, isNoAnswer && ccfCloseAtNoAnswerValue);
+  };
+
+  //TODO refactor this
+  useEffect(function () {
+    var _Object$keys3;
+    if (companyPhoneFields && ((_Object$keys3 = Object.keys(companyPhoneFields)) === null || _Object$keys3 === void 0 ? void 0 : _Object$keys3.length) === 0 && originalCompanyPhoneFields.length > 0) {
+      var companyPhoneToSet = originalCompanyPhoneFields === null || originalCompanyPhoneFields === void 0 ? void 0 : originalCompanyPhoneFields.reduce(function (obj, item) {
+        return Object.assign(obj, _defineProperty$H({}, item.id, item.text));
+      }, {});
+      setCompanyPhoneFields(companyPhoneToSet);
+    }
+  }, [originalCompanyPhoneFields]);
+  useEffect(function () {
+    var _callResultStepData$r4;
+    setRecallCreated(showRecallSection && (callResultStepData === null || callResultStepData === void 0 ? void 0 : (_callResultStepData$r4 = callResultStepData.recall) === null || _callResultStepData$r4 === void 0 ? void 0 : _callResultStepData$r4.checked));
+  }, [showRecallSection, callResultStepData === null || callResultStepData === void 0 ? void 0 : (_callResultStepData$r5 = callResultStepData.recall) === null || _callResultStepData$r5 === void 0 ? void 0 : _callResultStepData$r5.checked]);
+  useEffect(function () {
+    var _Object$keys4;
+    if (leadPhoneFields && ((_Object$keys4 = Object.keys(leadPhoneFields)) === null || _Object$keys4 === void 0 ? void 0 : _Object$keys4.length) === 0 && originalLeadPhoneFields.length > 0) {
+      var leadPhoneToSet = originalLeadPhoneFields === null || originalLeadPhoneFields === void 0 ? void 0 : originalLeadPhoneFields.reduce(function (obj, item) {
+        return Object.assign(obj, _defineProperty$H({}, item.id, item.text));
+      }, {});
+      setLeadPhoneFields(leadPhoneToSet);
+    }
+  }, [originalLeadPhoneFields]);
+  useEffect(function () {
+    if (propertyUpdateRef !== null && propertyUpdateRef !== void 0 && propertyUpdateRef.current) {
+      var _propertyUpdateRef$cu;
+      propertyUpdateRef === null || propertyUpdateRef === void 0 ? void 0 : (_propertyUpdateRef$cu = propertyUpdateRef.current) === null || _propertyUpdateRef$cu === void 0 ? void 0 : _propertyUpdateRef$cu.scrollIntoView({
+        behavior: 'smooth'
+      });
+    } else if (recallRef !== null && recallRef !== void 0 && recallRef.current) {
+      var _recallRef$current;
+      recallRef === null || recallRef === void 0 ? void 0 : (_recallRef$current = recallRef.current) === null || _recallRef$current === void 0 ? void 0 : _recallRef$current.scrollIntoView({
+        behavior: 'smooth'
+      });
+    }
+  }, [callResultStepData === null || callResultStepData === void 0 ? void 0 : (_callResultStepData$c8 = callResultStepData.callResult) === null || _callResultStepData$c8 === void 0 ? void 0 : _callResultStepData$c8.logicRole]);
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsxs(ModalContent, {
+      children: [/*#__PURE__*/jsx(CallInfo, {
+        activity: activity
+      }), /*#__PURE__*/jsxs("div", {
+        className: styles$v._section__wrapper,
+        children: [/*#__PURE__*/jsx("div", {
+          className: styles$v._section_title__wrapper,
+          children: /*#__PURE__*/jsx(Text, {
+            dataTest: "Text-Modal-CallResult",
+            size: "m",
+            weight: "medium",
+            color: "peanut",
+            children: t('wizards.steps.callResult.callResult')
+          })
+        }), /*#__PURE__*/jsx(CallResultSelector, {
+          callResultsPicklistValues: callResultsPicklistValues,
+          activity: activity,
+          callResultStepDataHandler: [callResultStepData, setCallResultStepData]
+        })]
+      }), (callResultStepData === null || callResultStepData === void 0 ? void 0 : (_callResultStepData$c9 = callResultStepData.callResult) === null || _callResultStepData$c9 === void 0 ? void 0 : _callResultStepData$c9.isCorrectContact) && !(buttonsConfig !== null && buttonsConfig !== void 0 && buttonsConfig.hidePitchCheck) && /*#__PURE__*/jsxs("div", {
+        className: styles$v._section__wrapper,
+        children: [/*#__PURE__*/jsx("div", {
+          className: styles$v.section_pitch__wrapper,
+          children: /*#__PURE__*/jsx(Text, {
+            size: "s",
+            weight: "medium",
+            color: "peanut",
+            children: t('wizards.steps.callResult.didYouPitch')
+          })
+        }), /*#__PURE__*/jsxs("div", {
+          className: styles$v._pitch__wrapper,
+          children: [/*#__PURE__*/jsx("div", {
+            className: styles$v._chips__wrapper,
+            children: /*#__PURE__*/jsx(ChipGroup, {
+              value: callResultStepData === null || callResultStepData === void 0 ? void 0 : (_callResultStepData$p3 = callResultStepData.pitch) === null || _callResultStepData$p3 === void 0 ? void 0 : _callResultStepData$p3.done,
+              onChange: function onChange(value) {
+                setCallResultStepData(_objectSpread$x(_objectSpread$x({}, callResultStepData), {}, {
+                  pitch: isPitchNo(value) ? {
+                    template: null,
+                    done: value
+                  } : _objectSpread$x(_objectSpread$x({}, callResultStepData === null || callResultStepData === void 0 ? void 0 : callResultStepData.pitch), {}, {
+                    done: value
+                  })
+                }));
+              },
+              children: pitchDonePicklistValues === null || pitchDonePicklistValues === void 0 ? void 0 : pitchDonePicklistValues.map(function (pitchDone) {
+                return /*#__PURE__*/jsx(Chip, {
+                  size: "small",
+                  value: pitchDone === null || pitchDone === void 0 ? void 0 : pitchDone.logicRole,
+                  children: pitchDone === null || pitchDone === void 0 ? void 0 : pitchDone.name
+                }, "pitch-done-".concat(pitchDone === null || pitchDone === void 0 ? void 0 : pitchDone.id));
+              })
+            })
+          }), isPitchDone && /*#__PURE__*/jsx("div", {
+            className: styles$v._pitch_select__wrapper,
+            children: /*#__PURE__*/jsx(Select, {
+              value: callResultStepData === null || callResultStepData === void 0 ? void 0 : (_callResultStepData$p4 = callResultStepData.pitch) === null || _callResultStepData$p4 === void 0 ? void 0 : _callResultStepData$p4.template,
+              placeholder: t('wizards.steps.callResult.pitchPlaceholder') + (isPitchRequired ? '*' : ''),
+              size: "small",
+              width: "300px",
+              borderless: false,
+              onChange: function onChange(value) {
+                return setCallResultStepData(_objectSpread$x(_objectSpread$x({}, callResultStepData), {}, {
+                  pitch: _objectSpread$x(_objectSpread$x({}, callResultStepData === null || callResultStepData === void 0 ? void 0 : callResultStepData.pitch), {}, {
+                    template: value
+                  })
+                }));
+              },
+              children: availablePitches === null || availablePitches === void 0 ? void 0 : availablePitches.map(function (pitchItem) {
+                return /*#__PURE__*/jsx(Item, {
+                  value: pitchItem.id,
+                  children: pitchItem.name
+                }, pitchItem.id);
+              })
+            })
+          })]
+        })]
+      }), isNoAnswer && !(buttonsConfig !== null && buttonsConfig !== void 0 && buttonsConfig.hideNoAnswerExtraInfo) && /*#__PURE__*/jsxs("div", {
+        style: {
+          display: 'flex',
+          alignContent: 'center'
+        },
+        children: [/*#__PURE__*/jsx(Checkbox, {
+          size: "small",
+          checked: ccfCloseAtNoAnswerValue,
+          onClick: function onClick(value) {
+            setCcfCloseAtNoAnswerValue(value);
+          },
+          expand: false,
+          children: t('wizards.steps.callResult.endFlowHere')
+        }), /*#__PURE__*/jsx(Text, {
+          size: "xs",
+          className: styles$v._no_answer_close_text,
+          children: t('wizards.steps.callResult.endFlowHereDisclaimer')
+        })]
+      }), (callResultStepData === null || callResultStepData === void 0 ? void 0 : (_callResultStepData$c10 = callResultStepData.callResult) === null || _callResultStepData$c10 === void 0 ? void 0 : _callResultStepData$c10.logicRole) === CALL_RESULTS_LOGIC_ROLE.WRONG_DATA && !(buttonsConfig !== null && buttonsConfig !== void 0 && buttonsConfig.hideNoAnswerExtraInfo) && /*#__PURE__*/jsxs(Fragment, {
+        children: [/*#__PURE__*/jsx(Text, {
+          className: styles$v._phone_edit_header,
+          dataTest: "Text-Modal-CallResult",
+          size: "m",
+          weight: "medium",
+          color: "peanut",
+          children: t('wizards.steps.callResult.updateNumber')
+        }), !!leadFullName && (leadAvailablePhoneFields === null || leadAvailablePhoneFields === void 0 ? void 0 : leadAvailablePhoneFields.length) > 0 && /*#__PURE__*/jsxs(Fragment, {
+          children: [/*#__PURE__*/jsxs("div", {
+            className: styles$v._section_title__wrapper,
+            children: [/*#__PURE__*/jsx(Icon, {
+              className: styles$v._section_title_icon,
+              color: "verySoftPeanut",
+              name: "person"
+            }), /*#__PURE__*/jsx(Text, {
+              className: styles$v._section_title_text,
+              dataTest: "Text-Modal-CallResult",
+              size: "m",
+              weight: "medium",
+              color: "softPeanut",
+              children: t('wizards.steps.callResult.info', {
+                name: leadFullName
+              })
+            })]
+          }), /*#__PURE__*/jsx("div", {
+            className: styles$v._phone_input_container,
+            children: leadAvailablePhoneFields === null || leadAvailablePhoneFields === void 0 ? void 0 : leadAvailablePhoneFields.map(function (phone, index) {
+              return /*#__PURE__*/jsx("div", {
+                className: styles$v._phone_field_wrapper,
+                children: /*#__PURE__*/jsx(Input, {
+                  value: leadPhoneFields[phone === null || phone === void 0 ? void 0 : phone.name],
+                  placeholder: phone === null || phone === void 0 ? void 0 : phone.label,
+                  width: "365px",
+                  onChange: function onChange(value) {
+                    setBobjectChanges(function (state) {
+                      return _objectSpread$x(_objectSpread$x({}, state), {}, _defineProperty$H({}, BobjectTypes.Lead, true));
+                    });
+                    setLeadPhoneFields(_objectSpread$x(_objectSpread$x({}, leadPhoneFields), {}, _defineProperty$H({}, phone === null || phone === void 0 ? void 0 : phone.name, value)));
+                  }
+                }, phone === null || phone === void 0 ? void 0 : phone.id)
+              }, "lead-phone-".concat(index));
+            })
+          })]
+        }), !!companyName && (companyAvailablePhoneFields === null || companyAvailablePhoneFields === void 0 ? void 0 : companyAvailablePhoneFields.length) > 0 && /*#__PURE__*/jsxs(Fragment, {
+          children: [/*#__PURE__*/jsxs("div", {
+            className: styles$v._section_title__wrapper,
+            children: [/*#__PURE__*/jsx(Icon, {
+              className: styles$v._section_title_icon,
+              color: "verySoftPeanut",
+              name: "company"
+            }), /*#__PURE__*/jsx(Text, {
+              className: styles$v._section_title_text,
+              dataTest: "Text-Modal-CallResult",
+              size: "m",
+              weight: "medium",
+              color: "softPeanut",
+              children: t('wizards.steps.callResult.info', {
+                name: companyName
+              })
+            })]
+          }), /*#__PURE__*/jsx("div", {
+            className: styles$v._phone_input_container,
+            children: companyAvailablePhoneFields === null || companyAvailablePhoneFields === void 0 ? void 0 : companyAvailablePhoneFields.map(function (phone, index) {
+              return /*#__PURE__*/jsx("div", {
+                className: styles$v._phone_field_wrapper,
+                children: /*#__PURE__*/jsx(Input, {
+                  value: companyPhoneFields[phone === null || phone === void 0 ? void 0 : phone.name],
+                  placeholder: phone === null || phone === void 0 ? void 0 : phone.label,
+                  width: "365px",
+                  onChange: function onChange(value) {
+                    setBobjectChanges(function (state) {
+                      return _objectSpread$x(_objectSpread$x({}, state), {}, _defineProperty$H({}, BobjectTypes.Company, true));
+                    });
+                    setCompanyPhoneFields(_objectSpread$x(_objectSpread$x({}, companyPhoneFields), {}, _defineProperty$H({}, phone === null || phone === void 0 ? void 0 : phone.name, value)));
+                  }
+                }, phone === null || phone === void 0 ? void 0 : phone.id)
+              }, "company-phone-".concat(index));
+            })
+          })]
+        })]
+      }), showUpdatePropertySection && /*#__PURE__*/jsx(UpdatePropertySection, {
+        propertyUpdateRef: propertyUpdateRef,
+        fields: propertiesToUpdate,
+        bobjects: _defineProperty$H(_defineProperty$H(_defineProperty$H(_defineProperty$H({}, BobjectTypes.Activity, activity), BobjectTypes.Lead, activityLead), BobjectTypes.Company, activityCompany), BobjectTypes.Opportunity, (_machineContext$selec4 = machineContext === null || machineContext === void 0 ? void 0 : machineContext.selectedOpportunityObject) !== null && _machineContext$selec4 !== void 0 ? _machineContext$selec4 : activityOpportunity),
+        handleOnChange: function handleOnChange(fieldName, value, fieldBobjectType) {
+          setBobjectChanges(function (state) {
+            return _objectSpread$x(_objectSpread$x({}, state), {}, _defineProperty$H({}, fieldBobjectType, true));
+          });
+          setNewBobjectPropertyValue(function (state) {
+            return _objectSpread$x(_objectSpread$x({}, state), {}, _defineProperty$H({}, fieldBobjectType, _objectSpread$x(_objectSpread$x({}, state[fieldBobjectType]), _defineProperty$H({}, fieldName, value))));
+          });
+        }
+      }), showRecallSection && /*#__PURE__*/jsx(RecallSection, {
+        recallRef: recallRef,
+        mode: recallMode,
+        activityDateTime: activityDateTime,
+        callResultStepDataHandler: [callResultStepData, setCallResultStepData]
+      })]
+    }), /*#__PURE__*/jsx(ModalFooter, {
+      children: /*#__PURE__*/jsxs("div", {
+        className: styles$v._buttons__wrapper,
+        children: [hasPreviousStep && /*#__PURE__*/jsx(Button, {
+          variant: "clear",
+          onClick: handleBack,
+          className: styles$v.back_button,
+          children: (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.previousButtonTitle) || t('wizards.common.back')
+        }), showSkipButton && /*#__PURE__*/jsx(Button, {
+          variant: "secondary",
+          onClick: function onClick() {
+            return handleSkip(openCadenceControlOnClose);
+          },
+          className: styles$v.skip_button,
+          children: t('wizards.common.skipWizard')
+        }), /*#__PURE__*/jsx(Button, {
+          onClick: saveAndNext,
+          disabled: !(callResultStepData !== null && callResultStepData !== void 0 && (_callResultStepData$c11 = callResultStepData.callResult) !== null && _callResultStepData$c11 !== void 0 && _callResultStepData$c11.logicRole) && !(callResultStepData !== null && callResultStepData !== void 0 && (_callResultStepData$c12 = callResultStepData.callResult) !== null && _callResultStepData$c12 !== void 0 && _callResultStepData$c12.value) || isMissingPitch,
+          className: styles$v.next_button,
+          children: isNoAnswer && ccfCloseAtNoAnswerValue ? (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.nextButtonTitle) || t('wizards.common.saveAndClose') : (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.nextButtonAlternativeTitle) || t('wizards.common.next')
+        })]
+      })
+    })]
+  });
+};
+
+function _slicedToArray$A(arr, i) { return _arrayWithHoles$A(arr) || _iterableToArrayLimit$A(arr, i) || _unsupportedIterableToArray$A(arr, i) || _nonIterableRest$A(); }
+function _nonIterableRest$A() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$A(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$A(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$A(o, minLen); }
+function _arrayLikeToArray$A(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$A(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$A(arr) { if (Array.isArray(arr)) return arr; }
+var useNoteStepData = function useNoteStepData() {
+  var _useState = useState(),
+    _useState2 = _slicedToArray$A(_useState, 2),
+    noteStepData = _useState2[0],
+    setNoteStepData = _useState2[1];
+  return {
+    noteStepData: noteStepData,
+    setNoteStepData: setNoteStepData
+  };
+};
+
+var css_248z$t = ".callResultOpp-module__labels__wrapper__BIZKi {\n  display: flex;\n  flex-direction: column;\n  flex-wrap: wrap;\n  max-height: 250px;\n  align-content: space-around;\n}\n\n.callResultOpp-module__label__content__WsF77 {\n  display: flex;\n  flex-direction: column;\n  width: 225px;\n  margin-bottom: 12px;\n}\n\n.callResultOpp-module__section__wrapper__tv23n {\n  margin-bottom: 24px;\n}\n\n.callResultOpp-module__section_title__wrapper__vl6Hp {\n  margin-bottom: 16px;\n}\n\n.callResultOpp-module__chips__wrapper__ta08F {\n  height: 52px;\n  display: flex;\n  align-items: center;\n}\n\n.callResultOpp-module__chips__wrapper__ta08F > div > div {\n  margin-right: 15px;\n}\n\n.callResultOpp-module__buttons__wrapper__pc4bt {\n  justify-content: flex-end;\n  display: flex;\n  width: 100%;\n}\n\n.callResultOpp-module__pitch__wrapper__wtKmK {\n  display: flex;\n  align-items: center;\n}\n\n.callResultOpp-module__pitch_select__wrapper__rPqaJ {\n  margin-left: 15px;\n  flex: 1;\n}\n\n.callResultOpp-module__note__sDLKP {\n  display: flex;\n  flex-direction: column;\n  flex-grow: 1;\n  border-radius: 4px;\n  border: 1px solid var(--softPeanut);\n  height: 100%;\n  max-height: 100%;\n}\n\n.callResultOpp-module_skip_button__Air1B {\n  margin-left: auto;\n  margin-right: 16px;\n}\n\n.callResultOpp-module_back_button__xe-N6 {\n  margin-left: 0px;\n  margin-right: auto;\n}\n";
+var styles$t = {"_labels__wrapper":"callResultOpp-module__labels__wrapper__BIZKi","_label__content":"callResultOpp-module__label__content__WsF77","_section__wrapper":"callResultOpp-module__section__wrapper__tv23n","_section_title__wrapper":"callResultOpp-module__section_title__wrapper__vl6Hp","_chips__wrapper":"callResultOpp-module__chips__wrapper__ta08F","_buttons__wrapper":"callResultOpp-module__buttons__wrapper__pc4bt","_pitch__wrapper":"callResultOpp-module__pitch__wrapper__wtKmK","_pitch_select__wrapper":"callResultOpp-module__pitch_select__wrapper__rPqaJ","_note":"callResultOpp-module__note__sDLKP","skip_button":"callResultOpp-module_skip_button__Air1B","back_button":"callResultOpp-module_back_button__xe-N6"};
+styleInject(css_248z$t);
+
+function _typeof$H(obj) { "@babel/helpers - typeof"; return _typeof$H = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$H(obj); }
+function ownKeys$w(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$w(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$w(Object(source), !0).forEach(function (key) { _defineProperty$G(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$w(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$G(obj, key, value) { key = _toPropertyKey$G(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$G(arg) { var key = _toPrimitive$G(arg, "string"); return _typeof$H(key) === "symbol" ? key : String(key); }
+function _toPrimitive$G(input, hint) { if (_typeof$H(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$H(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$z(arr, i) { return _arrayWithHoles$z(arr) || _iterableToArrayLimit$z(arr, i) || _unsupportedIterableToArray$z(arr, i) || _nonIterableRest$z(); }
+function _nonIterableRest$z() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$z(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$z(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$z(o, minLen); }
+function _arrayLikeToArray$z(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$z(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$z(arr) { if (Array.isArray(arr)) return arr; }
+var isCorrectContact = function isCorrectContact(logicRole) {
+  return logicRole === CALL_RESULTS_LOGIC_ROLE.CORRECT_CONTACT;
+};
+function NoteRichTextEditor$1(_ref) {
+  var note = _ref.note,
+    onChange = _ref.onChange;
+  var plugins = useRichTextEditorPlugins({
+    images: false,
+    replaceParagraphs: true
+  });
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards.steps.callResultOpp'
+    }),
+    t = _useTranslation.t;
+  return /*#__PURE__*/jsx("div", {
+    className: styles$t._note,
+    children: /*#__PURE__*/jsx(RichTextEditor, {
+      defaultValue: note,
+      plugins: plugins,
+      placeholder: t('placeholder'),
+      onChange: onChange,
+      style: {
+        padding: '12px 28px 4px 28px'
+      },
+      children: function children(editor) {
+        return /*#__PURE__*/jsxs(Fragment, {
+          children: [/*#__PURE__*/jsx("div", {
+            className: styles$t.editorContent,
+            children: editor
+          }), /*#__PURE__*/jsx("div", {
+            className: styles$t.toolbar,
+            children: /*#__PURE__*/jsxs(EditorToolbar, {
+              backgroundColor: "white",
+              children: [/*#__PURE__*/jsx(EditorToolbarControlsSection, {
+                color: "peanut"
+              }), /*#__PURE__*/jsx(EditorToolbarFontStylesSection, {
+                color: "peanut"
+              }), /*#__PURE__*/jsx(EditorToolbarTextMarksSection, {
+                color: "peanut"
+              }), /*#__PURE__*/jsx(EditorToolbarListsSection, {
+                color: "peanut"
+              })]
+            })
+          })]
+        });
+      }
+    })
+  });
+}
+var CallResultOpportunity = function CallResultOpportunity(_ref2) {
+  var _callResultStepData$c3, _callResultStepData$c4;
+  var handleBack = _ref2.handleBack,
+    handleSkip = _ref2.handleSkip,
+    buttonsConfig = _ref2.buttonsConfig,
+    wizardKey = _ref2.wizardKey,
+    send = _ref2.send,
+    machineContext = _ref2.machineContext;
+  var _useState = useState([]),
+    _useState2 = _slicedToArray$z(_useState, 2),
+    callResults = _useState2[0],
+    setCallResults = _useState2[1];
+  var _useState3 = useState(false),
+    _useState4 = _slicedToArray$z(_useState3, 2),
+    isAST = _useState4[0],
+    setIsAST = _useState4[1];
+  var _useWizardContext = useWizardContext(),
+    getWizardProperties = _useWizardContext.getWizardProperties,
+    hasCustomWizardsEnabled = _useWizardContext.hasCustomWizardsEnabled;
+  var _getWizardProperties = getWizardProperties(wizardKey),
+    activity = _getWizardProperties.bobject;
+  var _useActivityRelatedIn = useActivityRelatedInfo(wizardKey),
+    referenceBobjectIsSales = _useActivityRelatedIn.referenceBobjectIsSales;
+  var dataModel = useDataModel();
+  var _useCallResultStepDat = useCallResultStepData(activity, dataModel, null),
+    callResultStepData = _useCallResultStepDat.callResultStepData,
+    setCallResultStepData = _useCallResultStepDat.setCallResultStepData,
+    callResultsPicklistValues = _useCallResultStepDat.callResultsPicklistValues;
+  var _useNoteStepData = useNoteStepData(),
+    noteStepData = _useNoteStepData.noteStepData,
+    setNoteStepData = _useNoteStepData.setNoteStepData;
+  var _useContactFlowData = useContactFlowData(),
+    handleSubmit = _useContactFlowData.handleSubmit;
+  var _useTranslation2 = useTranslation('translation', {
+      keyPrefix: 'wizards.steps.callResultOpp'
+    }),
+    t = _useTranslation2.t;
+  var _useTranslation3 = useTranslation('translation', {
+      keyPrefix: 'wizards.common'
+    }),
+    commonT = _useTranslation3.t;
+  var _useNotifications = useNotifications(),
+    removeNotificationByObjectId = _useNotifications.removeNotificationByObjectId;
+  function deleteRelatedNotification(activity) {
+    if (activity) {
+      var _activity$id;
+      removeNotificationByObjectId(activity === null || activity === void 0 ? void 0 : (_activity$id = activity.id) === null || _activity$id === void 0 ? void 0 : _activity$id.objectId);
+    }
+  }
+  function handleNext(correctContact) {
+    deleteRelatedNotification(activity);
+    mixpanel.track(MIXPANEL_EVENTS.CLICK_ON_NEXT_IN_WIZARD_STEP_ + 'CALL_RESULTS_OPP');
+    send(EVENTS.NEXT, {
+      isCorrectContact: correctContact,
+      isLeadInSalesStage: referenceBobjectIsSales
+    });
+  }
+
+  //const [notificationId] = useSharedState('notificationId');
+  var correctContact = callResultsPicklistValues.find(function (result) {
+    return result.logicRole === CALL_RESULTS_LOGIC_ROLE.CORRECT_CONTACT;
+  });
+  var showSkipButton = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton : false;
+  var hasPreviousStep = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep : false;
+  var openCadenceControlOnClose = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip : false;
+
+  // That's awful, I know. But we should do it for cases that they change the no answer
+  var noAnswer = callResultsPicklistValues.find(function (result) {
+    return result.logicRole === CALL_RESULTS_LOGIC_ROLE.NO_ANSWER || (result === null || result === void 0 ? void 0 : result.name) === 'No Answer';
+  });
+  //const removeNotification = useNotificationDelete();
+
+  var plugins = useRichTextEditorPlugins({
+    images: false,
+    replaceParagraphs: true
+  });
+  useEffect(function () {
+    if (activity && !noteStepData) {
+      var noteField = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.NOTE);
+      if (isHtml(noteField === null || noteField === void 0 ? void 0 : noteField.value)) {
+        setNoteStepData({
+          value: deserialize(noteField === null || noteField === void 0 ? void 0 : noteField.value, {
+            format: 'HTML',
+            plugins: plugins
+          }),
+          fieldId: noteField === null || noteField === void 0 ? void 0 : noteField.name
+        });
+        setIsAST(true);
+      } else {
+        setNoteStepData({
+          value: noteField.text,
+          fieldId: noteField.name
+        });
+      }
+    }
+  }, [activity]);
+  useEffect(function () {
+    if (callResultsPicklistValues.length > 0 && callResults.length === 0) {
+      setCallResults(callResultsPicklistValues);
+    }
+  }, [callResultsPicklistValues]);
+  var saveAndNext = function saveAndNext() {
+    var _machineContext$wizar, _machineContext$wizar2, _callResultStepData$c;
+    var data = _defineProperty$G(_defineProperty$G({}, ACTIVITY_FIELDS_LOGIC_ROLE.CALL_RESULT, callResultStepData === null || callResultStepData === void 0 ? void 0 : callResultStepData.callResult.logicRole), ACTIVITY_FIELDS_LOGIC_ROLE.NOTE, isAST ? serialize(noteStepData === null || noteStepData === void 0 ? void 0 : noteStepData.value, {
+      format: 'AST',
+      plugins: plugins
+    }) : noteStepData === null || noteStepData === void 0 ? void 0 : noteStepData.value);
+    if (!hasCustomWizardsEnabled || (machineContext === null || machineContext === void 0 ? void 0 : (_machineContext$wizar = machineContext.wizardConfig) === null || _machineContext$wizar === void 0 ? void 0 : _machineContext$wizar.markReportedAtStart) === true || (machineContext === null || machineContext === void 0 ? void 0 : (_machineContext$wizar2 = machineContext.wizardConfig) === null || _machineContext$wizar2 === void 0 ? void 0 : _machineContext$wizar2.markReportedAtStart) === undefined) {
+      data[ACTIVITY_FIELDS_LOGIC_ROLE.REPORTED] = REPORTED_VALUES_LOGIC_ROLE.YES;
+    }
+    handleSubmit({
+      activity: activity,
+      data: data
+    });
+    /*    if (notificationId) {
+      removeNotification(notificationId);
+    }*/
+    handleNext(isCorrectContact(callResultStepData === null || callResultStepData === void 0 ? void 0 : (_callResultStepData$c = callResultStepData.callResult) === null || _callResultStepData$c === void 0 ? void 0 : _callResultStepData$c.logicRole));
+  };
+  useEffect(function () {
+    mixpanel.track('ENTERED_IN_CC_OPPORTUNITY_STEP1');
+  }, []);
+  useEffect(function () {
+    var _callResultStepData$c2;
+    if (!(callResultStepData !== null && callResultStepData !== void 0 && (_callResultStepData$c2 = callResultStepData.callResult) !== null && _callResultStepData$c2 !== void 0 && _callResultStepData$c2.logicRole)) {
+      setCallResultStepData(_objectSpread$w(_objectSpread$w({}, callResultStepData), {}, {
+        /*@ts-ignore*/
+        callResult: noAnswer
+      }));
+    }
+  }, [callResultStepData === null || callResultStepData === void 0 ? void 0 : callResultStepData.callResult]);
+  var textarea = isAST ? /*#__PURE__*/jsx(NoteRichTextEditor$1, {
+    note: noteStepData === null || noteStepData === void 0 ? void 0 : noteStepData.value,
+    onChange: function onChange(value) {
+      return setNoteStepData(_objectSpread$w(_objectSpread$w({}, noteStepData), {}, {
+        value: value
+      }));
+    }
+  }) : /*#__PURE__*/jsx(TextArea, {
+    value: noteStepData === null || noteStepData === void 0 ? void 0 : noteStepData.value,
+    rows: 16,
+    placeholder: !(noteStepData !== null && noteStepData !== void 0 && noteStepData.value) ? t('addANote') : null,
+    width: "100%",
+    onChange: function onChange(value) {
+      return setNoteStepData(_objectSpread$w(_objectSpread$w({}, noteStepData), {}, {
+        value: value
+      }));
+    }
+  });
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsxs(ModalContent, {
+      children: [/*#__PURE__*/jsx(CallInfo, {
+        activity: activity
+      }), /*#__PURE__*/jsxs("div", {
+        className: styles$t._section__wrapper,
+        children: [/*#__PURE__*/jsx("div", {
+          className: styles$t._section_title__wrapper,
+          children: /*#__PURE__*/jsx(Text, {
+            dataTest: "Text-Modal-CallResultOpp",
+            size: "m",
+            weight: "medium",
+            color: "peanut",
+            children: t('ableToContact')
+          })
+        }), /*#__PURE__*/jsxs(ChipGroup, {
+          value: isCorrectContact(callResultStepData === null || callResultStepData === void 0 ? void 0 : (_callResultStepData$c3 = callResultStepData.callResult) === null || _callResultStepData$c3 === void 0 ? void 0 : _callResultStepData$c3.logicRole) ? 'yes' : 'no',
+          onChange: function onChange(value) {
+            setCallResultStepData(_objectSpread$w(_objectSpread$w({}, callResultStepData), {}, {
+              /*@ts-ignore*/
+              callResult: value === 'yes' ? correctContact : noAnswer
+            }));
+          },
+          children: [/*#__PURE__*/jsx(Chip, {
+            dataTest: "Opportunity-Yes",
+            value: "yes",
+            children: t('yes')
+          }), /*#__PURE__*/jsx(Chip, {
+            dataTest: "Opportunity-No",
+            value: "no",
+            children: t('no')
+          })]
+        })]
+      }), /*#__PURE__*/jsxs("div", {
+        className: styles$t._section__wrapper,
+        children: [/*#__PURE__*/jsx("div", {
+          className: styles$t._section_title__wrapper,
+          children: /*#__PURE__*/jsx(Text, {
+            size: "m",
+            weight: "medium",
+            color: "peanut",
+            children: t('addInfo')
+          })
+        }), textarea]
+      })]
+    }), /*#__PURE__*/jsx(ModalFooter, {
+      children: /*#__PURE__*/jsxs("div", {
+        className: styles$t._buttons__wrapper,
+        children: [hasPreviousStep && /*#__PURE__*/jsx(Button, {
+          variant: "clear",
+          onClick: handleBack,
+          className: styles$t.back_button,
+          children: (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.previousButtonTitle) || commonT('back')
+        }), showSkipButton && /*#__PURE__*/jsx(Button, {
+          variant: "secondary",
+          onClick: function onClick() {
+            return handleSkip(openCadenceControlOnClose);
+          },
+          className: styles$t.skip_button,
+          children: commonT('skipWizard')
+        }), /*#__PURE__*/jsx(Button, {
+          dataTest: "Form-Next",
+          onClick: saveAndNext,
+          disabled: !(callResultStepData !== null && callResultStepData !== void 0 && (_callResultStepData$c4 = callResultStepData.callResult) !== null && _callResultStepData$c4 !== void 0 && _callResultStepData$c4.logicRole),
+          children: (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.nextButtonTitle) || commonT('next')
+        })]
+      })
+    })]
+  });
+};
+
+function _typeof$G(obj) { "@babel/helpers - typeof"; return _typeof$G = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$G(obj); }
+function ownKeys$v(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$v(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$v(Object(source), !0).forEach(function (key) { _defineProperty$F(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$v(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$F(obj, key, value) { key = _toPropertyKey$F(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$F(arg) { var key = _toPrimitive$F(arg, "string"); return _typeof$G(key) === "symbol" ? key : String(key); }
+function _toPrimitive$F(input, hint) { if (_typeof$G(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$G(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$y(arr, i) { return _arrayWithHoles$y(arr) || _iterableToArrayLimit$y(arr, i) || _unsupportedIterableToArray$y(arr, i) || _nonIterableRest$y(); }
+function _nonIterableRest$y() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$y(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$y(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$y(o, minLen); }
+function _arrayLikeToArray$y(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$y(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$y(arr) { if (Array.isArray(arr)) return arr; }
+var bulkUpdateActivity = function bulkUpdateActivity(activitiesData, accountId) {
+  api.patch("/bobjects/".concat(accountId, "/Activity/bulk"), activitiesData);
+};
+var updateActivity = function updateActivity(activityId, data, accountId) {
+  return api.patch("/bobjects/".concat(accountId, "/Activity/").concat(activityId, "/raw"), data);
+};
+var useChangeStatusStepData = function useChangeStatusStepData() {
+  var dataModel = useDataModel();
+  var _useWizardContext = useWizardContext(),
+    accountId = _useWizardContext.accountId;
+  var _useState = useState({
+      companyStatus: undefined,
+      leadStatus: undefined,
+      opportunityStatus: undefined
+    }),
+    _useState2 = _slicedToArray$y(_useState, 2),
+    changeStatusStepData = _useState2[0],
+    setChangeStatusStepData = _useState2[1];
+  var reportedValues = dataModel.findValuesByFieldLogicRole(ACTIVITY_FIELDS_LOGIC_ROLE.REPORTED);
+  var meetingReportValues = dataModel.findValuesByFieldLogicRole(ACTIVITY_FIELDS_LOGIC_ROLE.MEETING_RESULT);
+  var bulkReportedActivityResult = function bulkReportedActivityResult(_ref) {
+    var valueLogicRole = _ref.valueLogicRole,
+      activitiesId = _ref.activitiesId;
+    var reported = reportedValues.find(function (status) {
+      return status.logicRole === valueLogicRole;
+    });
+    var activitiesData = {};
+    activitiesId.forEach(function (activityId) {
+      activitiesData = _objectSpread$v(_objectSpread$v({}, activitiesData), {}, _defineProperty$F({}, activityId, _defineProperty$F({}, ACTIVITY_FIELDS_LOGIC_ROLE.REPORTED, reported.id)));
+    });
+    bulkUpdateActivity(activitiesData, accountId);
+  };
+  var reportedActivityResult = function reportedActivityResult(_ref2) {
+    var valueLogicRole = _ref2.valueLogicRole,
+      activityId = _ref2.activityId,
+      activity = _ref2.activity;
+    var activityType = getValueFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.TYPE);
+    var updateData;
+    if (activityType && activityType === ACTIVITY_TYPES.MEETING) {
+      var reportedResult = meetingReportValues.find(function (status) {
+        return status.logicRole === valueLogicRole;
+      });
+      updateData = _defineProperty$F(_defineProperty$F({}, ACTIVITY_FIELDS_LOGIC_ROLE.MEETING_RESULT, (reportedResult === null || reportedResult === void 0 ? void 0 : reportedResult.id) || valueLogicRole), ACTIVITY_FIELDS_LOGIC_ROLE.REPORTED, valueLogicRole ? REPORTED_VALUES_LOGIC_ROLE.YES : REPORTED_VALUES_LOGIC_ROLE.NO);
+    } else {
+      var reported = reportedValues.find(function (status) {
+        return status.logicRole === valueLogicRole;
+      });
+      updateData = _defineProperty$F({}, ACTIVITY_FIELDS_LOGIC_ROLE.REPORTED, reported ? reported === null || reported === void 0 ? void 0 : reported.id : REPORTED_VALUES_LOGIC_ROLE.NO);
+    }
+    var activityIdToUpdate = (activity === null || activity === void 0 ? void 0 : activity.id.objectId) || activityId;
+    updateActivity(activityIdToUpdate, updateData, accountId);
+  };
+  return {
+    changeStatusStepData: changeStatusStepData,
+    setChangeStatusStepData: setChangeStatusStepData,
+    bulkReportedActivityResult: bulkReportedActivityResult,
+    reportedActivityResult: reportedActivityResult
+  };
+};
+
+function _typeof$F(obj) { "@babel/helpers - typeof"; return _typeof$F = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$F(obj); }
+function ownKeys$u(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$u(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$u(Object(source), !0).forEach(function (key) { _defineProperty$E(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$u(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$E(obj, key, value) { key = _toPropertyKey$E(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$E(arg) { var key = _toPrimitive$E(arg, "string"); return _typeof$F(key) === "symbol" ? key : String(key); }
+function _toPrimitive$E(input, hint) { if (_typeof$F(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$F(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var useStatusPicklistValue = function useStatusPicklistValue(dataModel) {
+  var getStatusPicklistValues = function getStatusPicklistValues(dataModel) {
+    var _dataModel$findValues, _dataModel$findValues2, _dataModel$findValues3, _dataModel$findValues4, _dataModel$findValues5, _dataModel$findValues6, _dataModel$findValues7, _dataModel$findValues8;
+    var companyStatusPicklistValues = (_dataModel$findValues = dataModel.findValuesByFieldLogicRole(COMPANY_FIELDS_LOGIC_ROLE.STATUS)) === null || _dataModel$findValues === void 0 ? void 0 : (_dataModel$findValues2 = _dataModel$findValues.filter(function (companyStatus) {
+      return companyStatus.isEnabled;
+    })) === null || _dataModel$findValues2 === void 0 ? void 0 : _dataModel$findValues2.sort(function (a, b) {
+      return a.value < b.value ? -1 : 1;
+    });
+    var leadStatusPicklistValues = (_dataModel$findValues3 = dataModel.findValuesByFieldLogicRole(LEAD_FIELDS_LOGIC_ROLE.STATUS)) === null || _dataModel$findValues3 === void 0 ? void 0 : (_dataModel$findValues4 = _dataModel$findValues3.filter(function (leadStatus) {
+      return leadStatus.isEnabled;
+    })) === null || _dataModel$findValues4 === void 0 ? void 0 : _dataModel$findValues4.sort(function (a, b) {
+      return a.value < b.value ? -1 : 1;
+    });
+    var companySalesStatusPicklistValues = (_dataModel$findValues5 = dataModel.findValuesByFieldLogicRole(COMPANY_FIELDS_LOGIC_ROLE.SALES_STATUS)) === null || _dataModel$findValues5 === void 0 ? void 0 : (_dataModel$findValues6 = _dataModel$findValues5.filter(function (companyStatus) {
+      return companyStatus.isEnabled;
+    })) === null || _dataModel$findValues6 === void 0 ? void 0 : _dataModel$findValues6.sort(function (a, b) {
+      return a.value < b.value ? -1 : 1;
+    });
+    var leadSalesStatusPicklistValues = (_dataModel$findValues7 = dataModel.findValuesByFieldLogicRole(LEAD_FIELDS_LOGIC_ROLE.SALES_STATUS)) === null || _dataModel$findValues7 === void 0 ? void 0 : (_dataModel$findValues8 = _dataModel$findValues7.filter(function (leadStatus) {
+      return leadStatus.isEnabled;
+    })) === null || _dataModel$findValues8 === void 0 ? void 0 : _dataModel$findValues8.sort(function (a, b) {
+      return a.value < b.value ? -1 : 1;
+    });
+    return {
+      companyStatusPicklistValues: companyStatusPicklistValues,
+      leadStatusPicklistValues: leadStatusPicklistValues,
+      companySalesStatusPicklistValues: companySalesStatusPicklistValues,
+      leadSalesStatusPicklistValues: leadSalesStatusPicklistValues
+    };
+  };
+  var picklistValues = getStatusPicklistValues(dataModel);
+  return _objectSpread$u({}, picklistValues);
+};
+
+var AVAILABLE_COMPANY_STATUSES$1 = [COMPANY_SALES_STATUS_VALUES_LOGIC_ROLE.ACTIVE, COMPANY_SALES_STATUS_VALUES_LOGIC_ROLE.ON_HOLD, COMPANY_SALES_STATUS_VALUES_LOGIC_ROLE.NURTURING, COMPANY_SALES_STATUS_VALUES_LOGIC_ROLE.DISCARDED, COMPANY_SALES_STATUS_VALUES_LOGIC_ROLE.CLIENT];
+var AVAILABLE_LEAD_STATUSES$1 = [LEAD_SALES_STATUS_VALUES_LOGIC_ROLE.ACTIVE, LEAD_SALES_STATUS_VALUES_LOGIC_ROLE.ON_HOLD, LEAD_SALES_STATUS_VALUES_LOGIC_ROLE.NURTURING, LEAD_SALES_STATUS_VALUES_LOGIC_ROLE.DISCARDED, LEAD_SALES_STATUS_VALUES_LOGIC_ROLE.CLIENT];
+
+var css_248z$s = ".changeSalesStatus-module__section__wrapper__3tcQd {\n  margin-bottom: 24px;\n}\n\n.changeSalesStatus-module__content__wrapper__zjIL4 {\n  padding-top: 5px;\n  display: flex;\n  flex-flow: row;\n  justify-content: space-around;\n  width: 100%;\n}\n\n.changeSalesStatus-module__lead_info_container__TvDgf {\n  width: 180px;\n  margin: 0 auto;\n}\n\n.changeSalesStatus-module__name__wrapper__38aDb {\n  display: flex;\n  margin-bottom: 16px;\n  justify-content: center;\n  margin-left: -12px;\n}\n\n.changeSalesStatus-module__name__wrapper__38aDb > p {\n  text-overflow: ellipsis;\n  overflow: hidden;\n  white-space: nowrap;\n  max-width: 230px;\n}\n\n.changeSalesStatus-module__name__wrapper__38aDb > svg {\n  margin-right: 4px;\n}\n\n.changeSalesStatus-module__currentStatus__wrapper__m-Zn3 {\n  margin-bottom: 24px;\n}\n\n.changeSalesStatus-module__currentStatus__wrapper__m-Zn3 > div {\n  padding: 4px 16px;\n  text-align: center;\n  opacity: 0.5;\n}\n\n.changeSalesStatus-module__change_lead_status__wrapper__UXPIK {\n  width: 420px;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n}\n\n.changeSalesStatus-module__change_company_status__wrapper__Jb389 {\n  width: 250px;\n}\n\n.changeSalesStatus-module__list_status__eoetE {\n  width: 180px;\n  margin: auto;\n}\n\n.changeSalesStatus-module__list_status__eoetE > div {\n  display: flex;\n  flex-direction: column;\n  margin-bottom: 12px;\n}\n\n.changeSalesStatus-module__list_status__eoetE > div > div,\n.changeSalesStatus-module__currentStatus__wrapper__m-Zn3 > div {\n  width: 148px;\n}\n\n.changeSalesStatus-module__radios_list_status__snYu5 {\n  width: 420px;\n}\n\n.changeSalesStatus-module__radios_list_status__snYu5 > div > div {\n  letter-spacing: 0;\n  margin-bottom: 10px;\n  padding: 6px 12px;\n}\n\n.changeSalesStatus-module__title__wrapper__rF-K- {\n  margin-bottom: 15px;\n}\n\n.changeSalesStatus-module__title__wrapper__centered__OMJ0r {\n  display: flex;\n  justify-content: center;\n}\n\n.changeSalesStatus-module__reason__wrapper__iXn0F {\n  margin-right: 15px;\n  width: 50%;\n}\n\n.changeSalesStatus-module__buttons__wrapper__zD5PL {\n  display: flex;\n  width: 100%;\n}\n\n.changeSalesStatus-module_skip_button__d2G9C {\n  margin-left: auto;\n  margin-right: 16px;\n}\n\n.changeSalesStatus-module_back_button__uxMe1 {\n  margin-left: 0px;\n  margin-right: auto;\n}\n";
+var styles$s = {"_section__wrapper":"changeSalesStatus-module__section__wrapper__3tcQd","_content__wrapper":"changeSalesStatus-module__content__wrapper__zjIL4","_lead_info_container":"changeSalesStatus-module__lead_info_container__TvDgf","_name__wrapper":"changeSalesStatus-module__name__wrapper__38aDb","_currentStatus__wrapper":"changeSalesStatus-module__currentStatus__wrapper__m-Zn3","_change_lead_status__wrapper":"changeSalesStatus-module__change_lead_status__wrapper__UXPIK","_change_company_status__wrapper":"changeSalesStatus-module__change_company_status__wrapper__Jb389","_list_status":"changeSalesStatus-module__list_status__eoetE","_radios_list_status":"changeSalesStatus-module__radios_list_status__snYu5","_title__wrapper":"changeSalesStatus-module__title__wrapper__rF-K-","_title__wrapper__centered":"changeSalesStatus-module__title__wrapper__centered__OMJ0r","_reason__wrapper":"changeSalesStatus-module__reason__wrapper__iXn0F","_buttons__wrapper":"changeSalesStatus-module__buttons__wrapper__zD5PL","skip_button":"changeSalesStatus-module_skip_button__d2G9C","back_button":"changeSalesStatus-module_back_button__uxMe1"};
+styleInject(css_248z$s);
+
+function _typeof$E(obj) { "@babel/helpers - typeof"; return _typeof$E = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$E(obj); }
+function ownKeys$t(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$t(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$t(Object(source), !0).forEach(function (key) { _defineProperty$D(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$t(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$D(obj, key, value) { key = _toPropertyKey$D(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$D(arg) { var key = _toPrimitive$D(arg, "string"); return _typeof$E(key) === "symbol" ? key : String(key); }
+function _toPrimitive$D(input, hint) { if (_typeof$E(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$E(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$x(arr, i) { return _arrayWithHoles$x(arr) || _iterableToArrayLimit$x(arr, i) || _unsupportedIterableToArray$x(arr, i) || _nonIterableRest$x(); }
+function _nonIterableRest$x() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$x(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$x(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$x(o, minLen); }
+function _arrayLikeToArray$x(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$x(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$x(arr) { if (Array.isArray(arr)) return arr; }
+//TODO refactor
+var updateEntity$1 = function updateEntity(idValue, data) {
+  return api.patch("/bobjects/".concat(idValue, "/raw"), data);
+};
+var fetcherReason$1 = function fetcherReason(url) {
+  return api.get(url);
+};
+var getStatusName = function getStatusName(statusLogicRole) {
+  var status = statusLogicRole.split('__')[2];
+  return status === null || status === void 0 ? void 0 : status.toLowerCase();
+};
+//TODO this should be COMPLETELY redone
+var ChangeSalesStatus = function ChangeSalesStatus(_ref) {
+  var _referenceBobject$id, _changeStatusStepData, _changeStatusStepData2, _referenceBobject$id2, _changeStatusStepData3;
+  var handleBack = _ref.handleBack,
+    handleNext = _ref.handleNext,
+    handleSkip = _ref.handleSkip,
+    buttonsConfig = _ref.buttonsConfig,
+    wizardKey = _ref.wizardKey;
+  var _useWizardContext = useWizardContext(),
+    getWizardProperties = _useWizardContext.getWizardProperties;
+  var _getWizardProperties = getWizardProperties(wizardKey),
+    referenceBobject = _getWizardProperties.referenceBobject;
+  var dataModel = useDataModel();
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  var _useState = useState(),
+    _useState2 = _slicedToArray$x(_useState, 2),
+    selectedReasons = _useState2[0],
+    setSelectedReasons = _useState2[1];
+  var _useChangeStatusStepD = useChangeStatusStepData(),
+    changeStatusStepData = _useChangeStatusStepD.changeStatusStepData,
+    setChangeStatusStepData = _useChangeStatusStepD.setChangeStatusStepData;
+  var _useActivityRelatedIn = useActivityRelatedInfo(wizardKey),
+    company = _useActivityRelatedIn.activityCompany,
+    lead = _useActivityRelatedIn.activityLead;
+  var _useStatusPicklistVal = useStatusPicklistValue(dataModel),
+    leadSalesStatusPicklistValues = _useStatusPicklistVal.leadSalesStatusPicklistValues,
+    companySalesStatusPicklistValues = _useStatusPicklistVal.companySalesStatusPicklistValues;
+  var referenceBobjectType = referenceBobject === null || referenceBobject === void 0 ? void 0 : (_referenceBobject$id = referenceBobject.id) === null || _referenceBobject$id === void 0 ? void 0 : _referenceBobject$id.typeName;
+  var hasLeadReference = isLead(referenceBobject);
+  var mainBobjectStatusKey = "".concat(referenceBobjectType === null || referenceBobjectType === void 0 ? void 0 : referenceBobjectType.toLowerCase(), "Status");
+  var salesStatusField = hasLeadReference ? getFieldByLogicRole(lead, LEAD_FIELDS_LOGIC_ROLE.SALES_STATUS) : getFieldByLogicRole(company, COMPANY_FIELDS_LOGIC_ROLE.SALES_STATUS);
+  var referenceBobjectName = hasLeadReference ? getValueFromLogicRole(lead, LEAD_FIELDS_LOGIC_ROLE.FULL_NAME) : getValueFromLogicRole(company, COMPANY_FIELDS_LOGIC_ROLE.NAME);
+  var showSkipButton = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton : true;
+  var hasPreviousStep = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep : true;
+  var openCadenceControlOnClose = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip : true;
+  var _useSWR = useSWR("/utils/service/view/field/statusReasons/".concat(referenceBobjectType, "?stage=SALES"), fetcherReason$1),
+    reasons = _useSWR.data;
+  var getStatusValues = function getStatusValues() {
+    var statusPicklistValues = hasLeadReference ? leadSalesStatusPicklistValues : companySalesStatusPicklistValues;
+    var availableStatus = hasLeadReference ? AVAILABLE_LEAD_STATUSES$1 : AVAILABLE_COMPANY_STATUSES$1;
+    return statusPicklistValues.filter(function (fieldStatus) {
+      return availableStatus.indexOf(fieldStatus.logicRole) > -1;
+    }).sort(function (a, b) {
+      return (availableStatus === null || availableStatus === void 0 ? void 0 : availableStatus.indexOf(a.logicRole)) - (availableStatus === null || availableStatus === void 0 ? void 0 : availableStatus.indexOf(b.logicRole));
+    }).map(function (fieldStatus) {
+      return {
+        name: fieldStatus.name,
+        logicRole: fieldStatus.logicRole,
+        backgroundColor: fieldStatus.backgroundColor,
+        outlineColor: fieldStatus.outlineColor,
+        textColor: fieldStatus.textColor
+      };
+    });
+  };
+  var isNurturing = (_changeStatusStepData = changeStatusStepData[mainBobjectStatusKey]) === null || _changeStatusStepData === void 0 ? void 0 : _changeStatusStepData.includes('NURTURING');
+  var isDiscarded = (_changeStatusStepData2 = changeStatusStepData[mainBobjectStatusKey]) === null || _changeStatusStepData2 === void 0 ? void 0 : _changeStatusStepData2.includes('DISCARDED');
+  var bobjectStatuses = getStatusValues();
+  useEffect(function () {
+    if (salesStatusField) {
+      var _ref2;
+      setChangeStatusStepData(_objectSpread$t(_objectSpread$t(_objectSpread$t({}, changeStatusStepData), !changeStatusStepData[mainBobjectStatusKey] ? _defineProperty$D({}, mainBobjectStatusKey, (_ref2 = hasLeadReference ? leadSalesStatusPicklistValues.find(function (field) {
+        return field.logicRole === salesStatusField.valueLogicRole;
+      }) : companySalesStatusPicklistValues.find(function (field) {
+        return field.logicRole === salesStatusField.valueLogicRole;
+      })) === null || _ref2 === void 0 ? void 0 : _ref2.logicRole) : {}), {}, _defineProperty$D({}, "".concat(referenceBobjectType === null || referenceBobjectType === void 0 ? void 0 : referenceBobjectType.toLowerCase(), "ReasonToDiscard"), Array.isArray(selectedReasons) ? selectedReasons[0] : undefined)));
+    }
+  }, [referenceBobject === null || referenceBobject === void 0 ? void 0 : (_referenceBobject$id2 = referenceBobject.id) === null || _referenceBobject$id2 === void 0 ? void 0 : _referenceBobject$id2.objectId, selectedReasons]);
+  useEffect(function () {
+    if (isNurturing || isDiscarded) {
+      var bobjectTypeName = referenceBobjectType.toUpperCase();
+      var bobjectStatus = changeStatusStepData[mainBobjectStatusKey].split('__')[2];
+      var reasonsField = reasons === null || reasons === void 0 ? void 0 : reasons.data.find(function (field) {
+        return field.logicRole === "".concat(bobjectTypeName, "__SALES_").concat(bobjectStatus, "_REASONS");
+      });
+      if (reasonsField) {
+        setSelectedReasons(reasonsField.fieldValues);
+      }
+    }
+  }, [changeStatusStepData[mainBobjectStatusKey], reasons]);
+  var save = function save(id, status, entity, reasonToDiscard) {
+    var bobjectTypeName = entity === null || entity === void 0 ? void 0 : entity.toUpperCase();
+    var bobjectStatus = status === null || status === void 0 ? void 0 : status.split('__')[2];
+    var data = _defineProperty$D({}, "".concat(bobjectTypeName, "__SALES_STATUS"), status);
+    if (reasonToDiscard && (status !== null && status !== void 0 && status.includes('NURTURING') || status !== null && status !== void 0 && status.includes('DISCARDED'))) {
+      data = _objectSpread$t(_objectSpread$t({}, data), {}, _defineProperty$D({}, "".concat(bobjectTypeName, "__SALES_").concat(bobjectStatus, "_REASONS"), reasonToDiscard.value));
+    }
+    updateEntity$1(referenceBobject.id.value, data);
+  };
+  var saveAndClose = function saveAndClose() {
+    if (hasLeadReference) {
+      save(lead === null || lead === void 0 ? void 0 : lead.id.objectId, changeStatusStepData.leadStatus, BobjectTypes.Lead, changeStatusStepData.leadReasonToDiscard);
+    } else {
+      save(company === null || company === void 0 ? void 0 : company.id.objectId, changeStatusStepData.companyStatus, BobjectTypes.Company, changeStatusStepData.companyReasonToDiscard);
+    }
+    handleNext(changeStatusStepData.companyStatus, changeStatusStepData.leadStatus);
+  };
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsx(ModalContent, {
+      children: /*#__PURE__*/jsxs(ModalSection, {
+        size: "l",
+        title: t('wizards.steps.changeSalesStatus.title', {
+          bobjectType: t('common.' + lead ? 'lead' : 'company')
+        }),
+        children: [/*#__PURE__*/jsx("div", {
+          className: styles$s._section__wrapper,
+          children: /*#__PURE__*/jsx("div", {
+            className: styles$s._content__wrapper,
+            children: /*#__PURE__*/jsxs("div", {
+              className: styles$s._change_company_status__wrapper,
+              children: [/*#__PURE__*/jsxs("div", {
+                className: styles$s._name__wrapper,
+                children: [/*#__PURE__*/jsx(Icon, {
+                  color: "verySoftPeanut",
+                  name: isLead(referenceBobject) ? 'people' : 'company'
+                }), /*#__PURE__*/jsx(Text, {
+                  dataTest: "Text-Modal-StatusUpdate",
+                  size: "m",
+                  color: "peanut",
+                  children: referenceBobjectName
+                })]
+              }), /*#__PURE__*/jsx("div", {
+                className: styles$s._list_status,
+                children: bobjectStatuses.map(function (bobjectStatus) {
+                  var key = referenceBobjectType === null || referenceBobjectType === void 0 ? void 0 : referenceBobjectType.toLowerCase();
+                  var isSelected = (bobjectStatus === null || bobjectStatus === void 0 ? void 0 : bobjectStatus.logicRole) === changeStatusStepData["".concat(key, "Status")];
+                  var style = {
+                    backgroundColor: bobjectStatus.backgroundColor,
+                    borderColor: bobjectStatus.outlineColor,
+                    color: bobjectStatus.textColor
+                  };
+                  var overrideStyle = isSelected ? {
+                    selectedStyle: style
+                  } : null;
+                  return /*#__PURE__*/jsx(Label, _objectSpread$t(_objectSpread$t({
+                    value: bobjectStatus.logicRole,
+                    dataTest: bobjectStatus.logicRole,
+                    align: "center",
+                    inline: false,
+                    onClick: function onClick(value) {
+                      setChangeStatusStepData(_objectSpread$t(_objectSpread$t({}, changeStatusStepData), {}, _defineProperty$D(_defineProperty$D({}, "".concat(key, "ReasonToDiscard"), null), "".concat(key, "Status"), value)));
+                    },
+                    selected: isSelected,
+                    hoverStyle: style
+                  }, overrideStyle), {}, {
+                    children: bobjectStatus.name
+                  }), "".concat(key, "-status-").concat(bobjectStatus.name));
+                })
+              })]
+            })
+          })
+        }), (isNurturing || isDiscarded) && (selectedReasons === null || selectedReasons === void 0 ? void 0 : selectedReasons.length) > 0 && /*#__PURE__*/jsxs("div", {
+          className: styles$s._section__wrapper,
+          children: [/*#__PURE__*/jsx("div", {
+            className: styles$s._title__wrapper,
+            children: /*#__PURE__*/jsx(Text, {
+              size: "m",
+              weight: "medium",
+              color: "peanut",
+              children: t('wizards.steps.changeSalesStatus.reason')
+            })
+          }), /*#__PURE__*/jsx("div", {
+            className: styles$s._content__wrapper,
+            children: /*#__PURE__*/jsx("div", {
+              className: styles$s._reason__wrapper,
+              children: /*#__PURE__*/jsx(Select, {
+                value: (_changeStatusStepData3 = changeStatusStepData["".concat(referenceBobjectType === null || referenceBobjectType === void 0 ? void 0 : referenceBobjectType.toLowerCase(), "ReasonToDiscard")]) === null || _changeStatusStepData3 === void 0 ? void 0 : _changeStatusStepData3.value,
+                placeholder: t('wizards.steps.changeSalesStatus.leadStatusPlaceholder', {
+                  status: getStatusName(changeStatusStepData[mainBobjectStatusKey])
+                }),
+                width: "100%",
+                children: selectedReasons === null || selectedReasons === void 0 ? void 0 : selectedReasons.map(function (reason) {
+                  var _referenceBobject$id3;
+                  return /*#__PURE__*/jsx(Item, {
+                    value: reason.value,
+                    onClick: function onClick() {
+                      setChangeStatusStepData(_objectSpread$t(_objectSpread$t({}, changeStatusStepData), {}, {
+                        leadReasonToDiscard: reason,
+                        companyReasonToDiscard: reason
+                      }));
+                    },
+                    children: reason.label
+                  }, "".concat(referenceBobject === null || referenceBobject === void 0 ? void 0 : (_referenceBobject$id3 = referenceBobject.id) === null || _referenceBobject$id3 === void 0 ? void 0 : _referenceBobject$id3.typeName, "-reason-item-").concat(reason.value));
+                })
+              })
+            })
+          })]
+        })]
+      })
+    }), /*#__PURE__*/jsx(ModalFooter, {
+      children: /*#__PURE__*/jsxs("div", {
+        className: styles$s._buttons__wrapper,
+        children: [hasPreviousStep && /*#__PURE__*/jsx(Button, {
+          variant: "clear",
+          onClick: handleBack,
+          className: styles$s.back_button,
+          children: (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.previousButtonTitle) || t('wizards.common.back')
+        }), showSkipButton && /*#__PURE__*/jsx(Button, {
+          variant: "secondary",
+          onClick: function onClick() {
+            return handleSkip(openCadenceControlOnClose);
+          },
+          className: styles$s.skip_button,
+          children: t('wizards.common.skipWizard')
+        }), /*#__PURE__*/jsx(Button, {
+          dataTest: "Form-Save",
+          onClick: saveAndClose,
+          children: isDiscarded ? (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.nextButtonTitle) || t('wizards.common.saveAndClose') : (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.nextButtonAlternativeTitle) || t('wizards.common.next')
+        })]
+      })
+    })]
+  });
+};
+
+var STEPS = Object.seal({
+  ON_PROSPECTION: 'on_prospection',
+  CONTACTED: 'contacted',
+  CONTACT: 'contact',
+  ENGAGED: 'engaged',
+  MEETING: 'meeting',
+  ACCOUNT: 'account',
+  NURTURING: 'nurturing',
+  DISCARDED: 'discarded'
+});
+var statusMachine = createMachine({
+  id: 'status',
+  type: 'parallel',
+  states: {
+    lead: {
+      initial: STEPS.ON_PROSPECTION,
+      states: {
+        on_prospection: {
+          on: {
+            SET_ON_PROSPECTION_LEAD: STEPS.ON_PROSPECTION,
+            SET_CONTACTED_LEAD: STEPS.CONTACTED,
+            SET_ENGAGED_LEAD: STEPS.ENGAGED,
+            SET_MEETING_LEAD: STEPS.MEETING,
+            SET_CONTACT_LEAD: STEPS.CONTACT,
+            SET_NURTURING_LEAD: STEPS.NURTURING,
+            SET_NURTURING_COMPANY: STEPS.NURTURING,
+            SET_DISCARDED_LEAD: STEPS.DISCARDED,
+            SET_DISCARDED_COMPANY: STEPS.DISCARDED
+          }
+        },
+        contacted: {
+          on: {
+            SET_ON_PROSPECTION_LEAD: STEPS.ON_PROSPECTION,
+            SET_ENGAGED_LEAD: STEPS.ENGAGED,
+            SET_MEETING_LEAD: STEPS.MEETING,
+            SET_CONTACT_LEAD: STEPS.CONTACT,
+            SET_NURTURING_LEAD: STEPS.NURTURING,
+            SET_NURTURING_COMPANY: STEPS.NURTURING,
+            SET_DISCARDED_LEAD: STEPS.DISCARDED,
+            SET_DISCARDED_COMPANY: STEPS.DISCARDED
+          }
+        },
+        engaged: {
+          on: {
+            SET_ON_PROSPECTION_LEAD: STEPS.ON_PROSPECTION,
+            SET_CONTACTED_LEAD: STEPS.CONTACTED,
+            SET_MEETING_LEAD: STEPS.MEETING,
+            SET_CONTACT_LEAD: STEPS.CONTACT,
+            SET_NURTURING_LEAD: STEPS.NURTURING,
+            SET_NURTURING_COMPANY: STEPS.NURTURING,
+            SET_DISCARDED_LEAD: STEPS.DISCARDED,
+            SET_DISCARDED_COMPANY: STEPS.DISCARDED
+          }
+        },
+        meeting: {
+          on: {
+            SET_ON_PROSPECTION_LEAD: STEPS.ON_PROSPECTION,
+            SET_CONTACTED_LEAD: STEPS.CONTACTED,
+            SET_ENGAGED_LEAD: STEPS.ENGAGED,
+            SET_CONTACT_LEAD: STEPS.CONTACT,
+            SET_NURTURING_LEAD: STEPS.NURTURING,
+            SET_NURTURING_COMPANY: STEPS.NURTURING,
+            SET_DISCARDED_LEAD: STEPS.DISCARDED,
+            SET_DISCARDED_COMPANY: STEPS.DISCARDED
+          }
+        },
+        contact: {
+          on: {
+            SET_ON_PROSPECTION_LEAD: STEPS.ON_PROSPECTION,
+            SET_CONTACTED_LEAD: STEPS.CONTACTED,
+            SET_ENGAGED_LEAD: STEPS.ENGAGED,
+            SET_MEETING_LEAD: STEPS.MEETING,
+            SET_DISCARDED_LEAD: STEPS.DISCARDED,
+            SET_NURTURING_LEAD: STEPS.NURTURING,
+            SET_DISCARDED_COMPANY: STEPS.DISCARDED,
+            SET_NURTURING_COMPANY: STEPS.NURTURING
+          }
+        },
+        nurturing: {
+          on: {
+            SET_ON_PROSPECTION_LEAD: STEPS.ON_PROSPECTION,
+            SET_CONTACTED_LEAD: STEPS.CONTACTED,
+            SET_ENGAGED_LEAD: STEPS.ENGAGED,
+            SET_MEETING_LEAD: STEPS.MEETING,
+            SET_CONTACT_LEAD: STEPS.CONTACT,
+            SET_DISCARDED_LEAD: STEPS.DISCARDED,
+            SET_DISCARDED_COMPANY: STEPS.DISCARDED
+          }
+        },
+        discarded: {
+          on: {
+            SET_ON_PROSPECTION_LEAD: STEPS.ON_PROSPECTION,
+            SET_CONTACTED_LEAD: STEPS.CONTACTED,
+            SET_ENGAGED_LEAD: STEPS.ENGAGED,
+            SET_MEETING_LEAD: STEPS.MEETING,
+            SET_CONTACT_LEAD: STEPS.CONTACT,
+            SET_NURTURING_LEAD: STEPS.NURTURING,
+            SET_NURTURING_COMPANY: STEPS.NURTURING
+          }
+        }
+      }
+    },
+    company: {
+      initial: STEPS.ON_PROSPECTION,
+      states: {
+        on_prospection: {
+          on: {
+            SET_ON_PROSPECTION_COMPANY: STEPS.ON_PROSPECTION,
+            SET_ON_PROSPECTION_LEAD: STEPS.ON_PROSPECTION,
+            SET_CONTACTED_COMPANY: STEPS.CONTACTED,
+            SET_CONTACTED_LEAD: STEPS.CONTACTED,
+            SET_ENGAGED_COMPANY: STEPS.ENGAGED,
+            SET_ENGAGED_LEAD: STEPS.ENGAGED,
+            SET_MEETING_COMPANY: STEPS.MEETING,
+            SET_MEETING_LEAD: STEPS.MEETING,
+            SET_CONTACT_LEAD: STEPS.ACCOUNT,
+            SET_ACCOUNT_COMPANY: STEPS.ACCOUNT,
+            SET_NURTURING_COMPANY: STEPS.NURTURING,
+            SET_DISCARDED_COMPANY: STEPS.DISCARDED
+          }
+        },
+        contacted: {
+          on: {
+            SET_ON_PROSPECTION_COMPANY: STEPS.ON_PROSPECTION,
+            SET_ON_PROSPECTION_LEAD: STEPS.ON_PROSPECTION,
+            SET_ENGAGED_COMPANY: STEPS.ENGAGED,
+            SET_ENGAGED_LEAD: STEPS.ENGAGED,
+            SET_MEETING_COMPANY: STEPS.MEETING,
+            SET_MEETING_LEAD: STEPS.MEETING,
+            SET_CONTACT_LEAD: STEPS.ACCOUNT,
+            SET_ACCOUNT_COMPANY: STEPS.ACCOUNT,
+            SET_NURTURING_COMPANY: STEPS.NURTURING,
+            SET_DISCARDED_COMPANY: STEPS.DISCARDED
+          }
+        },
+        engaged: {
+          on: {
+            SET_ON_PROSPECTION_COMPANY: STEPS.ON_PROSPECTION,
+            SET_ON_PROSPECTION_LEAD: STEPS.ON_PROSPECTION,
+            SET_CONTACTED_LEAD: STEPS.CONTACTED,
+            SET_CONTACTED_COMPANY: STEPS.CONTACTED,
+            SET_ENGAGED_COMPANY: STEPS.ENGAGED,
+            SET_ENGAGED_LEAD: STEPS.ENGAGED,
+            SET_MEETING_COMPANY: STEPS.MEETING,
+            SET_MEETING_LEAD: STEPS.MEETING,
+            SET_CONTACT_LEAD: STEPS.ACCOUNT,
+            SET_ACCOUNT_COMPANY: STEPS.ACCOUNT,
+            SET_NURTURING_COMPANY: STEPS.NURTURING,
+            SET_DISCARDED_COMPANY: STEPS.DISCARDED
+          }
+        },
+        meeting: {
+          on: {
+            SET_ON_PROSPECTION_COMPANY: STEPS.ON_PROSPECTION,
+            SET_ON_PROSPECTION_LEAD: STEPS.ON_PROSPECTION,
+            SET_CONTACTED_COMPANY: STEPS.CONTACTED,
+            SET_CONTACTED_LEAD: STEPS.CONTACTED,
+            SET_ENGAGED_COMPANY: STEPS.ENGAGED,
+            SET_ENGAGED_LEAD: STEPS.ENGAGED,
+            SET_CONTACT_LEAD: STEPS.ACCOUNT,
+            SET_ACCOUNT_COMPANY: STEPS.ACCOUNT,
+            SET_NURTURING_COMPANY: STEPS.NURTURING,
+            SET_DISCARDED_COMPANY: STEPS.DISCARDED
+          }
+        },
+        account: {
+          on: {
+            SET_ON_PROSPECTION_COMPANY: STEPS.ON_PROSPECTION,
+            SET_ON_PROSPECTION_LEAD: STEPS.ON_PROSPECTION,
+            SET_CONTACTED_COMPANY: STEPS.CONTACTED,
+            SET_CONTACTED_LEAD: STEPS.CONTACTED,
+            SET_ENGAGED_COMPANY: STEPS.ENGAGED,
+            SET_ENGAGED_LEAD: STEPS.ENGAGED,
+            SET_MEETING_COMPANY: STEPS.MEETING,
+            SET_MEETING_LEAD: STEPS.MEETING,
+            SET_NURTURING_COMPANY: STEPS.NURTURING,
+            SET_DISCARDED_COMPANY: STEPS.DISCARDED
+          }
+        },
+        nurturing: {
+          on: {
+            SET_ON_PROSPECTION_COMPANY: STEPS.ON_PROSPECTION,
+            SET_ON_PROSPECTION_LEAD: STEPS.ON_PROSPECTION,
+            SET_CONTACTED_COMPANY: STEPS.CONTACTED,
+            SET_CONTACTED_LEAD: STEPS.CONTACTED,
+            SET_ENGAGED_COMPANY: STEPS.ENGAGED,
+            SET_ENGAGED_LEAD: STEPS.ENGAGED,
+            SET_MEETING_COMPANY: STEPS.MEETING,
+            SET_MEETING_LEAD: STEPS.MEETING,
+            SET_CONTACT_LEAD: STEPS.ACCOUNT,
+            SET_ACCOUNT_COMPANY: STEPS.ACCOUNT,
+            SET_DISCARDED_COMPANY: STEPS.DISCARDED
+          }
+        },
+        discarded: {
+          on: {
+            SET_ON_PROSPECTION_COMPANY: STEPS.ON_PROSPECTION,
+            SET_ON_PROSPECTION_LEAD: STEPS.ON_PROSPECTION,
+            SET_CONTACTED_COMPANY: STEPS.CONTACTED,
+            SET_CONTACTED_LEAD: STEPS.CONTACTED,
+            SET_ENGAGED_COMPANY: STEPS.ENGAGED,
+            SET_ENGAGED_LEAD: STEPS.ENGAGED,
+            SET_MEETING_COMPANY: STEPS.MEETING,
+            SET_MEETING_LEAD: STEPS.MEETING,
+            SET_CONTACT_LEAD: STEPS.ACCOUNT,
+            SET_ACCOUNT_COMPANY: STEPS.ACCOUNT,
+            SET_NURTURING_COMPANY: STEPS.NURTURING
+          }
+        }
+      }
+    }
+  }
+});
+
+var COMPANY_STATUSES_WITH_MESSAGE = [STEPS.MEETING, STEPS.ACCOUNT, STEPS.DISCARDED, STEPS.NURTURING];
+var AVAILABLE_LEAD_STATUSES = Object.freeze({
+  LEAD__STATUS__ON_PROSPECTION: 'LEAD__STATUS__ON_PROSPECTION',
+  LEAD__STATUS__CONTACTED: 'LEAD__STATUS__CONTACTED',
+  LEAD__STATUS__ENGAGED: 'LEAD__STATUS__ENGAGED',
+  LEAD__STATUS__MEETING: 'LEAD__STATUS__MEETING',
+  LEAD__STATUS__CONTACT: 'LEAD__STATUS__CONTACT',
+  LEAD__STATUS__NURTURING: 'LEAD__STATUS__NURTURING',
+  LEAD__STATUS__DISCARDED: 'LEAD__STATUS__DISCARDED'
+});
+var AVAILABLE_COMPANY_STATUSES = Object.freeze({
+  COMPANY__STATUS__ON_PROSPECTION: 'COMPANY__STATUS__ON_PROSPECTION',
+  COMPANY__STATUS__CONTACTED: 'COMPANY__STATUS__CONTACTED',
+  COMPANY__STATUS__ENGAGED: 'COMPANY__STATUS__ENGADED',
+  COMPANY__STATUS__MEETING: 'COMPANY__STATUS__MEETING',
+  COMPANY__STATUS__ACCOUNT: 'COMPANY__STATUS__ACCOUNT',
+  COMPANY__STATUS__NURTURING: 'COMPANY__STATUS__NURTURING',
+  COMPANY__STATUS__DISCARDED: 'COMPANY__STATUS__DISCARDED'
+});
+var tooltipKeys = ['LEAD__STATUS__CONTACTED', 'LEAD__STATUS__ENGAGED', 'LEAD__STATUS__MEETING', 'LEAD__STATUS__NURTURING', 'LEAD__STATUS__DISCARDED', 'COMPANY__STATUS__CONTACTED', 'COMPANY__STATUS__ENGAGED', 'COMPANY__STATUS__MEETING', 'COMPANY__STATUS__NURTURING', 'COMPANY__STATUS__DISCARDED'];
+
+var css_248z$r = ".changeStatus-module_container__5f1P4 {\n  padding-bottom: 24px;\n}\n\n.changeStatus-module__section__wrapper__nGEcW {\n  margin-bottom: 16px;\n}\n\n.changeStatus-module__content__wrapper__O5ccz {\n  padding-top: 5px;\n  display: flex;\n  flex-flow: row;\n  justify-content: space-around;\n  width: 100%;\n}\n\n.changeStatus-module__content__wrapper__O5ccz label {\n  width: 182px;\n}\n\n.changeStatus-module__lead_info_container__r-OT9 {\n  display: flex;\n  width: 180px;\n  margin: 0 auto 22px;\n  gap: 6px;\n  flex-direction: column;\n  align-items: center;\n}\n\n.changeStatus-module__name__wrapper__8RBsc {\n  display: flex;\n}\n\n.changeStatus-module__name__wrapper__8RBsc > p {\n  text-overflow: ellipsis;\n  overflow: hidden;\n  white-space: nowrap;\n  font-size: 14px;\n}\n\n.changeStatus-module__name__wrapper__8RBsc > svg {\n  margin-right: 4px;\n}\n\n.changeStatus-module__currentStatus__wrapper__JudDs > div {\n  width: 100%;\n  max-width: 182px;\n  padding: 3px 16px;\n  text-align: center;\n  opacity: 0.5;\n  font-size: 11px;\n}\n\n.changeStatus-module__change_lead_status__wrapper__qrI1d {\n  width: 450px;\n  display: flex;\n  flex-direction: column;\n}\n\n.changeStatus-module__lead_with_company_container__4Nha6 {\n  display: flex;\n  gap: 6px;\n  height: 72px;\n  flex-direction: column;\n}\n\n.changeStatus-module__change_company_status__wrapper__UB6Dl {\n  width: 180px;\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n}\n\n.changeStatus-module__change_company_status__wrapper__UB6Dl > .changeStatus-module__name__wrapper__8RBsc {\n  height: 24px;\n}\n\n.changeStatus-module__change_company_status__wrapper__UB6Dl > .changeStatus-module__currentStatus__wrapper__JudDs {\n  margin-bottom: 4px;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n}\n\n.changeStatus-module__single_entity__3wBcC {\n  margin-left: -12px;\n  justify-content: center;\n}\n\n.changeStatus-module__list_status__Gg9P0 > div {\n  display: flex;\n  flex-direction: column;\n  margin-bottom: 8px;\n}\n\n.changeStatus-module__list_status__Gg9P0 > div > div {\n  width: 160px;\n  font-size: 11px;\n  padding: 3px 16px;\n}\n\n.changeStatus-module__radios_list_status__wlclT {\n  width: 100%;\n}\n\n.changeStatus-module__warning__wrapper__fzTj9 > div {\n  font-size: 12px;\n}\n\n.changeStatus-module__warning__wrapper__fzTj9 > svg {\n  padding: 0;\n  margin-right: 12px;\n}\n\n.changeStatus-module__radios_list_status__wlclT > div > div {\n  letter-spacing: 0;\n  margin-bottom: 8px;\n  padding: 4px 12px;\n  font-size: 12px;\n}\n\n.changeStatus-module__title__wrapper__TC3GA {\n  margin-top: 4px;\n  margin-bottom: 12px;\n}\n\n.changeStatus-module__title__wrapper__centered__ki7In {\n  display: flex;\n  justify-content: center;\n}\n\n.changeStatus-module__reason__wrapper__FsCPV {\n  margin-right: 15px;\n  width: 50%;\n}\n\n.changeStatus-module__buttons__wrapper__6mO6f {\n  display: flex;\n  width: 100%;\n}\n\n.changeStatus-module_skip_button__TBoVT {\n  margin-left: auto;\n  margin-right: 16px;\n}\n\n.changeStatus-module_back_button__9nhEu {\n  margin-left: 0px;\n  margin-right: auto;\n}\n";
+var styles$r = {"container":"changeStatus-module_container__5f1P4","_section__wrapper":"changeStatus-module__section__wrapper__nGEcW","_content__wrapper":"changeStatus-module__content__wrapper__O5ccz","_lead_info_container":"changeStatus-module__lead_info_container__r-OT9","_name__wrapper":"changeStatus-module__name__wrapper__8RBsc","_currentStatus__wrapper":"changeStatus-module__currentStatus__wrapper__JudDs","_change_lead_status__wrapper":"changeStatus-module__change_lead_status__wrapper__qrI1d","_lead_with_company_container":"changeStatus-module__lead_with_company_container__4Nha6","_change_company_status__wrapper":"changeStatus-module__change_company_status__wrapper__UB6Dl","_single_entity":"changeStatus-module__single_entity__3wBcC","_list_status":"changeStatus-module__list_status__Gg9P0","_radios_list_status":"changeStatus-module__radios_list_status__wlclT","_warning__wrapper":"changeStatus-module__warning__wrapper__fzTj9","_title__wrapper":"changeStatus-module__title__wrapper__TC3GA","_title__wrapper__centered":"changeStatus-module__title__wrapper__centered__ki7In","_reason__wrapper":"changeStatus-module__reason__wrapper__FsCPV","_buttons__wrapper":"changeStatus-module__buttons__wrapper__6mO6f","skip_button":"changeStatus-module_skip_button__TBoVT","back_button":"changeStatus-module_back_button__9nhEu"};
+styleInject(css_248z$r);
+
+function _typeof$D(obj) { "@babel/helpers - typeof"; return _typeof$D = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$D(obj); }
+function ownKeys$s(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$s(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$s(Object(source), !0).forEach(function (key) { _defineProperty$C(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$s(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$C(obj, key, value) { key = _toPropertyKey$C(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$C(arg) { var key = _toPrimitive$C(arg, "string"); return _typeof$D(key) === "symbol" ? key : String(key); }
+function _toPrimitive$C(input, hint) { if (_typeof$D(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$D(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$w(arr, i) { return _arrayWithHoles$w(arr) || _iterableToArrayLimit$w(arr, i) || _unsupportedIterableToArray$w(arr, i) || _nonIterableRest$w(); }
+function _nonIterableRest$w() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$w(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$w(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$w(o, minLen); }
+function _arrayLikeToArray$w(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$w(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$w(arr) { if (Array.isArray(arr)) return arr; }
+var updateEntity = function updateEntity(id, data, bobjectType) {
+  return api.patch("/bobjects/".concat(id.accountId, "/").concat(bobjectType, "/").concat(id.objectId, "/raw"), data);
+};
+var fetcherReason = function fetcherReason(url) {
+  return api.get(url);
+};
+function getStatusValues(values, availableStatus) {
+  var statusOrder = Object.keys(availableStatus);
+  return values.filter(function (fieldStatus) {
+    return !!availableStatus[fieldStatus.logicRole];
+  }).sort(function (a, b) {
+    return (statusOrder === null || statusOrder === void 0 ? void 0 : statusOrder.indexOf(a.logicRole)) - (statusOrder === null || statusOrder === void 0 ? void 0 : statusOrder.indexOf(b.logicRole));
+  });
+}
+var ChangeStatus = function ChangeStatus(_ref) {
+  var _referenceBobject$id, _getFieldByLogicRole, _lead$id, _company$id, _changeStatusStepData, _selectedLeadReasons$, _changeStatusStepData2, _selectedCompanyReaso;
+  var handleBack = _ref.handleBack,
+    handleNext = _ref.handleNext,
+    handleSkip = _ref.handleSkip,
+    buttonsConfig = _ref.buttonsConfig,
+    wizardKey = _ref.wizardKey,
+    machineContext = _ref.machineContext;
+  var _useObjectCreationSet = useObjectCreationSettings(),
+    enabledObjectCreation = _useObjectCreationSet.enabledObjectCreation;
+  var _useWizardContext = useWizardContext(),
+    getWizardProperties = _useWizardContext.getWizardProperties;
+  var _getWizardProperties = getWizardProperties(wizardKey),
+    activity = _getWizardProperties.bobject,
+    handleClose = _getWizardProperties.handleClose,
+    referenceBobject = _getWizardProperties.referenceBobject,
+    contactFlowTrigger = _getWizardProperties.contactFlowTrigger,
+    contactFlowActivity = _getWizardProperties.contactFlowActivity;
+  var dataModel = useDataModel();
+  var _useChangeStatusStepD = useChangeStatusStepData(),
+    changeStatusStepData = _useChangeStatusStepD.changeStatusStepData,
+    setChangeStatusStepData = _useChangeStatusStepD.setChangeStatusStepData,
+    bulkReportedActivityResult = _useChangeStatusStepD.bulkReportedActivityResult,
+    reportedActivityResult = _useChangeStatusStepD.reportedActivityResult;
+  var _useActivityRelatedIn = useActivityRelatedInfo(wizardKey),
+    company = _useActivityRelatedIn.activityCompany,
+    lead = _useActivityRelatedIn.activityLead;
+  var _useStatusPicklistVal = useStatusPicklistValue(dataModel),
+    companyStatusPicklistValues = _useStatusPicklistVal.companyStatusPicklistValues,
+    leadStatusPicklistValues = _useStatusPicklistVal.leadStatusPicklistValues;
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards.steps.changeStatus'
+    }),
+    t = _useTranslation.t;
+  var _useTranslation2 = useTranslation('translation', {
+      keyPrefix: 'wizards.common'
+    }),
+    commonT = _useTranslation2.t;
+  var _useTranslation3 = useTranslation('translation', {
+      keyPrefix: 'bobjectTypes'
+    }),
+    bobjectT = _useTranslation3.t;
+  var _useSWR = useSWR("/utils/service/view/field/statusReasons/".concat(referenceBobject === null || referenceBobject === void 0 ? void 0 : (_referenceBobject$id = referenceBobject.id) === null || _referenceBobject$id === void 0 ? void 0 : _referenceBobject$id.typeName), /*@ts-ignore*/
+    fetcherReason),
+    reasons = _useSWR.data;
+  var _useActiveUserSetting = useActiveUserSettings(),
+    settings = _useActiveUserSetting.settings;
+  var _useMachine = useMachine(statusMachine, {}),
+    _useMachine2 = _slicedToArray$w(_useMachine, 2),
+    state = _useMachine2[0],
+    send = _useMachine2[1];
+  // @ts-ignore
+  var machineStatus = state.value;
+  var companyStatuses = getStatusValues(companyStatusPicklistValues, AVAILABLE_COMPANY_STATUSES);
+  var leadStatuses = getStatusValues(leadStatusPicklistValues, AVAILABLE_LEAD_STATUSES);
+  var _useState = useState(),
+    _useState2 = _slicedToArray$w(_useState, 2),
+    selectedLeadReasons = _useState2[0],
+    setSelectedLeadReasons = _useState2[1];
+  var _useState3 = useState(),
+    _useState4 = _slicedToArray$w(_useState3, 2),
+    selectedCompanyReasons = _useState4[0],
+    setSelectedCompanyReasons = _useState4[1];
+  var leadName = getValueFromLogicRole(lead, LEAD_FIELDS_LOGIC_ROLE.FULL_NAME);
+  var _useToasts = useToasts(),
+    createToast = _useToasts.createToast;
+  var companyName = getValueFromLogicRole(company, COMPANY_FIELDS_LOGIC_ROLE.NAME);
+  var hasLead = !!lead;
+  var companyStage = (_getFieldByLogicRole = getFieldByLogicRole(company, COMPANY_FIELDS_LOGIC_ROLE.STAGE)) === null || _getFieldByLogicRole === void 0 ? void 0 : _getFieldByLogicRole.valueLogicRole;
+  var hasCompany = !!company && companyStage !== COMPANY_STAGE_LOGIC_ROLE.SALES;
+  var isReportResultTrigger = contactFlowTrigger === 'REPORT_RESULT' || contactFlowTrigger === 'UPDATE_CADENCE';
+  var isNurturing = hasLead && machineStatus.lead === 'nurturing' || hasCompany && machineStatus.company === 'nurturing';
+  var isDiscarded = machineStatus.lead === 'discarded' || machineStatus.company === 'discarded';
+  var isFirstRender = useRef(true);
+  var reasonsRef = useRef(null);
+  var changeStatus = function changeStatus(logicRole, entity) {
+    var newStatus = logicRole === null || logicRole === void 0 ? void 0 : logicRole.split('__')[2];
+    send("SET_".concat(newStatus, "_").concat(entity));
+  };
+  var showSkipButton = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton : true;
+  var hasPreviousStep = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep : true;
+  var openCadenceControlOnClose = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip : true;
+  var getLogicRoleFromMachineValue = function getLogicRoleFromMachineValue(machineValue, entity) {
+    return entity === 'company' ? COMPANY_STATUS_LOGIC_ROLE[machineValue] : LEAD_STATUS_LOGIC_ROLE[machineValue];
+  };
+  //TODO these should be set on initialization, not like this
+  useEffect(function () {
+    var _getFieldByLogicRole2, _getFieldByLogicRole3;
+    var leadStatus = changeStatusStepData.leadStatus,
+      companyStatus = changeStatusStepData.companyStatus;
+    var leadSelectedStatus = (_getFieldByLogicRole2 = getFieldByLogicRole(lead, LEAD_FIELDS_LOGIC_ROLE.STATUS)) === null || _getFieldByLogicRole2 === void 0 ? void 0 : _getFieldByLogicRole2.valueLogicRole;
+    var companySelectedStatus = (_getFieldByLogicRole3 = getFieldByLogicRole(company, COMPANY_FIELDS_LOGIC_ROLE.STATUS)) === null || _getFieldByLogicRole3 === void 0 ? void 0 : _getFieldByLogicRole3.valueLogicRole;
+    if (leadStatus || leadSelectedStatus) {
+      var newLeadstatus = leadStatus ? "LEAD__STATUS__".concat(leadStatus.toUpperCase()) : leadSelectedStatus;
+      changeStatus(newLeadstatus, 'LEAD');
+    }
+    if (companyStatus || companySelectedStatus) {
+      var newCompanyStatus = companyStatus ? "COMPANY__STATUS__".concat(companyStatus.toUpperCase()) : companySelectedStatus;
+      changeStatus(newCompanyStatus, 'COMPANY');
+    }
+  }, [lead === null || lead === void 0 ? void 0 : (_lead$id = lead.id) === null || _lead$id === void 0 ? void 0 : _lead$id.objectId, company === null || company === void 0 ? void 0 : (_company$id = company.id) === null || _company$id === void 0 ? void 0 : _company$id.objectId]);
+  useEffect(function () {
+    var companyStatusLogicRole = getLogicRoleFromMachineValue(machineStatus.company.toUpperCase(), 'company');
+    var leadStatusLogicRole = getLogicRoleFromMachineValue(machineStatus.lead.toUpperCase(), 'lead');
+    if (companyStatusLogicRole === COMPANY_STATUS_LOGIC_ROLE.NURTURING || companyStatusLogicRole === COMPANY_STATUS_LOGIC_ROLE.DISCARDED) {
+      //@ts-ignore
+      var reasonsField = reasons === null || reasons === void 0 ? void 0 : reasons.data.find(function (reason) {
+        var _machineStatus$compan;
+        return (reason === null || reason === void 0 ? void 0 : reason.logicRole) === "COMPANY__".concat((_machineStatus$compan = machineStatus.company) === null || _machineStatus$compan === void 0 ? void 0 : _machineStatus$compan.toUpperCase(), "_REASONS");
+      });
+      if (reasonsField) {
+        setSelectedCompanyReasons(reasonsField.fieldValues);
+      }
+    }
+    if (leadStatusLogicRole === LEAD_STATUS_LOGIC_ROLE.NURTURING || leadStatusLogicRole === LEAD_STATUS_LOGIC_ROLE.DISCARDED) {
+      //@ts-ignore
+      var _reasonsField = reasons === null || reasons === void 0 ? void 0 : reasons.data.find(function (reason) {
+        var _machineStatus$lead;
+        return (reason === null || reason === void 0 ? void 0 : reason.logicRole) === "LEAD__".concat((_machineStatus$lead = machineStatus.lead) === null || _machineStatus$lead === void 0 ? void 0 : _machineStatus$lead.toUpperCase(), "_REASONS");
+      });
+      if (_reasonsField) {
+        setSelectedLeadReasons(_reasonsField.fieldValues);
+      }
+    }
+  }, [machineStatus, reasons]);
+  useEffect(function () {
+    var companyReasonToDiscard;
+    var leadReasonToDiscard;
+    if ((selectedCompanyReasons === null || selectedCompanyReasons === void 0 ? void 0 : selectedCompanyReasons.length) > 0) {
+      companyReasonToDiscard = {
+        companyReasonToDiscard: selectedCompanyReasons[0]
+      };
+    }
+    if ((selectedLeadReasons === null || selectedLeadReasons === void 0 ? void 0 : selectedLeadReasons.length) > 0) {
+      leadReasonToDiscard = {
+        leadReasonToDiscard: selectedLeadReasons[0]
+      };
+    }
+    setChangeStatusStepData(_objectSpread$s(_objectSpread$s(_objectSpread$s({}, changeStatusStepData), companyReasonToDiscard), leadReasonToDiscard));
+  }, [selectedCompanyReasons, selectedLeadReasons]);
+  useEffect(function () {
+    if (isFirstRender !== null && isFirstRender !== void 0 && isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (reasonsRef !== null && reasonsRef !== void 0 && reasonsRef.current) {
+      var _reasonsRef$current;
+      reasonsRef === null || reasonsRef === void 0 ? void 0 : (_reasonsRef$current = reasonsRef.current) === null || _reasonsRef$current === void 0 ? void 0 : _reasonsRef$current.scrollIntoView({
+        behavior: 'smooth'
+      });
+    }
+  }, [changeStatusStepData === null || changeStatusStepData === void 0 ? void 0 : changeStatusStepData.leadStatus, changeStatusStepData === null || changeStatusStepData === void 0 ? void 0 : changeStatusStepData.companyStatus]);
+  var save = function save(id, status, entity, reasonToDiscard) {
+    var prefix = "".concat(entity.toUpperCase(), "__STATUS");
+    var data = _defineProperty$C({}, prefix, "".concat(prefix, "__").concat(status));
+    if (reasonToDiscard && (status === 'NURTURING' || status === 'DISCARDED')) {
+      data = _objectSpread$s(_objectSpread$s({}, data), {}, _defineProperty$C({}, "".concat(entity.toUpperCase(), "__").concat(status, "_REASONS"), reasonToDiscard.value));
+    }
+    updateEntity(id, data, entity).then(function () {
+      window.dispatchEvent(new CustomEvent('ACTIVE_BOBJECT_UPDATED', {
+        detail: {
+          type: entity
+        }
+      }));
+    });
+  };
+  var saveAndClose = function saveAndClose() {
+    var _settings$settings;
+    var leadStatus = machineStatus.lead.toUpperCase();
+    var companyStatus = machineStatus.company.toUpperCase();
+    if (hasLead) {
+      save(lead === null || lead === void 0 ? void 0 : lead.id, leadStatus, 'Lead', changeStatusStepData.leadReasonToDiscard);
+    }
+    if (hasCompany && company) {
+      save(company === null || company === void 0 ? void 0 : company.id, companyStatus, 'Company', changeStatusStepData.companyReasonToDiscard);
+    }
+    if (contactFlowTrigger && contactFlowTrigger === 'REPORT_RESULT' && contactFlowActivity) {
+      if (Array.isArray(contactFlowActivity)) {
+        bulkReportedActivityResult({
+          valueLogicRole: REPORTED_VALUES_LOGIC_ROLE.YES,
+          activitiesId: contactFlowActivity
+        });
+      } else {
+        reportedActivityResult({
+          valueLogicRole: REPORTED_VALUES_LOGIC_ROLE.YES,
+          activityId: contactFlowActivity,
+          activity: activity
+        });
+      }
+    }
+    var isMeeting = [companyStatus, leadStatus].includes('MEETING');
+    if (settings !== null && settings !== void 0 && (_settings$settings = settings.settings) !== null && _settings$settings !== void 0 && _settings$settings.endCCFAtStatus && isMeeting) {
+      var _machineContext$markA;
+      machineContext === null || machineContext === void 0 ? void 0 : (_machineContext$markA = machineContext.markAsReported) === null || _machineContext$markA === void 0 ? void 0 : _machineContext$markA.call(machineContext);
+      handleClose === null || handleClose === void 0 ? void 0 : handleClose();
+      createToast({
+        message: t('success'),
+        type: 'success'
+      });
+    } else {
+      handleNext(companyStatus, leadStatus);
+    }
+  };
+  var leadStatusSelected = leadStatuses.find(function (leadStatus) {
+    return leadStatus.logicRole === "LEAD__STATUS__".concat(machineStatus.lead.toUpperCase());
+  });
+  var renderSelectedStatus = function renderSelectedStatus(selectedStatus, statuses) {
+    var regex = new RegExp("(.*)__".concat(selectedStatus === null || selectedStatus === void 0 ? void 0 : selectedStatus.toUpperCase(), "$"), 'g');
+    var statusObj = statuses.find(function (status) {
+      return status === null || status === void 0 ? void 0 : status.logicRole.match(regex);
+    });
+    var style = {
+      backgroundColor: statusObj === null || statusObj === void 0 ? void 0 : statusObj.backgroundColor,
+      borderColor: statusObj === null || statusObj === void 0 ? void 0 : statusObj.outlineColor,
+      color: statusObj === null || statusObj === void 0 ? void 0 : statusObj.textColor
+    };
+    return /*#__PURE__*/jsx(Label, {
+      overrideStyle: style,
+      children: selectedStatus.replace('_', ' ')
+    });
+  };
+  var leadInfoClasses = clsx(_defineProperty$C(_defineProperty$C({}, styles$r._lead_with_company_container, hasCompany), styles$r._lead_info_container, !hasCompany));
+  var titleWrapperClasses = clsx(styles$r._title__wrapper, _defineProperty$C({}, styles$r._title__wrapper__centered, !hasCompany));
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsx(ModalContent, {
+      children: /*#__PURE__*/jsxs("div", {
+        className: styles$r.container,
+        children: [/*#__PURE__*/jsx("div", {
+          className: styles$r._section__wrapper,
+          children: /*#__PURE__*/jsxs("div", {
+            className: styles$r._content__wrapper,
+            children: [hasLead && /*#__PURE__*/jsxs("div", {
+              className: styles$r._change_lead_status__wrapper,
+              children: [/*#__PURE__*/jsxs("div", {
+                className: leadInfoClasses,
+                children: [/*#__PURE__*/jsxs("div", {
+                  className: clsx(styles$r._name__wrapper, _defineProperty$C({}, styles$r._single_entity, !hasCompany)),
+                  children: [/*#__PURE__*/jsx(Icon, {
+                    color: "verySoftPeanut",
+                    name: "person"
+                  }), /*#__PURE__*/jsx(Text, {
+                    size: "m",
+                    color: "peanut",
+                    children: leadName
+                  })]
+                }), /*#__PURE__*/jsx("div", {
+                  className: styles$r._currentStatus__wrapper,
+                  children: renderSelectedStatus(machineStatus.lead, leadStatuses)
+                })]
+              }), /*#__PURE__*/jsx("div", {
+                className: styles$r._radios_list_status,
+                children: /*#__PURE__*/jsx(RadioGroup, {
+                  value: leadStatusSelected
+                  //@ts-ignore
+                  ,
+                  onChange: function onChange(selectedStatus) {
+                    var logicRole = selectedStatus === null || selectedStatus === void 0 ? void 0 : selectedStatus.logicRole;
+                    setChangeStatusStepData(_objectSpread$s(_objectSpread$s({}, changeStatusStepData), {}, {
+                      leadReasonToDiscard: null,
+                      leadStatus: logicRole === null || logicRole === void 0 ? void 0 : logicRole.split('__')[2].toLowerCase()
+                    }));
+                    changeStatus(logicRole, 'LEAD');
+                  },
+                  children: leadStatuses.map(function (status) {
+                    return /*#__PURE__*/jsx(Radio, {
+                      dataTest: "LeadStatus-".concat(status.name),
+                      size: "medium",
+                      value: status,
+                      children: status.logicRole === 'LEAD__STATUS__CONTACT' && !enabledObjectCreation ? t("leadStatusTexts.LEAD__STATUS__CONTACT_NO_CREATE_LEAD") : t("leadStatusTexts.".concat(status.logicRole))
+                    }, "lead-status-".concat(status.name));
+                  })
+                })
+              })]
+            }), hasCompany && /*#__PURE__*/jsxs("div", {
+              className: styles$r._change_company_status__wrapper,
+              children: [/*#__PURE__*/jsxs("div", {
+                className: clsx(styles$r._name__wrapper, _defineProperty$C({}, styles$r._single_entity, !hasLead)),
+                children: [/*#__PURE__*/jsx(Icon, {
+                  color: "verySoftPeanut",
+                  name: "company"
+                }), /*#__PURE__*/jsx(Text, {
+                  dataTest: "Text-Modal-StatusUpdate",
+                  size: "m",
+                  color: "peanut",
+                  children: companyName
+                })]
+              }), /*#__PURE__*/jsx("div", {
+                className: styles$r._currentStatus__wrapper,
+                children: renderSelectedStatus(machineStatus.company, companyStatuses)
+              }), /*#__PURE__*/jsx("div", {
+                className: styles$r._list_status,
+                children: companyStatuses.map(function (status) {
+                  var regex = new RegExp(machineStatus.company, 'gi');
+                  var isSelected = status.logicRole.match(regex);
+                  var style = {
+                    backgroundColor: status.backgroundColor,
+                    borderColor: status.outlineColor,
+                    color: status.textColor
+                  };
+                  var overrideStyle = isSelected ? {
+                    selectedStyle: style
+                  } : null;
+                  return /*#__PURE__*/jsx(Tooltip, {
+                    title: t("tooltipDictionary.".concat(tooltipKeys.includes(status.logicRole) ? status.logicRole : 'HEADER_TEXT')),
+                    position: "top",
+                    children: /*#__PURE__*/jsx(Label, _objectSpread$s(_objectSpread$s({
+                      value: status.logicRole,
+                      dataTest: status.logicRole,
+                      align: "center",
+                      inline: false,
+                      onClick: function onClick(value) {
+                        setChangeStatusStepData(_objectSpread$s(_objectSpread$s({}, changeStatusStepData), {}, {
+                          companyReasonToDiscard: null,
+                          companyStatus: value === null || value === void 0 ? void 0 : value.split('__')[2].toLowerCase()
+                        }));
+                        changeStatus(value, 'COMPANY');
+                      }
+                      /*@ts-ignore*/,
+                      selected: isSelected,
+                      hoverStyle: style
+                    }, overrideStyle), {}, {
+                      children: status.name
+                    }), "company-status-".concat(status.name))
+                  }, "company-status-tooltip-".concat(status.name));
+                })
+              })]
+            })]
+          })
+        }), (isNurturing || isDiscarded) && /*#__PURE__*/jsxs("div", {
+          className: styles$r._section__wrapper,
+          children: [/*#__PURE__*/jsx("div", {
+            className: titleWrapperClasses,
+            children: /*#__PURE__*/jsx(Text, {
+              size: "s",
+              weight: "bold",
+              color: "peanut",
+              children: t('whatReason')
+            })
+          }), /*#__PURE__*/jsxs("div", {
+            className: styles$r._content__wrapper,
+            children: [hasLead && /*#__PURE__*/jsx("div", {
+              className: styles$r._reason__wrapper,
+              ref: reasonsRef,
+              children: (machineStatus.lead === 'nurturing' || machineStatus.lead === 'discarded') && selectedLeadReasons && /*#__PURE__*/jsx(Select, {
+                value: (changeStatusStepData === null || changeStatusStepData === void 0 ? void 0 : (_changeStatusStepData = changeStatusStepData.leadReasonToDiscard) === null || _changeStatusStepData === void 0 ? void 0 : _changeStatusStepData.value) || ((_selectedLeadReasons$ = selectedLeadReasons[0]) === null || _selectedLeadReasons$ === void 0 ? void 0 : _selectedLeadReasons$.value),
+                placeholder: t('placeholder', {
+                  lead: toSentenceCase(bobjectT('lead')),
+                  status: machineStatus.lead.toLowerCase()
+                }),
+                width: "100%",
+                size: "small",
+                borderless: false,
+                children: selectedLeadReasons.map(function (reason) {
+                  return /*#__PURE__*/jsx(Item, {
+                    value: reason.value,
+                    onClick: function onClick() {
+                      setChangeStatusStepData(_objectSpread$s(_objectSpread$s({}, changeStatusStepData), {}, {
+                        leadReasonToDiscard: reason
+                      }));
+                    },
+                    children: reason.label
+                  }, "lead-reason-item-".concat(reason.value));
+                })
+              })
+            }), hasCompany && /*#__PURE__*/jsx("div", {
+              className: styles$r._reason__wrapper,
+              children: (machineStatus.company === 'nurturing' || machineStatus.company === 'discarded') && selectedCompanyReasons && /*#__PURE__*/jsx(Select, {
+                value: (changeStatusStepData === null || changeStatusStepData === void 0 ? void 0 : (_changeStatusStepData2 = changeStatusStepData.companyReasonToDiscard) === null || _changeStatusStepData2 === void 0 ? void 0 : _changeStatusStepData2.value) || ((_selectedCompanyReaso = selectedCompanyReasons[0]) === null || _selectedCompanyReaso === void 0 ? void 0 : _selectedCompanyReaso.value),
+                placeholder: t('placeholder', {
+                  lead: toSentenceCase(bobjectT('company')),
+                  status: machineStatus.company.toLowerCase()
+                }),
+                width: "100%",
+                children: selectedCompanyReasons.map(function (reason) {
+                  return /*#__PURE__*/jsx(Item, {
+                    value: reason.value,
+                    onClick: function onClick() {
+                      setChangeStatusStepData(_objectSpread$s(_objectSpread$s({}, changeStatusStepData), {}, {
+                        companyReasonToDiscard: reason
+                      }));
+                    },
+                    children: reason.label
+                  }, "company-reason-item-".concat(reason.value));
+                })
+              })
+            })]
+          })]
+        }), COMPANY_STATUSES_WITH_MESSAGE.includes(machineStatus.company) && hasCompany && /*#__PURE__*/jsx("div", {
+          className: styles$r._warning__wrapper,
+          children: /*#__PURE__*/jsx(Callout, {
+            variant: "alert",
+            icon: "cadence",
+            width: "100%",
+            children: /*#__PURE__*/jsx(Trans, {
+              i18nKey: "contactFlowModal.changeStatus.companiesStatusMessage"
+            })
+          })
+        })]
+      })
+    }), /*#__PURE__*/jsx(ModalFooter, {
+      children: /*#__PURE__*/jsxs("div", {
+        className: styles$r._buttons__wrapper,
+        children: [hasPreviousStep && /*#__PURE__*/jsx(Button, {
+          variant: "clear",
+          onClick: isReportResultTrigger ? handleClose : handleBack,
+          className: styles$r.back_button,
+          children: isReportResultTrigger ? commonT('cancel') : commonT('back')
+        }), showSkipButton && !isReportResultTrigger && /*#__PURE__*/jsx(Button, {
+          variant: "secondary",
+          onClick: function onClick() {
+            return handleSkip(openCadenceControlOnClose);
+          },
+          className: styles$r.skip_button,
+          children: commonT('skipWizard')
+        }), !(buttonsConfig !== null && buttonsConfig !== void 0 && buttonsConfig.hideSaveButton) && /*#__PURE__*/jsx(Button, {
+          dataTest: "Form-Save",
+          onClick: saveAndClose,
+          children: machineStatus.company === 'discarded' || !hasCompany && machineStatus.lead === 'discarded' ? (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.nextButtonTitle) || commonT('saveAndClose') : (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.nextButtonAlternativeTitle) || commonT('next')
+        })]
+      })
+    })]
+  });
+};
+
+function _typeof$C(obj) { "@babel/helpers - typeof"; return _typeof$C = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$C(obj); }
+function ownKeys$r(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$r(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$r(Object(source), !0).forEach(function (key) { _defineProperty$B(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$r(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$B(obj, key, value) { key = _toPropertyKey$B(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$B(arg) { var key = _toPrimitive$B(arg, "string"); return _typeof$C(key) === "symbol" ? key : String(key); }
+function _toPrimitive$B(input, hint) { if (_typeof$C(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$C(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+//If we need more entities, we can add them here
+var handledEntities = {
+  companyCrmStatusValues: SALESFORCE_LOGIC_ROLES.SALESFORCE_COMPANY_STATUS,
+  leadCrmStatusValues: SALESFORCE_LOGIC_ROLES.SALESFORCE_LEAD_STATUS,
+  opportunityCrmStatusValues: SALESFORCE_LOGIC_ROLES.SALESFORCE_OPPORTUNITY_STAGE
+};
+function parseFields(dataModel, entityLogicRole) {
+  var _crmStatusField$value;
+  var crmStatusField = dataModel.findFieldByLogicRole(entityLogicRole);
+  return (_crmStatusField$value = crmStatusField.values) === null || _crmStatusField$value === void 0 ? void 0 : _crmStatusField$value.filter(function (crmStatus) {
+    return crmStatus.isEnabled;
+  }).sort(function (a, b) {
+    return a.ordering < b.ordering ? -1 : 1;
+  });
+}
+function parseAccountFields(dataModel) {
+  var _Object$keys;
+  return (_Object$keys = Object.keys(handledEntities)) === null || _Object$keys === void 0 ? void 0 : _Object$keys.reduce(function (acc, key) {
+    acc[key] = parseFields(dataModel, handledEntities[key]);
+    return acc;
+  }, {});
+}
+var useSalesforceStatusPicklistValue = function useSalesforceStatusPicklistValue() {
+  var dataModel = useDataModel();
+  return _objectSpread$r({}, parseAccountFields(dataModel));
+};
+
+function _typeof$B(obj) { "@babel/helpers - typeof"; return _typeof$B = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$B(obj); }
+function ownKeys$q(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$q(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$q(Object(source), !0).forEach(function (key) { _defineProperty$A(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$q(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$A(obj, key, value) { key = _toPropertyKey$A(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$A(arg) { var key = _toPrimitive$A(arg, "string"); return _typeof$B(key) === "symbol" ? key : String(key); }
+function _toPrimitive$A(input, hint) { if (_typeof$B(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$B(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var CustomObjectForm = function CustomObjectForm(_ref) {
+  var label = _ref.label,
+    name = _ref.name,
+    type = _ref.type,
+    picklistValues = _ref.picklistValues,
+    defaultValue = _ref.defaultValue,
+    control = _ref.control,
+    required = _ref.required,
+    styleProps = _ref.styleProps;
+  var formField = null;
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards.steps.customObject'
+    }),
+    t = _useTranslation.t;
+  useEffect(function () {
+    onChangeController(type != 'boolean' ? defaultValue : !!defaultValue);
+  }, [defaultValue]);
+  var _useController = useController({
+      control: control,
+      name: name,
+      defaultValue: type != 'boolean' ? defaultValue : !!defaultValue,
+      rules: {
+        required: {
+          value: type != 'boolean' ? required : false,
+          message: t('requiredMessage')
+        }
+      }
+    }),
+    _useController$field = _useController.field,
+    value = _useController$field.value,
+    onChangeController = _useController$field.onChange,
+    error = _useController.fieldState.error;
+  switch (type) {
+    case 'phone':
+    case 'email':
+    case 'string':
+    case 'url':
+    case 'currency':
+    case 'double':
+    case 'percent':
+    case 'encryptedstring':
+      formField = /*#__PURE__*/jsx(Input, _objectSpread$q(_objectSpread$q({
+        width: "100%",
+        name: name,
+        placeholder: "".concat(label).concat(required ? ' *' : ''),
+        onChange: onChangeController,
+        type: type === 'email' ? 'email' : type === 'url' ? 'url' : 'text',
+        error: error === null || error === void 0 ? void 0 : error.message,
+        defaultValue: defaultValue,
+        value: value
+      }, styleProps), styleProps.height && {
+        height: undefined
+      }));
+      break;
+    case 'picklist':
+      formField = /*#__PURE__*/jsxs(Select, _objectSpread$q(_objectSpread$q({
+        width: "100%",
+        placeholder: "".concat(label).concat(required ? ' *' : ''),
+        onChange: onChangeController,
+        defaultValue: defaultValue,
+        value: value,
+        error: error === null || error === void 0 ? void 0 : error.message,
+        autocomplete: picklistValues.length > 6
+      }, styleProps), {}, {
+        children: [/*#__PURE__*/jsx(Item, {
+          value: "none",
+          children: t('none')
+        }), picklistValues.map(function (answer) {
+          return /*#__PURE__*/jsx(Item, {
+            hidden: !answer.active,
+            value: answer.value,
+            label: answer.label,
+            children: answer.label
+          }, answer.value);
+        })]
+      }));
+      break;
+    case 'boolean':
+      formField = /*#__PURE__*/jsx(Checkbox, _objectSpread$q(_objectSpread$q({
+        size: 'small',
+        disableHoverStyle: true,
+        onClick: onChangeController,
+        defaultChecked: !!defaultValue
+      }, styleProps), {}, {
+        children: /*#__PURE__*/jsx(Text, {
+          size: "m",
+          children: label
+        })
+      }));
+      break;
+    case 'multipicklist':
+      formField = /*#__PURE__*/jsx(MultiSelect, _objectSpread$q(_objectSpread$q({
+        autocomplete: picklistValues.length > 6,
+        size: "medium",
+        placeholder: "".concat(label).concat(required ? ' *' : ''),
+        onChange: onChangeController,
+        error: error === null || error === void 0 ? void 0 : error.message,
+        value: value,
+        width: "100%"
+      }, styleProps), {}, {
+        children: picklistValues.map(function (answer) {
+          return /*#__PURE__*/jsx(CheckItem, {
+            value: answer.value,
+            label: answer.label,
+            children: answer.value
+          }, answer.value);
+        })
+      }));
+      break;
+    case 'date':
+    case 'datetime':
+      formField = /*#__PURE__*/jsx(DateTimePicker, _objectSpread$q({
+        width: "100%",
+        withTimePicker: type == 'datetime',
+        placeholder: "".concat(label).concat(required ? ' *' : ''),
+        onChange: onChangeController,
+        defaultValue: defaultValue ? new Date(defaultValue) : null,
+        error: error === null || error === void 0 ? void 0 : error.message,
+        value: value ? new Date(value) : null
+      }, styleProps));
+      break;
+    case 'textarea':
+      formField = /*#__PURE__*/jsx(TextArea, _objectSpread$q({
+        onChange: onChangeController,
+        defaultValue: defaultValue,
+        placeholder: "".concat(label).concat(required ? ' *' : ''),
+        width: "100%",
+        minRows: 3,
+        maxRows: 3,
+        error: error === null || error === void 0 ? void 0 : error.message,
+        value: value
+      }, styleProps));
+      break;
+  }
+  return formField;
+};
+
+function _typeof$A(obj) { "@babel/helpers - typeof"; return _typeof$A = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$A(obj); }
+function ownKeys$p(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$p(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$p(Object(source), !0).forEach(function (key) { _defineProperty$z(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$p(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$z(obj, key, value) { key = _toPropertyKey$z(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$z(arg) { var key = _toPrimitive$z(arg, "string"); return _typeof$A(key) === "symbol" ? key : String(key); }
+function _toPrimitive$z(input, hint) { if (_typeof$A(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$A(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var SobjectMandatoryFields = function SobjectMandatoryFields(_ref) {
+  var iconName = _ref.iconName,
+    title = _ref.title,
+    statuses = _ref.statuses,
+    sobject = _ref.sobject,
+    selectedStatus = _ref.selectedStatus,
+    width = _ref.width,
+    error = _ref.error;
+  var _useFormContext = useFormContext(),
+    control = _useFormContext.control,
+    watch = _useFormContext.watch;
+  return /*#__PURE__*/jsxs("div", {
+    style: {
+      display: 'flex',
+      gap: '8px',
+      flexDirection: 'column',
+      marginRight: '-24px'
+    },
+    children: [/*#__PURE__*/jsxs("div", {
+      style: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        width: width
+      },
+      children: [/*#__PURE__*/jsxs("div", {
+        style: {
+          display: 'flex',
+          gap: '4px'
+        },
+        children: [/*#__PURE__*/jsx(Icon, {
+          name: iconName,
+          color: "softPeanut",
+          size: 16
+        }), /*#__PURE__*/jsx(Text, {
+          size: "xs",
+          children: title
+        })]
+      }), error && /*#__PURE__*/jsx(Tooltip, {
+        title: error,
+        position: "top",
+        children: /*#__PURE__*/jsx(Icon, {
+          name: "infoFilled",
+          color: "tomato",
+          size: 16
+        })
+      })]
+    }), statuses.map(function (field) {
+      var _watch, _watch$get, _watch$get$selectedSt;
+      return /*#__PURE__*/jsx(CustomObjectForm, _objectSpread$p(_objectSpread$p({
+        control: control
+      }, field), {}, {
+        name: "".concat(sobject, ".").concat(selectedStatus, ".").concat(field.name),
+        styleProps: {
+          size: 'small',
+          width: width || '180px',
+          height: field.type !== 'textarea' ? '34px' : undefined
+        },
+        defaultValue: (_watch = watch('salesforceLiveFieldsValues')) === null || _watch === void 0 ? void 0 : (_watch$get = _watch.get(sobject)) === null || _watch$get === void 0 ? void 0 : (_watch$get$selectedSt = _watch$get[selectedStatus]) === null || _watch$get$selectedSt === void 0 ? void 0 : _watch$get$selectedSt[field.name]
+      }), "".concat(sobject, ".").concat(selectedStatus, ".").concat(field.name));
+    })]
+  });
+};
+
+function _typeof$z(obj) { "@babel/helpers - typeof"; return _typeof$z = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$z(obj); }
+function _slicedToArray$v(arr, i) { return _arrayWithHoles$v(arr) || _iterableToArrayLimit$v(arr, i) || _unsupportedIterableToArray$v(arr, i) || _nonIterableRest$v(); }
+function _nonIterableRest$v() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$v(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$v(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$v(o, minLen); }
+function _arrayLikeToArray$v(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$v(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$v(arr) { if (Array.isArray(arr)) return arr; }
+function ownKeys$o(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$o(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$o(Object(source), !0).forEach(function (key) { _defineProperty$y(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$o(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$y(obj, key, value) { key = _toPropertyKey$y(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$y(arg) { var key = _toPrimitive$y(arg, "string"); return _typeof$z(key) === "symbol" ? key : String(key); }
+function _toPrimitive$y(input, hint) { if (_typeof$z(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$z(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var dictionary$1 = {
+  Opportunity: {
+    resourceField: 'opportunityStatus',
+    annexTitle: 'Opportunity status dependencies'
+  },
+  Lead: {
+    resourceField: 'leadStatus',
+    annexTitle: 'Lead status dependencies'
+  },
+  Contact: {
+    resourceField: 'leadStatus',
+    annexTitle: 'Contact status dependencies'
+  },
+  Account: {
+    resourceField: 'companyStatus',
+    annexTitle: 'Company status dependencies'
+  }
+};
+function parseStatusRestrictions$1(salesforceStatusFieldsRequirements, datamodelFields) {
+  return salesforceStatusFieldsRequirements === null || salesforceStatusFieldsRequirements === void 0 ? void 0 : salesforceStatusFieldsRequirements.reduce(function (acc, restriction) {
+    var _restriction$fields$m;
+    acc[restriction.salesforceStatus] = (_restriction$fields$m = restriction.fields.map(function (_ref) {
+      var field = _ref.field,
+        required = _ref.required;
+      var matchingField = datamodelFields === null || datamodelFields === void 0 ? void 0 : datamodelFields.find(function (_ref2) {
+        var name = _ref2.name;
+        return name === field;
+      });
+      if (!matchingField) return null;
+      return _objectSpread$o(_objectSpread$o({}, matchingField), {}, {
+        required: required
+      });
+    })) === null || _restriction$fields$m === void 0 ? void 0 : _restriction$fields$m.filter(Boolean);
+    return acc;
+  }, {});
+}
+function parseRequirements$1(salesforceStatusFieldsRequirements, salesforceDataModelFields) {
+  return salesforceStatusFieldsRequirements === null || salesforceStatusFieldsRequirements === void 0 ? void 0 : salesforceStatusFieldsRequirements.reduce(function (acc, sobject) {
+    var typeInfos = salesforceDataModelFields === null || salesforceDataModelFields === void 0 ? void 0 : salesforceDataModelFields[sobject.objectType.toLowerCase()];
+    acc[dictionary$1[sobject.objectType].resourceField] = parseStatusRestrictions$1(sobject.statusRestrictions, typeInfos === null || typeInfos === void 0 ? void 0 : typeInfos.fields);
+    return acc;
+  }, {});
+}
+var initialAnimationStyle = {
+  opacity: 0,
+  x: 0,
+  width: '0px',
+  marginLeft: '0px',
+  paddingLeft: '0px'
+};
+var finalAnimationStyle = {
+  opacity: 1,
+  x: 1,
+  width: '216px',
+  marginLeft: '20px',
+  paddingLeft: '16px'
+};
+var animationProgress = [0, 0.12, 0.26, 0.32, 0.38, 0.5, 1];
+var AnimatedSidebar = function AnimatedSidebar(_ref3) {
+  var _parsedRequirements$c2, _parsedRequirements$l2, _parsedRequirements$l3, _parsedRequirements$o2;
+  var _ref3$changeStatusSte = _ref3.changeStatusStepData,
+    companyStatus = _ref3$changeStatusSte.companyStatus,
+    leadStatus = _ref3$changeStatusSte.leadStatus,
+    opportunityStatus = _ref3$changeStatusSte.opportunityStatus,
+    salesforceStatusFieldsRequirements = _ref3.salesforceStatusFieldsRequirements,
+    crmObject = _ref3.crmObject;
+  var salesforceDataModel = useSalesforceDataModel();
+  var _useSpring = useSpring(function () {
+      return {
+        config: config.slow,
+        from: initialAnimationStyle
+      };
+    }),
+    _useSpring2 = _slicedToArray$v(_useSpring, 2),
+    animationStyle = _useSpring2[0],
+    animationApi = _useSpring2[1];
+  var parsedRequirements = parseRequirements$1(salesforceStatusFieldsRequirements, salesforceDataModel === null || salesforceDataModel === void 0 ? void 0 : salesforceDataModel.types);
+  useEffect(function () {
+    var _parsedRequirements$o, _parsedRequirements$l, _parsedRequirements$c;
+    if (!parsedRequirements) return;
+    if ((_parsedRequirements$o = parsedRequirements.opportunityStatus) !== null && _parsedRequirements$o !== void 0 && _parsedRequirements$o[opportunityStatus] || (_parsedRequirements$l = parsedRequirements.leadStatus) !== null && _parsedRequirements$l !== void 0 && _parsedRequirements$l[leadStatus] || (_parsedRequirements$c = parsedRequirements.companyStatus) !== null && _parsedRequirements$c !== void 0 && _parsedRequirements$c[companyStatus]) {
+      animationApi.start({
+        to: finalAnimationStyle
+      });
+    } else {
+      animationApi.start({
+        to: initialAnimationStyle
+      });
+    }
+  }, [opportunityStatus, leadStatus, companyStatus, !!parsedRequirements]);
+  var animation = {
+    scale: animationStyle.x.to({
+      range: animationProgress,
+      output: [1, 1.11, 0.9, 1.06, 1.03, 1, 1]
+    }),
+    width: animationStyle.x.to({
+      range: animationProgress,
+      output: ['0px', '0px', '0px', '0px', '0px', '200px', '216px']
+    })
+  };
+  if (!parsedRequirements) return null;
+  return /*#__PURE__*/jsx(animated.div, {
+    style: _objectSpread$o(_objectSpread$o({
+      borderLeft: '1px solid var(--lightPeanut)'
+    }, animationStyle), animation),
+    children: /*#__PURE__*/jsx("div", {
+      children: /*#__PURE__*/jsx(ModalSection, {
+        title: "Mandatory fields",
+        children: /*#__PURE__*/jsxs("div", {
+          style: {
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          },
+          children: [((_parsedRequirements$c2 = parsedRequirements.companyStatus) === null || _parsedRequirements$c2 === void 0 ? void 0 : _parsedRequirements$c2[companyStatus]) && /*#__PURE__*/jsx(SobjectMandatoryFields, {
+            iconName: "company",
+            title: dictionary$1.Account.annexTitle,
+            statuses: parsedRequirements.companyStatus[companyStatus],
+            sobject: "Account",
+            selectedStatus: companyStatus
+          }), crmObject === 'Lead' && ((_parsedRequirements$l2 = parsedRequirements.leadStatus) === null || _parsedRequirements$l2 === void 0 ? void 0 : _parsedRequirements$l2[leadStatus]) && /*#__PURE__*/jsx(SobjectMandatoryFields, {
+            iconName: "personBody",
+            title: dictionary$1.Lead.annexTitle,
+            statuses: parsedRequirements.leadStatus[leadStatus],
+            sobject: "Lead",
+            selectedStatus: leadStatus
+          }), crmObject === 'Contact' && ((_parsedRequirements$l3 = parsedRequirements.leadStatus) === null || _parsedRequirements$l3 === void 0 ? void 0 : _parsedRequirements$l3[leadStatus]) && /*#__PURE__*/jsx(SobjectMandatoryFields, {
+            iconName: "sfdcContacts",
+            title: dictionary$1.Contact.annexTitle,
+            statuses: parsedRequirements.leadStatus[leadStatus],
+            sobject: "Contact",
+            selectedStatus: leadStatus
+          }), ((_parsedRequirements$o2 = parsedRequirements.opportunityStatus) === null || _parsedRequirements$o2 === void 0 ? void 0 : _parsedRequirements$o2[opportunityStatus]) && /*#__PURE__*/jsx(SobjectMandatoryFields, {
+            iconName: "sfdcOpp",
+            title: dictionary$1.Opportunity.annexTitle,
+            statuses: parsedRequirements.opportunityStatus[opportunityStatus],
+            sobject: "Opportunity",
+            selectedStatus: opportunityStatus
+          })]
+        })
+      })
+    })
+  });
+};
+
+var SalesforceStatusLoader = function SalesforceStatusLoader() {
+  return /*#__PURE__*/jsx("div", {
+    style: {
+      display: 'flex',
+      gap: '24px'
+    },
+    children: Array.from({
+      length: 3
+    }).map(function () {
+      return /*#__PURE__*/jsxs("div", {
+        style: {
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px'
+        },
+        children: [/*#__PURE__*/jsxs("div", {
+          style: {
+            display: 'flex',
+            gap: '4px',
+            alignItems: 'center'
+          },
+          children: [/*#__PURE__*/jsx("div", {
+            style: {
+              marginTop: '4px'
+            },
+            children: /*#__PURE__*/jsx(Skeleton, {
+              variant: "circle",
+              height: 24,
+              width: 24
+            })
+          }), /*#__PURE__*/jsx(Skeleton, {
+            variant: "text",
+            height: 46,
+            width: 172
+          })]
+        }), Array.from({
+          length: 8
+        }).map(function (_, index) {
+          return /*#__PURE__*/jsx(Skeleton, {
+            variant: "rect",
+            height: 28,
+            width: 200
+          }, "status_".concat(index));
+        })]
+      });
+    })
+  });
+};
+
+var css_248z$q = ".changeStatusSalesforce-module__section__wrapper__2ZwkH {\n  margin-bottom: 24px;\n}\n\n.changeStatusSalesforce-module__content__wrapper__Dgwsk {\n  padding-top: 5px;\n  display: flex;\n  flex-flow: row;\n  gap: 24px;\n  width: 100%;\n}\n\n.changeStatusSalesforce-module__lead_info_container__RbvBG {\n  width: 200px;\n  margin: 0 auto;\n}\n\n.changeStatusSalesforce-module__name__wrapper__tYV7b {\n  display: flex;\n  padding-bottom: 6px;\n  justify-content: center;\n}\n\n.changeStatusSalesforce-module__name__wrapper__tYV7b > p {\n  text-overflow: ellipsis;\n  overflow: hidden;\n  white-space: nowrap;\n  max-width: 200px;\n}\n\n.changeStatusSalesforce-module__name__wrapper__tYV7b > svg {\n  margin-right: 4px;\n}\n\n.changeStatusSalesforce-module__currentStatus__wrapper__ilhFC {\n  margin-bottom: 24px;\n}\n\n.changeStatusSalesforce-module__currentStatus__wrapper__ilhFC > div {\n  padding: 4px 16px;\n  text-align: center;\n  opacity: 0.5;\n}\n\n.changeStatusSalesforce-module__change_lead_status__wrapper__bZ3jX {\n  width: 420px;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n}\n\n.changeStatusSalesforce-module__change_status__wrapper__JMgDV {\n  width: 100%;\n}\n\n.changeStatusSalesforce-module__list_status__RLQ3m {\n  margin: auto;\n}\n\n.changeStatusSalesforce-module__list_status__RLQ3m > div {\n  display: flex;\n  flex-direction: column;\n  margin-bottom: 12px;\n  align-items: center;\n}\n\n.changeStatusSalesforce-module__list_status__RLQ3m > div > div,\n.changeStatusSalesforce-module__currentStatus__wrapper__ilhFC > div {\n  width: 200px;\n}\n\n.changeStatusSalesforce-module__radios_list_status__W3kj1 {\n  width: 420px;\n}\n\n.changeStatusSalesforce-module__radios_list_status__W3kj1 > div > div {\n  letter-spacing: 0;\n  margin-bottom: 10px;\n  padding: 6px 12px;\n}\n\n.changeStatusSalesforce-module__title__wrapper__lu6QN {\n  margin-bottom: 15px;\n}\n\n.changeStatusSalesforce-module__title__wrapper__centered__M9j7A {\n  display: flex;\n  justify-content: center;\n}\n\n.changeStatusSalesforce-module__reason__wrapper__DgKC8 {\n  margin-right: 15px;\n  width: 50%;\n}\n\n.changeStatusSalesforce-module__buttons__wrapper__rkkGu {\n  justify-content: flex-end;\n  display: flex;\n  width: 100%;\n}\n\n.changeStatusSalesforce-module_skip_button__L9iLv {\n  margin-left: auto;\n  margin-right: 16px;\n}\n\n.changeStatusSalesforce-module_back_button__U2B-Q {\n  margin-left: 0;\n  margin-right: auto;\n}\n";
+var styles$q = {"_section__wrapper":"changeStatusSalesforce-module__section__wrapper__2ZwkH","_content__wrapper":"changeStatusSalesforce-module__content__wrapper__Dgwsk","_lead_info_container":"changeStatusSalesforce-module__lead_info_container__RbvBG","_name__wrapper":"changeStatusSalesforce-module__name__wrapper__tYV7b","_currentStatus__wrapper":"changeStatusSalesforce-module__currentStatus__wrapper__ilhFC","_change_lead_status__wrapper":"changeStatusSalesforce-module__change_lead_status__wrapper__bZ3jX","_change_status__wrapper":"changeStatusSalesforce-module__change_status__wrapper__JMgDV","_list_status":"changeStatusSalesforce-module__list_status__RLQ3m","_radios_list_status":"changeStatusSalesforce-module__radios_list_status__W3kj1","_title__wrapper":"changeStatusSalesforce-module__title__wrapper__lu6QN","_title__wrapper__centered":"changeStatusSalesforce-module__title__wrapper__centered__M9j7A","_reason__wrapper":"changeStatusSalesforce-module__reason__wrapper__DgKC8","_buttons__wrapper":"changeStatusSalesforce-module__buttons__wrapper__rkkGu","skip_button":"changeStatusSalesforce-module_skip_button__L9iLv","back_button":"changeStatusSalesforce-module_back_button__U2B-Q"};
+styleInject(css_248z$q);
+
+var useRelatedBobjects = function useRelatedBobjects() {
+  var dataModel = useDataModel();
+  var getOpportunityRelated = function getOpportunityRelated(referenceBobject, accountId) {
+    var _referenceBobject$raw;
+    var dataModelField = dataModel === null || dataModel === void 0 ? void 0 : dataModel.findFieldByLogicRole(LEAD_FIELDS_LOGIC_ROLE.LEAD_OPPORTUNITIES);
+    var leadOpportunities = (referenceBobject === null || referenceBobject === void 0 ? void 0 : referenceBobject.rawBobject[dataModelField === null || dataModelField === void 0 ? void 0 : dataModelField.id]) || getValueFromLogicRole(referenceBobject, LEAD_FIELDS_LOGIC_ROLE.LEAD_OPPORTUNITIES);
+    var leadOpportunitiesValue = leadOpportunities || (referenceBobject === null || referenceBobject === void 0 ? void 0 : (_referenceBobject$raw = referenceBobject.rawBobject) === null || _referenceBobject$raw === void 0 ? void 0 : _referenceBobject$raw[dataModelField === null || dataModelField === void 0 ? void 0 : dataModelField.id]);
+    if (leadOpportunitiesValue) {
+      var opportunityId = Array.isArray(leadOpportunitiesValue) ? leadOpportunitiesValue[0] : leadOpportunitiesValue;
+      var opp = getOpportunityById(opportunityId.split('/')[2], accountId);
+      return opp === null || opp === void 0 ? void 0 : opp.opportunity;
+    }
+    return undefined;
+  };
+  var getCompanyRelated = function getCompanyRelated(referenceBobjectWithReferences) {
+    var _referenceBobjectWith, _referenceBobjectWith2, _referenceBobjectWith3;
+    var companyId = isLead(referenceBobjectWithReferences) ? (_referenceBobjectWith = referenceBobjectWithReferences === null || referenceBobjectWithReferences === void 0 ? void 0 : (_referenceBobjectWith2 = referenceBobjectWithReferences.company) === null || _referenceBobjectWith2 === void 0 ? void 0 : _referenceBobjectWith2.value) !== null && _referenceBobjectWith !== void 0 ? _referenceBobjectWith : getTextFromLogicRole(referenceBobjectWithReferences, LEAD_FIELDS_LOGIC_ROLE.COMPANY) : getTextFromLogicRole(referenceBobjectWithReferences, OPPORTUNITY_FIELDS_LOGIC_ROLE.COMPANY);
+    return referenceBobjectWithReferences === null || referenceBobjectWithReferences === void 0 ? void 0 : (_referenceBobjectWith3 = referenceBobjectWithReferences.referencedBobjects) === null || _referenceBobjectWith3 === void 0 ? void 0 : _referenceBobjectWith3[companyId];
+  };
+  var getLeadRelated = function getLeadRelated(referenceBobjectWithReferences) {
+    var _referenceBobjectWith4, _referenceBobjectWith5, _referenceBobjectWith6;
+    var leadId = isLead(referenceBobjectWithReferences) ? (_referenceBobjectWith4 = referenceBobjectWithReferences === null || referenceBobjectWithReferences === void 0 ? void 0 : (_referenceBobjectWith5 = referenceBobjectWithReferences.company) === null || _referenceBobjectWith5 === void 0 ? void 0 : _referenceBobjectWith5.value) !== null && _referenceBobjectWith4 !== void 0 ? _referenceBobjectWith4 : getTextFromLogicRole(referenceBobjectWithReferences, LEAD_FIELDS_LOGIC_ROLE.COMPANY) : getTextFromLogicRole(referenceBobjectWithReferences, OPPORTUNITY_FIELDS_LOGIC_ROLE.COMPANY);
+    return referenceBobjectWithReferences === null || referenceBobjectWithReferences === void 0 ? void 0 : (_referenceBobjectWith6 = referenceBobjectWithReferences.referencedBobjects) === null || _referenceBobjectWith6 === void 0 ? void 0 : _referenceBobjectWith6[leadId];
+  };
+  return {
+    getOpportunityRelated: getOpportunityRelated,
+    getCompanyRelated: getCompanyRelated,
+    getLeadRelated: getLeadRelated
+  };
+};
+
+var getBobjectName = function getBobjectName(referenceBobject) {
+  var _referenceBobject$id;
+  switch (referenceBobject === null || referenceBobject === void 0 ? void 0 : (_referenceBobject$id = referenceBobject.id) === null || _referenceBobject$id === void 0 ? void 0 : _referenceBobject$id.typeName) {
+    case BobjectTypes.Lead:
+      return getValueFromLogicRole(referenceBobject, LEAD_FIELDS_LOGIC_ROLE.FULL_NAME) || referenceBobject.fullName;
+    case BobjectTypes.Company:
+      return getValueFromLogicRole(referenceBobject, COMPANY_FIELDS_LOGIC_ROLE.NAME) || referenceBobject.name;
+    case BobjectTypes.Opportunity:
+      return getValueFromLogicRole(referenceBobject, OPPORTUNITY_FIELDS_LOGIC_ROLE.NAME) || referenceBobject.name;
+    default:
+      return undefined;
+  }
+};
+var getSalesforceIdField$1 = function getSalesforceIdField(bobject, isOpportunityBased, hasOpenOpportunity) {
+  var _bobject$id;
+  var isContact = isOpportunityBased ? hasOpenOpportunity : isContactSalesforce(bobject);
+  switch (bobject === null || bobject === void 0 ? void 0 : (_bobject$id = bobject.id) === null || _bobject$id === void 0 ? void 0 : _bobject$id.typeName) {
+    case BobjectTypes.Lead:
+      return isContact ? {
+        crmId: SALESFORCE_LOGIC_ROLES.CONTACT_ID_FIELD,
+        crmObject: 'Contact'
+      } : {
+        crmId: SALESFORCE_LOGIC_ROLES.LEAD_ID_FIELD,
+        crmObject: 'Lead'
+      };
+    case BobjectTypes.Company:
+      return {
+        crmId: SALESFORCE_LOGIC_ROLES.ACCOUNT_ID_FIELD,
+        crmObject: 'Account'
+      };
+    case BobjectTypes.Opportunity:
+      return {
+        crmId: SALESFORCE_LOGIC_ROLES.OPPORTUNITY_ID_FIELD,
+        crmObject: 'Opportunity'
+      };
+    default:
+      return {
+        crmId: undefined,
+        crmObject: undefined
+      };
+  }
+};
+var getIconName$1 = function getIconName(bobject) {
+  var _bobject$id2;
+  switch (bobject === null || bobject === void 0 ? void 0 : (_bobject$id2 = bobject.id) === null || _bobject$id2 === void 0 ? void 0 : _bobject$id2.typeName) {
+    case BobjectTypes.Company:
+      return 'company';
+    case BobjectTypes.Lead:
+      return isContactSalesforce(bobject) ? 'sfdcContacts' : 'personBody';
+    case BobjectTypes.Opportunity:
+      return 'sfdcOpp';
+  }
+};
+
+var css_248z$p = ".salesforceStatusSelector-module__section__wrapper__seQZn {\n  margin-bottom: 24px;\n}\n\n.salesforceStatusSelector-module__content__wrapper__-g1jb {\n  padding-top: 5px;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: space-around;\n  width: 100%;\n}\n\n.salesforceStatusSelector-module__lead_info_container__YfY0K {\n  width: 200px;\n  margin: 0 auto;\n}\n\n.salesforceStatusSelector-module__name__wrapper__4zez4 {\n  width: 100%;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  margin-bottom: 6px;\n}\n\n.salesforceStatusSelector-module__name__wrapper__4zez4 > p {\n  text-overflow: ellipsis;\n  overflow: hidden;\n  white-space: nowrap;\n  padding-right: 12px;\n  max-width: 200px;\n}\n\n.salesforceStatusSelector-module__name__wrapper__4zez4 > svg {\n  margin-right: 4px;\n}\n\n.salesforceStatusSelector-module__currentStatus__wrapper__hNZuf {\n  margin-bottom: 24px;\n}\n\n.salesforceStatusSelector-module__currentStatus__wrapper__hNZuf > div {\n  padding: 4px 16px;\n  text-align: center;\n  opacity: 0.5;\n}\n\n.salesforceStatusSelector-module__change_lead_status__wrapper__PdezM {\n  width: 420px;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n}\n\n.salesforceStatusSelector-module__change_status__wrapper__hdMGp {\n  width: 100%;\n}\n\n.salesforceStatusSelector-module__list_status__3JXAt {\n  /* margin: auto; */\n}\n\n.salesforceStatusSelector-module__list_status__3JXAt > div {\n  display: flex;\n  flex-direction: column;\n  margin-bottom: 12px;\n  align-items: center;\n}\n\n/*._status_wrapper {*/\n/*  cursor: pointer;*/\n/*  display: flex;*/\n/*  justify-content: center;*/\n/*  margin: 8px 0;*/\n/*  box-sizing: border-box;*/\n/*}*/\n\n.salesforceStatusSelector-module__status_wrapper__PjaID {\n  margin-bottom: 24px;\n}\n\n.salesforceStatusSelector-module__status_wrapper__PjaID > div {\n  padding: 4px 16px;\n  text-align: center;\n  opacity: 0.5;\n}\n\n.salesforceStatusSelector-module__list_status__3JXAt > div > div,\n.salesforceStatusSelector-module__status_wrapper__PjaID > div {\n  width: 200px;\n}\n\n.salesforceStatusSelector-module__radios_list_status__UYvlh {\n  width: 420px;\n}\n\n.salesforceStatusSelector-module__radios_list_status__UYvlh > div > div {\n  letter-spacing: 0;\n  margin-bottom: 10px;\n  padding: 6px 12px;\n}\n\n.salesforceStatusSelector-module__title__wrapper__-Jp7o {\n  margin-bottom: 15px;\n}\n\n.salesforceStatusSelector-module__title__wrapper__centered__SPVQE {\n  display: flex;\n  justify-content: center;\n}\n\n.salesforceStatusSelector-module__reason__wrapper__cr-ED {\n  width: 50%;\n}\n\n.salesforceStatusSelector-module__buttons__wrapper__mpJIi {\n  display: flex;\n  width: 100%;\n}\n\n.salesforceStatusSelector-module__buttons__wrapper__mpJIi > button:nth-child(2) {\n  margin-left: auto;\n  margin-right: 16px;\n}\n\n.salesforceStatusSelector-module__warning__banner__lEbmB {\n  background-color: var(--verySoftBanana);\n  text-align: center;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  gap: 8px;\n  padding: 8px 0;\n}\n\n.salesforceStatusSelector-module__status__Xx9OV {\n  width: 100%;\n  display: flex;\n  flex-direction: column;\n}\n\n.salesforceStatusSelector-module__status_left__QeCMO {\n  width: 200px;\n  padding-right: 20px;\n  box-sizing: border-box;\n}\n\n.salesforceStatusSelector-module__status_right__IA8i2 {\n  width: 200px;\n  padding-left: 20px;\n  box-sizing: border-box;\n}\n\n.salesforceStatusSelector-module__status_center_solo__Xvi7j {\n  box-sizing: border-box;\n  width: 200px;\n}\n\n.salesforceStatusSelector-module__list_status__3JXAt > div {\n  display: flex;\n  flex-direction: column;\n  margin-bottom: 12px;\n}\n\n.salesforceStatusSelector-module__list_status__3JXAt > div > div,\n.salesforceStatusSelector-module__currentStatus__wrapper__hNZuf > div {\n  width: 200px;\n}\n\n.salesforceStatusSelector-module_label__6GvLR {\n  padding: 4px 16px;\n  min-height: 0;\n  color: var(--softPeanut);\n  background-color: var(--lightestBloobirds);\n  border: 1px solid;\n  border-color: var(--lightestBloobirds);\n  border-radius: 4px;\n  font-family: var(--fontFamily);\n  font-weight: var(--fontMedium);\n  font-size: 13px;\n  letter-spacing: 1px;\n  line-height: 16px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  text-align: center;\n  opacity: 50%;\n}\n\n.salesforceStatusSelector-module_label__6GvLR:hover {\n  cursor: pointer;\n  opacity: 100%;\n}\n\n.salesforceStatusSelector-module_selected__Fs1dP {\n  opacity: 100%;\n  box-shadow: 0px 0px 4px var(--verySoftPeanut);\n  border-color: var(--verySoftPeanut);\n}\n\n.salesforceStatusSelector-module_selected__Fs1dP:hover {\n  cursor: pointer;\n}\n";
+var styles$p = {"_section__wrapper":"salesforceStatusSelector-module__section__wrapper__seQZn","_content__wrapper":"salesforceStatusSelector-module__content__wrapper__-g1jb","_lead_info_container":"salesforceStatusSelector-module__lead_info_container__YfY0K","_name__wrapper":"salesforceStatusSelector-module__name__wrapper__4zez4","_currentStatus__wrapper":"salesforceStatusSelector-module__currentStatus__wrapper__hNZuf","_change_lead_status__wrapper":"salesforceStatusSelector-module__change_lead_status__wrapper__PdezM","_change_status__wrapper":"salesforceStatusSelector-module__change_status__wrapper__hdMGp","_list_status":"salesforceStatusSelector-module__list_status__3JXAt","_status_wrapper":"salesforceStatusSelector-module__status_wrapper__PjaID","_radios_list_status":"salesforceStatusSelector-module__radios_list_status__UYvlh","_title__wrapper":"salesforceStatusSelector-module__title__wrapper__-Jp7o","_title__wrapper__centered":"salesforceStatusSelector-module__title__wrapper__centered__SPVQE","_reason__wrapper":"salesforceStatusSelector-module__reason__wrapper__cr-ED","_buttons__wrapper":"salesforceStatusSelector-module__buttons__wrapper__mpJIi","_warning__banner":"salesforceStatusSelector-module__warning__banner__lEbmB","_status":"salesforceStatusSelector-module__status__Xx9OV","_status_left":"salesforceStatusSelector-module__status_left__QeCMO","_status_right":"salesforceStatusSelector-module__status_right__IA8i2","_status_center_solo":"salesforceStatusSelector-module__status_center_solo__Xvi7j","label":"salesforceStatusSelector-module_label__6GvLR","selected":"salesforceStatusSelector-module_selected__Fs1dP"};
+styleInject(css_248z$p);
+
+function _typeof$y(obj) { "@babel/helpers - typeof"; return _typeof$y = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$y(obj); }
+function _defineProperty$x(obj, key, value) { key = _toPropertyKey$x(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$x(arg) { var key = _toPrimitive$x(arg, "string"); return _typeof$y(key) === "symbol" ? key : String(key); }
+function _toPrimitive$x(input, hint) { if (_typeof$y(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$y(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var StatusLabelButton = function StatusLabelButton(_ref) {
+  var status = _ref.status,
+    selectedStatus = _ref.selectedStatus,
+    onClick = _ref.onClick;
+  var name = status.name,
+    salesforceLabel = status.salesforceLabel,
+    backgroundColor = status.backgroundColor,
+    textColor = status.textColor;
+  var isSelected = name === selectedStatus;
+  var classes = clsx(styles$p.label, _defineProperty$x({}, styles$p.selected, isSelected));
+  return /*#__PURE__*/jsx("div", {
+    className: classes,
+    style: {
+      backgroundColor: backgroundColor !== null && backgroundColor !== void 0 ? backgroundColor : 'var(--darkGray)',
+      color: textColor !== null && textColor !== void 0 ? textColor : 'white'
+    },
+    "aria-label": 'Label',
+    onClick: onClick,
+    children: salesforceLabel
+  });
+};
+
+function _typeof$x(obj) { "@babel/helpers - typeof"; return _typeof$x = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$x(obj); }
+function ownKeys$n(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$n(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$n(Object(source), !0).forEach(function (key) { _defineProperty$w(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$n(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$w(obj, key, value) { key = _toPropertyKey$w(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$w(arg) { var key = _toPrimitive$w(arg, "string"); return _typeof$x(key) === "symbol" ? key : String(key); }
+function _toPrimitive$w(input, hint) { if (_typeof$x(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$x(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var SalesforceStatusSelector = function SalesforceStatusSelector(_ref) {
+  var _sampleBobject$id, _sampleBobject$id$typ, _bobject$, _bobject$$id;
+  var statusList = _ref.statusList,
+    bobject = _ref.bobject,
+    changeStatusStepData = _ref.changeStatusStepData,
+    setChangeStatusStepData = _ref.setChangeStatusStepData,
+    _onClick = _ref.onClick,
+    onBobjectChange = _ref.onBobjectChange;
+  if (!statusList) return null;
+  var sampleBobject = Array.isArray(bobject) ? bobject[0] : bobject;
+  var relatedBobjectName = getBobjectName(sampleBobject);
+  var bobjectType = sampleBobject === null || sampleBobject === void 0 ? void 0 : (_sampleBobject$id = sampleBobject.id) === null || _sampleBobject$id === void 0 ? void 0 : (_sampleBobject$id$typ = _sampleBobject$id.typeName) === null || _sampleBobject$id$typ === void 0 ? void 0 : _sampleBobject$id$typ.toLowerCase();
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$p._status,
+    children: [/*#__PURE__*/jsxs("div", {
+      className: styles$p._name__wrapper,
+      children: [/*#__PURE__*/jsx(Icon, {
+        color: "verySoftPeanut",
+        name: getIconName$1(sampleBobject)
+      }), Array.isArray(bobject) ? /*#__PURE__*/jsx(Select, {
+        size: "small",
+        width: "134px",
+        defaultValue: (_bobject$ = bobject[0]) === null || _bobject$ === void 0 ? void 0 : (_bobject$$id = _bobject$.id) === null || _bobject$$id === void 0 ? void 0 : _bobject$$id.value,
+        onChange: onBobjectChange,
+        children: bobject.map(function (b) {
+          var _b$id;
+          return /*#__PURE__*/jsx(Item, {
+            value: (_b$id = b.id) === null || _b$id === void 0 ? void 0 : _b$id.value,
+            children: getBobjectName(b)
+          }, b.id);
+        })
+      }) : /*#__PURE__*/jsx(Text, {
+        dataTest: "Text-Modal-StatusUpdate",
+        size: "m",
+        color: "peanut",
+        children: relatedBobjectName
+      })]
+    }), /*#__PURE__*/jsx("div", {
+      className: styles$p._list_status,
+      children: statusList === null || statusList === void 0 ? void 0 : statusList.map(function (status) {
+        return /*#__PURE__*/jsx(StatusLabelButton, {
+          status: status,
+          selectedStatus: changeStatusStepData["".concat(bobjectType, "Status")],
+          onClick: function onClick() {
+            _onClick === null || _onClick === void 0 ? void 0 : _onClick();
+            setChangeStatusStepData(_objectSpread$n(_objectSpread$n({}, changeStatusStepData), {}, _defineProperty$w({}, "".concat(bobjectType, "Status"), status.name)));
+          }
+        }, "".concat(bobjectType, "-status-").concat(status === null || status === void 0 ? void 0 : status.name));
+      })
+    })]
+  });
+};
+
+function _typeof$w(obj) { "@babel/helpers - typeof"; return _typeof$w = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$w(obj); }
+function ownKeys$m(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$m(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$m(Object(source), !0).forEach(function (key) { _defineProperty$v(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$m(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$v(obj, key, value) { key = _toPropertyKey$v(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$v(arg) { var key = _toPrimitive$v(arg, "string"); return _typeof$w(key) === "symbol" ? key : String(key); }
+function _toPrimitive$v(input, hint) { if (_typeof$w(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$w(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$u(arr, i) { return _arrayWithHoles$u(arr) || _iterableToArrayLimit$u(arr, i) || _unsupportedIterableToArray$u(arr, i) || _nonIterableRest$u(); }
+function _nonIterableRest$u() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$u(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$u(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$u(o, minLen); }
+function _arrayLikeToArray$u(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$u(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$u(arr) { if (Array.isArray(arr)) return arr; }
+var ChangeStatusSalesforce = function ChangeStatusSalesforce(_ref) {
+  var _opportunities$, _mainObject$id, _mainObject$id3, _selectedOpp$id;
+  var handleBack = _ref.handleBack,
+    handleNext = _ref.handleNext,
+    handleSkip = _ref.handleSkip,
+    buttonsConfig = _ref.buttonsConfig,
+    wizardKey = _ref.wizardKey,
+    machineContext = _ref.machineContext;
+  var dataModel = useDataModel();
+  var _useWizardContext = useWizardContext(),
+    getWizardProperties = _useWizardContext.getWizardProperties,
+    accountId = _useWizardContext.accountId;
+  var _getWizardProperties = getWizardProperties(wizardKey),
+    referenceBobject = _getWizardProperties.referenceBobject,
+    handleOnSave = _getWizardProperties.handleOnSave,
+    opportunities = _getWizardProperties.opportunities;
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards'
+    }),
+    t = _useTranslation.t;
+  var mainObject = wizardKey === 'CONTACT_FLOW_OTO' && machineContext !== null && machineContext !== void 0 && machineContext.selectedOpportunityObject ? machineContext === null || machineContext === void 0 ? void 0 : machineContext.selectedOpportunityObject : referenceBobject;
+  var _useState = useState(opportunities === null || opportunities === void 0 ? void 0 : (_opportunities$ = opportunities[0]) === null || _opportunities$ === void 0 ? void 0 : _opportunities$.id.value),
+    _useState2 = _slicedToArray$u(_useState, 2),
+    selectedOpp = _useState2[0],
+    setSelectedOpp = _useState2[1];
+  var _useState3 = useState(null),
+    _useState4 = _slicedToArray$u(_useState3, 2),
+    isSubmitting = _useState4[0],
+    setIsSubmitting = _useState4[1];
+  var _useState5 = useState(null),
+    _useState6 = _slicedToArray$u(_useState5, 2),
+    bobjectWithReferences = _useState6[0],
+    setBobjectWithReferences = _useState6[1];
+  var _useChangeStatusStepD = useChangeStatusStepData(),
+    changeStatusStepData = _useChangeStatusStepD.changeStatusStepData,
+    setChangeStatusStepData = _useChangeStatusStepD.setChangeStatusStepData;
+  var _useRelatedBobjects = useRelatedBobjects(),
+    getOpportunityRelated = _useRelatedBobjects.getOpportunityRelated,
+    getCompanyRelated = _useRelatedBobjects.getCompanyRelated,
+    getLeadRelated = _useRelatedBobjects.getLeadRelated;
+  var isB2CAccount = useIsB2CAccount();
+  var methods = useForm({
+    shouldUnregister: false
+  });
+  var handleSubmit = methods.handleSubmit;
+  var _useSalesforceStatusP = useSalesforceStatusPicklistValue(),
+    companyCrmStatusValues = _useSalesforceStatusP.companyCrmStatusValues,
+    leadCrmStatusValues = _useSalesforceStatusP.leadCrmStatusValues,
+    opportunityCrmStatusValues = _useSalesforceStatusP.opportunityCrmStatusValues;
+  var referenceBobjectType = mainObject === null || mainObject === void 0 ? void 0 : (_mainObject$id = mainObject.id) === null || _mainObject$id === void 0 ? void 0 : _mainObject$id.typeName;
+  var isCompanyReference = isCompany(mainObject);
+  var isLeadReference = isLead(mainObject);
+  var isOpportunityReference = isOpportunity(mainObject);
+  var companyRelated = !isCompanyReference && getCompanyRelated(bobjectWithReferences);
+  var leadRelated = isOpportunityReference && getLeadRelated(bobjectWithReferences);
+  var opportunityRelated = opportunities || !isOpportunityReference && getOpportunityRelated(mainObject, accountId);
+  var showCompanyStatusSelector = !(buttonsConfig !== null && buttonsConfig !== void 0 && buttonsConfig.salesforceStatusShowOnlyMainObject) && (isLeadReference || isOpportunityReference) && companyRelated;
+  var showLeadStatusSelector = !(buttonsConfig !== null && buttonsConfig !== void 0 && buttonsConfig.salesforceStatusShowOnlyMainObject) && isOpportunityReference && !companyRelated && leadRelated;
+  var showOpportunityStatusSelector = !(buttonsConfig !== null && buttonsConfig !== void 0 && buttonsConfig.salesforceStatusShowOnlyMainObject) && isLeadReference && opportunityRelated;
+  var _getSalesforceIdField = getSalesforceIdField$1(mainObject, wizardKey === 'CONTACT_FLOW_OTO' && (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.checkExistingOpportunity), machineContext === null || machineContext === void 0 ? void 0 : machineContext.selectedOpportunityObject),
+    crmObject = _getSalesforceIdField.crmObject;
+  var showSkipButton = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton : false;
+  var hasPreviousStep = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep : false;
+  var openCadenceControlOnClose = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip : false;
+  function getBobjectWithReferences(bobjectId, changeStatusStepData) {
+    if (bobjectId && changeStatusStepData) {
+      api.get("/bobjects/".concat(bobjectId, "/form?injectReferences=true")).then(function (data) {
+        var bobjectWithReferences = injectReferencesGetProcess(data === null || data === void 0 ? void 0 : data.data);
+        setBobjectWithReferences(bobjectWithReferences);
+      });
+    }
+  }
+  var getReferenceObjectStatusValues = function getReferenceObjectStatusValues(bobjectWithReferences) {
+    var statusPicklistValues;
+    if (isCompanyReference) {
+      statusPicklistValues = companyCrmStatusValues;
+    } else if (isLeadReference) {
+      var isContact = wizardKey === 'CONTACT_FLOW_OTO' && buttonsConfig !== null && buttonsConfig !== void 0 && buttonsConfig.checkExistingOpportunity ? machineContext === null || machineContext === void 0 ? void 0 : machineContext.selectedOpportunityObject : isContactSalesforce(bobjectWithReferences);
+      statusPicklistValues = isContact ? leadCrmStatusValues === null || leadCrmStatusValues === void 0 ? void 0 : leadCrmStatusValues.filter(function (status) {
+        return status.salesforceObjectType === 'Contact';
+      }) : leadCrmStatusValues === null || leadCrmStatusValues === void 0 ? void 0 : leadCrmStatusValues.filter(function (status) {
+        return status.salesforceObjectType === 'Lead';
+      });
+    } else {
+      statusPicklistValues = opportunityCrmStatusValues;
+    }
+    return statusPicklistValues;
+  };
+  var bobjectStatuses = getReferenceObjectStatusValues(bobjectWithReferences);
+  var updateStatus = function updateStatus(statusInfo) {
+    var _Object$entries;
+    if (!statusInfo) return;
+    var newStatusData = (_Object$entries = Object.entries(statusInfo)) === null || _Object$entries === void 0 ? void 0 : _Object$entries.reduce(function (acc, curr) {
+      var _curr = _slicedToArray$u(curr, 2),
+        bobjectType = _curr[0],
+        _curr$ = _curr[1],
+        bobject = _curr$.bobject,
+        statusValues = _curr$.statusValues,
+        statusKey = _curr$.statusKey;
+      if (bobject && bobjectType) {
+        var sfdcStatusField = getCurrentSalesforceStatusField(bobject);
+        if (sfdcStatusField) {
+          var _statusValues$find;
+          var statusName = statusValues === null || statusValues === void 0 ? void 0 : (_statusValues$find = statusValues.find(function (status) {
+            return status.salesforceLabel === sfdcStatusField.value;
+          })) === null || _statusValues$find === void 0 ? void 0 : _statusValues$find.name;
+          if (!changeStatusStepData[statusKey] || changeStatusStepData[statusKey] !== statusName) {
+            return _objectSpread$m(_objectSpread$m({}, acc), {}, _defineProperty$v({}, statusKey, statusName));
+          } else {
+            return _objectSpread$m(_objectSpread$m({}, acc), {}, _defineProperty$v({}, statusKey, changeStatusStepData[statusKey]));
+          }
+        }
+      }
+      return acc;
+    }, {
+      companyStatus: undefined,
+      leadStatus: undefined,
+      opportunityStatus: undefined
+    });
+    setChangeStatusStepData(newStatusData);
+  };
+  useEffect(function () {
+    var _mainObject$id2;
+    getBobjectWithReferences(mainObject === null || mainObject === void 0 ? void 0 : (_mainObject$id2 = mainObject.id) === null || _mainObject$id2 === void 0 ? void 0 : _mainObject$id2.value, changeStatusStepData);
+  }, [mainObject === null || mainObject === void 0 ? void 0 : (_mainObject$id3 = mainObject.id) === null || _mainObject$id3 === void 0 ? void 0 : _mainObject$id3.value]);
+  function getSampleBobject(bobject) {
+    return Array.isArray(bobject) ? bobject[0] : bobject;
+  }
+  useEffect(function () {
+    if (changeStatusStepData) {
+      var _Object$values;
+      var statusInfo = _defineProperty$v(_defineProperty$v(_defineProperty$v({}, BobjectTypes.Company, {
+        bobject: getSampleBobject(companyRelated),
+        statusValues: companyCrmStatusValues,
+        statusKey: 'companyStatus'
+      }), BobjectTypes.Lead, {
+        bobject: isLeadReference ? referenceBobject : getSampleBobject(leadRelated),
+        statusValues: leadCrmStatusValues,
+        statusKey: 'leadStatus'
+      }), BobjectTypes.Opportunity, {
+        bobject: selectedOpp ? opportunities === null || opportunities === void 0 ? void 0 : opportunities.find(function (_ref2) {
+          var value = _ref2.id.value;
+          return value === selectedOpp;
+        }) : isOpportunityReference ? referenceBobject : getSampleBobject(opportunityRelated),
+        statusValues: opportunityCrmStatusValues,
+        statusKey: 'opportunityStatus'
+      });
+      if (((_Object$values = Object.values(statusInfo)) === null || _Object$values === void 0 ? void 0 : _Object$values.reduce(function (acc, _ref3) {
+        var bobject = _ref3.bobject;
+        if (bobject) {
+          return acc + 1;
+        }
+        return acc;
+      }, 0)) > 0) {
+        updateStatus(statusInfo);
+      }
+    }
+  }, [companyRelated, leadRelated, selectedOpp === null || selectedOpp === void 0 ? void 0 : (_selectedOpp$id = selectedOpp.id) === null || _selectedOpp$id === void 0 ? void 0 : _selectedOpp$id.value]);
+  useEffect(function () {
+    var _buttonsConfig$salesf;
+    var salesforceId = referenceBobject === null || referenceBobject === void 0 ? void 0 : referenceBobject.salesforceId;
+    var valuesToMap = new Map();
+    if ((buttonsConfig === null || buttonsConfig === void 0 ? void 0 : (_buttonsConfig$salesf = buttonsConfig.salesforceStatusFields) === null || _buttonsConfig$salesf === void 0 ? void 0 : _buttonsConfig$salesf.length) > 0) {
+      var _buttonsConfig$salesf2;
+      buttonsConfig === null || buttonsConfig === void 0 ? void 0 : (_buttonsConfig$salesf2 = buttonsConfig.salesforceStatusFields) === null || _buttonsConfig$salesf2 === void 0 ? void 0 : _buttonsConfig$salesf2.forEach(function (salesforceField) {
+        var _salesforceField$stat;
+        var sobjectName = salesforceField === null || salesforceField === void 0 ? void 0 : salesforceField.objectType;
+        var sobjectFields = salesforceField === null || salesforceField === void 0 ? void 0 : (_salesforceField$stat = salesforceField.statusRestrictions) === null || _salesforceField$stat === void 0 ? void 0 : _salesforceField$stat.flatMap(function (status) {
+          return status === null || status === void 0 ? void 0 : status.fields.map(function (_ref4) {
+            var field = _ref4.field;
+            return field;
+          });
+        });
+        api.post('/utils/service/salesforce/query', {
+          query: "SELECT ".concat(sobjectFields.join(','), " FROM ").concat(sobjectName, " WHERE Id='").concat(salesforceId, "'")
+        }).then(function (data) {
+          var _data$data, _salesforceField$stat2;
+          var sobjectValues = data === null || data === void 0 ? void 0 : (_data$data = data.data) === null || _data$data === void 0 ? void 0 : _data$data.reduce(function (acc, field) {
+            if (field) {
+              var _Object$entries2;
+              var fieldValues = (_Object$entries2 = Object.entries(field)) === null || _Object$entries2 === void 0 ? void 0 : _Object$entries2.filter(function (_ref5) {
+                var _ref6 = _slicedToArray$u(_ref5, 2);
+                  _ref6[0];
+                  var value = _ref6[1];
+                return typeof value === 'string';
+              });
+              return fieldValues === null || fieldValues === void 0 ? void 0 : fieldValues.reduce(function (acc, _ref7) {
+                var _ref8 = _slicedToArray$u(_ref7, 2),
+                  key = _ref8[0],
+                  value = _ref8[1];
+                return _objectSpread$m(_objectSpread$m({}, acc), {}, _defineProperty$v({}, key, value));
+              }, {});
+            } else {
+              return acc;
+            }
+          }, {});
+          var statusFields = salesforceField === null || salesforceField === void 0 ? void 0 : (_salesforceField$stat2 = salesforceField.statusRestrictions) === null || _salesforceField$stat2 === void 0 ? void 0 : _salesforceField$stat2.reduce(function (acc, status) {
+            var _status$fields;
+            return _objectSpread$m(_objectSpread$m({}, acc), {}, _defineProperty$v({}, status.salesforceStatus, status === null || status === void 0 ? void 0 : (_status$fields = status.fields) === null || _status$fields === void 0 ? void 0 : _status$fields.reduce(function (acc, fieldValue) {
+              return _objectSpread$m(_objectSpread$m({}, acc), {}, _defineProperty$v({}, fieldValue.field, sobjectValues === null || sobjectValues === void 0 ? void 0 : sobjectValues[fieldValue.field]));
+            }, {})));
+          }, {});
+          valuesToMap.set(sobjectName, statusFields);
+          methods.setValue('salesforceLiveFieldsValues', valuesToMap);
+        });
+      });
+    }
+  }, []);
+  var getCRMIdValue = function getCRMIdValue(bobject, crmId) {
+    var _dataModel$findFieldB, _bobject$rawBobject;
+    if (bobject.fields) {
+      return getValueFromLogicRole(bobject, crmId);
+    }
+    var crmFieldId = (_dataModel$findFieldB = dataModel.findFieldByLogicRole(crmId)) === null || _dataModel$findFieldB === void 0 ? void 0 : _dataModel$findFieldB.id;
+    return (bobject === null || bobject === void 0 ? void 0 : (_bobject$rawBobject = bobject.rawBobject) === null || _bobject$rawBobject === void 0 ? void 0 : _bobject$rawBobject[crmFieldId]) || bobject.salesforceId;
+  };
+  var buildDataToSend = function buildDataToSend(data) {
+    var dataToSend = {};
+    var insertData = function insertData(relatedObject, statusKey, bobjectType) {
+      var objectToSend = referenceBobjectType === bobjectType ? bobjectWithReferences : relatedObject;
+      if (changeStatusStepData[statusKey] && objectToSend) {
+        var _data$_crmObject;
+        var statusField = getCurrentSalesforceStatusField(objectToSend);
+        var _getSalesforceIdField2 = getSalesforceIdField$1(objectToSend, wizardKey === 'CONTACT_FLOW_OTO' && (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.checkExistingOpportunity), machineContext === null || machineContext === void 0 ? void 0 : machineContext.selectedOpportunityObject),
+          crmId = _getSalesforceIdField2.crmId,
+          _crmObject = _getSalesforceIdField2.crmObject;
+        var crmStatusValue = changeStatusStepData[statusKey];
+        var extraFields = data === null || data === void 0 ? void 0 : (_data$_crmObject = data[_crmObject]) === null || _data$_crmObject === void 0 ? void 0 : _data$_crmObject[crmStatusValue];
+        var crmIdValue = getCRMIdValue(objectToSend, crmId);
+        if (crmStatusValue !== (statusField === null || statusField === void 0 ? void 0 : statusField.value) || extraFields) {
+          var _objectToSend$id;
+          dataToSend[_crmObject] = {
+            bobjectId: objectToSend === null || objectToSend === void 0 ? void 0 : (_objectToSend$id = objectToSend.id) === null || _objectToSend$id === void 0 ? void 0 : _objectToSend$id.value,
+            crmStatusValue: crmStatusValue,
+            crmObject: _crmObject,
+            crmId: crmIdValue,
+            extraFields: extraFields
+          };
+        }
+      }
+    };
+    insertData(companyRelated, 'companyStatus', BobjectTypes.Company);
+    insertData(leadRelated, 'leadStatus', BobjectTypes.Lead);
+    insertData(selectedOpp ? opportunities.find(function (_ref9) {
+      var value = _ref9.id.value;
+      return value === selectedOpp;
+    }) : opportunityRelated, 'opportunityStatus', BobjectTypes.Opportunity);
+    return dataToSend;
+  };
+  var saveAndNext = function saveAndNext(data) {
+    setIsSubmitting(true);
+    var dataToSend = buildDataToSend(data);
+    if (dataToSend) {
+      api.post("/utils/crmStatus/updateCrmStatus", {
+        fieldsToUpdate: dataToSend,
+        crm: 'SALESFORCE',
+        accountId: accountId
+      }).then(function () {
+        createToast({
+          message: t('steps.changeSalesforceStatus.toasts.success'),
+          type: 'success'
+        });
+        setIsSubmitting(false);
+        handleOnSave === null || handleOnSave === void 0 ? void 0 : handleOnSave();
+        handleNext(changeStatusStepData.companyStatus, changeStatusStepData.leadStatus);
+      })["catch"](function (e) {
+        var _e$response, _e$response$data, _e$response2, _e$response2$data;
+        createToast({
+          message: t('steps.changeSalesforceStatus.toasts.errorUpdating', {
+            error: e !== null && e !== void 0 && (_e$response = e.response) !== null && _e$response !== void 0 && (_e$response$data = _e$response.data) !== null && _e$response$data !== void 0 && _e$response$data.message ? ": ".concat(e === null || e === void 0 ? void 0 : (_e$response2 = e.response) === null || _e$response2 === void 0 ? void 0 : (_e$response2$data = _e$response2.data) === null || _e$response2$data === void 0 ? void 0 : _e$response2$data.message) : '.'
+          }),
+          type: 'error'
+        });
+        setIsSubmitting(false);
+      });
+    } else {
+      handleNext(changeStatusStepData.companyStatus, changeStatusStepData.leadStatus);
+    }
+  };
+  return /*#__PURE__*/jsxs(FormProvider, _objectSpread$m(_objectSpread$m({}, methods), {}, {
+    children: [/*#__PURE__*/jsx(ModalContent, {
+      children: /*#__PURE__*/jsxs("div", {
+        style: {
+          display: 'flex',
+          justifyContent: 'center'
+        },
+        children: [/*#__PURE__*/jsx(ModalSection, {
+          size: "l",
+          title: "Do you want to update the status?",
+          children: bobjectWithReferences ? /*#__PURE__*/jsx(Fragment, {
+            children: /*#__PURE__*/jsx("div", {
+              className: styles$q._section__wrapper,
+              children: /*#__PURE__*/jsxs("div", {
+                className: styles$q._content__wrapper,
+                children: [/*#__PURE__*/jsx(SalesforceStatusSelector, {
+                  statusList: bobjectStatuses,
+                  bobject: mainObject,
+                  changeStatusStepData: changeStatusStepData,
+                  setChangeStatusStepData: setChangeStatusStepData,
+                  onClick: function onClick() {
+                    methods.unregister(crmObject);
+                  }
+                }), !isB2CAccount && showCompanyStatusSelector && /*#__PURE__*/jsx(SalesforceStatusSelector, {
+                  statusList: companyCrmStatusValues,
+                  bobject: companyRelated,
+                  changeStatusStepData: changeStatusStepData,
+                  setChangeStatusStepData: setChangeStatusStepData
+                }), showLeadStatusSelector && /*#__PURE__*/jsx(SalesforceStatusSelector, {
+                  statusList: leadCrmStatusValues === null || leadCrmStatusValues === void 0 ? void 0 : leadCrmStatusValues.filter(function (status) {
+                    return status.salesforceObjectType === 'Lead';
+                  }),
+                  bobject: leadRelated,
+                  changeStatusStepData: changeStatusStepData,
+                  setChangeStatusStepData: setChangeStatusStepData
+                }), showOpportunityStatusSelector && /*#__PURE__*/jsx(SalesforceStatusSelector, {
+                  statusList: opportunityCrmStatusValues,
+                  bobject: opportunityRelated,
+                  changeStatusStepData: changeStatusStepData,
+                  setChangeStatusStepData: setChangeStatusStepData,
+                  onBobjectChange: setSelectedOpp
+                })]
+              })
+            })
+          }) : /*#__PURE__*/jsx(SalesforceStatusLoader, {})
+        }), /*#__PURE__*/jsx(AnimatedSidebar, {
+          changeStatusStepData: changeStatusStepData,
+          salesforceStatusFieldsRequirements: buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.salesforceStatusFields,
+          crmObject: crmObject
+        })]
+      })
+    }), /*#__PURE__*/jsx(ModalFooter, {
+      children: /*#__PURE__*/jsxs("div", {
+        className: styles$q._buttons__wrapper,
+        children: [hasPreviousStep && /*#__PURE__*/jsx(Button, {
+          variant: "clear",
+          onClick: handleBack,
+          className: styles$q.back_button,
+          children: (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.previousButtonTitle) || t('common.back')
+        }), showSkipButton && /*#__PURE__*/jsx(Button, {
+          variant: "secondary",
+          onClick: function onClick() {
+            return handleSkip(openCadenceControlOnClose);
+          },
+          className: styles$q.skip_button,
+          children: t('common.skipWizard')
+        }), !(buttonsConfig !== null && buttonsConfig !== void 0 && buttonsConfig.hideSaveButton) && /*#__PURE__*/jsx(Button, {
+          dataTest: "Form-Save",
+          onClick: handleSubmit(saveAndNext),
+          children: isSubmitting ? /*#__PURE__*/jsx(Spinner, {
+            name: "loadingCircle",
+            color: "white"
+          }) : (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.nextButtonTitle) || t('common.saveAndClose')
+        })]
+      })
+    })]
+  }));
+};
+
+var css_248z$o = ".meetingInfo-module_info__HEUMM {\n  display: flex;\n  margin-bottom: 16px;\n}\n\n.meetingInfo-module__icon__wrapper__W96Wm {\n  background-color: var(--verySoftTomato);\n  border-radius: 24px;\n  position: relative;\n  display: block;\n  flex-shrink: 0;\n  height: 36px;\n  width: 36px;\n  margin: auto 0;\n  margin-right: 8px;\n}\n\n.meetingInfo-module__icon__wrapper__W96Wm > svg {\n  margin-left: 4px;\n  margin-top: 5px;\n}\n\n\n.meetingInfo-module__card__body__qBFHG {\n  flex-shrink: 0;\n  margin: 0 12px;\n  display: flex;\n  flex-direction: column;\n  white-space: pre-line;\n}\n\n.meetingInfo-module__card__body__qBFHG > p {\n  margin-bottom: 4px;\n}\n\n.meetingInfo-module__card__info__4M4RO {\n  display: flex;\n  width: 220px;\n  flex-direction: column;\n  align-items: flex-end;\n  margin-left: auto;\n}\n\n.meetingInfo-module__loading_wrapper__ZhGWN {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin: 30px 0;\n}\n";
+var styles$o = {"info":"meetingInfo-module_info__HEUMM","_icon__wrapper":"meetingInfo-module__icon__wrapper__W96Wm","_card__body":"meetingInfo-module__card__body__qBFHG","_card__info":"meetingInfo-module__card__info__4M4RO","_loading_wrapper":"meetingInfo-module__loading_wrapper__ZhGWN"};
+styleInject(css_248z$o);
+
+var getMeetingData = function getMeetingData(activity) {
+  var _getFieldByLogicRole, _getFieldByLogicRole2;
+  var company = (_getFieldByLogicRole = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.COMPANY)) === null || _getFieldByLogicRole === void 0 ? void 0 : _getFieldByLogicRole.referencedBobject;
+  var companyName = company && getValueFromLogicRole(company, COMPANY_FIELDS_LOGIC_ROLE.NAME);
+  var date = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.TIME);
+  var lead = (_getFieldByLogicRole2 = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.LEAD)) === null || _getFieldByLogicRole2 === void 0 ? void 0 : _getFieldByLogicRole2.referencedBobject;
+  var leadName = lead && getValueFromLogicRole(lead, LEAD_FIELDS_LOGIC_ROLE.FULL_NAME);
+  var title = lead && getValueFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.TITLE);
+  return {
+    company: company,
+    companyName: companyName,
+    date: date,
+    lead: lead,
+    leadName: leadName,
+    title: title
+  };
+};
+var MeetingInfo = function MeetingInfo(_ref) {
+  var activity = _ref.activity;
+  var meetingData = getMeetingData(activity);
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  var _useTranslation2 = useTranslation('translation', {
+      keyPrefix: 'dates'
+    }),
+    dateT = _useTranslation2.t;
+  var isB2CAccount = useIsB2CAccount();
+  return meetingData.date ? /*#__PURE__*/jsx(Fragment, {
+    children: /*#__PURE__*/jsxs("div", {
+      className: styles$o.info,
+      children: [/*#__PURE__*/jsx("div", {
+        className: styles$o._icon__wrapper,
+        children: /*#__PURE__*/jsx(Icon, {
+          name: "calendar",
+          color: "extraMeeting",
+          size: 28
+        })
+      }), /*#__PURE__*/jsxs("div", {
+        className: styles$o._card__body,
+        children: [/*#__PURE__*/jsxs(Text, {
+          color: "darkGray",
+          size: "m",
+          ellipsis: 75,
+          children: [/*#__PURE__*/jsx(Text, {
+            htmlTag: "span",
+            size: "m",
+            weight: "bold",
+            children: meetingData === null || meetingData === void 0 ? void 0 : meetingData.title
+          }), ' ', t('wizards.steps.callResult.at'), ' ',
+          // @ts-ignore
+          !isToday(meetingData === null || meetingData === void 0 ? void 0 : meetingData.date) && /*#__PURE__*/jsx(Text, {
+            htmlTag: "span",
+            size: "m",
+            weight: "bold",
+            children: useGetI18nSpacetime(meetingData === null || meetingData === void 0 ? void 0 : meetingData.date).format(dateT('shortMonth'))
+          }), ' ', /*#__PURE__*/jsx(Text, {
+            htmlTag: "span",
+            weight: "bold",
+            size: "m",
+            children: useGetI18nSpacetime(meetingData === null || meetingData === void 0 ? void 0 : meetingData.date).format('{time}')
+          })]
+        }), /*#__PURE__*/jsxs(Text, {
+          color: "softPeanut",
+          size: "s",
+          ellipsis: 75,
+          children: [meetingData !== null && meetingData !== void 0 && meetingData.leadName ? "".concat(t('wizards.steps.callResult.with'), " ").concat(meetingData === null || meetingData === void 0 ? void 0 : meetingData.leadName, " ") : null, meetingData !== null && meetingData !== void 0 && meetingData.companyName && !isB2CAccount ? "".concat(t('wizards.steps.callResult.from'), " ").concat(meetingData === null || meetingData === void 0 ? void 0 : meetingData.companyName) : null]
+        })]
+      })]
+    })
+  }) : /*#__PURE__*/jsx("div", {
+    className: styles$o._loading_wrapper,
+    children: /*#__PURE__*/jsx(Spinner, {
+      name: "loadingCircle"
+    })
+  });
+};
+
+var css_248z$n = ".notesAndQQ-module__content__wrapper__JjgIb {\n  display: flex;\n  gap: 56px;\n  max-height: 436px;\n  align-items: start;\n  overscroll-behavior-y: contain;\n  height: 100%;\n}\n\n.notesAndQQ-module__textarea__wrapper__dEwf- {\n  margin-bottom: 72px;\n  width: 100%;\n}\n\n.notesAndQQ-module__content__wrapper__JjgIb > section {\n  flex-shrink: 0;\n  flex-grow: 1;\n  margin-bottom: 0;\n  display: flex;\n}\n\n.notesAndQQ-module__section__wrapper__TxBNx {\n  height: 100%;\n  display: flex;\n  flex-direction: column;\n  overflow-y: auto;\n  overflow-x: hidden;\n  flex-grow: 0;\n  padding: 24px 0;\n}\n\n.notesAndQQ-module__section__wrapper__TxBNx > *:first-child > header {\n  margin-top: 0;\n}\n\n.notesAndQQ-module__section__wrapper__TxBNx textarea {\n  height: 300px;\n}\n\n.notesAndQQ-module__full_section__k-y4w {\n  width: 100%;\n}\n\n.notesAndQQ-module__note__mRhX3 {\n  display: flex;\n  flex-direction: column;\n  flex-grow: 1;\n  border-radius: 4px;\n  border: 1px solid var(--softPeanut);\n  height: 100%;\n  max-height: 100%;\n}\n\n.notesAndQQ-module_editorContent__Kn0hp {\n  overflow-y: auto;\n  overflow-x: hidden;\n  padding-top: 12px;\n  padding-bottom: 12px;\n  flex-grow: 1;\n}\n\n.notesAndQQ-module_column__DGe67 {\n  display: flex;\n  flex-direction: column;\n  height: 100%;\n  max-width: 345px;\n}\n\n.notesAndQQ-module_columnOnyQQs__Ie-cZ {\n  display: flex;\n  flex-direction: column;\n  height: 100%;\n}\n\n.notesAndQQ-module_sectionHeader__PahIN {\n  display: flex;\n  gap: 8px;\n  padding-bottom: 8px;\n  border-bottom: 1px solid var(--verySoftPeanut);\n}\n\n.notesAndQQ-module_toolbar__3i2gS > div {\n  border-radius: 0 0 4px 4px;\n}\n\n.notesAndQQ-module_column__DGe67:first-of-type > div {\n  padding-bottom: 0;\n}\n\n.notesAndQQ-module_wrapper__OI4de > main {\n  height: calc(100% - 74px);\n  box-sizing: border-box;\n}\n\n.notesAndQQ-module_wrapper__OI4de > main > div {\n  height: 100%;\n}\n\n.notesAndQQ-module_skip_button__a-W-7 {\n  margin-left: auto;\n  margin-right: 16px;\n}\n\n.notesAndQQ-module_back_button__E4HZJ {\n  margin-left: 0px;\n  margin-right: auto;\n}\n";
+var styles$n = {"_content__wrapper":"notesAndQQ-module__content__wrapper__JjgIb","_textarea__wrapper":"notesAndQQ-module__textarea__wrapper__dEwf-","_section__wrapper":"notesAndQQ-module__section__wrapper__TxBNx","_full_section":"notesAndQQ-module__full_section__k-y4w","_note":"notesAndQQ-module__note__mRhX3","editorContent":"notesAndQQ-module_editorContent__Kn0hp","column":"notesAndQQ-module_column__DGe67","columnOnyQQs":"notesAndQQ-module_columnOnyQQs__Ie-cZ","sectionHeader":"notesAndQQ-module_sectionHeader__PahIN","toolbar":"notesAndQQ-module_toolbar__3i2gS","wrapper":"notesAndQQ-module_wrapper__OI4de","skip_button":"notesAndQQ-module_skip_button__a-W-7","back_button":"notesAndQQ-module_back_button__E4HZJ"};
+styleInject(css_248z$n);
+
+function _toConsumableArray$2(arr) { return _arrayWithoutHoles$2(arr) || _iterableToArray$3(arr) || _unsupportedIterableToArray$t(arr) || _nonIterableSpread$2(); }
+function _nonIterableSpread$2() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray$3(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function _arrayWithoutHoles$2(arr) { if (Array.isArray(arr)) return _arrayLikeToArray$t(arr); }
+function _slicedToArray$t(arr, i) { return _arrayWithHoles$t(arr) || _iterableToArrayLimit$t(arr, i) || _unsupportedIterableToArray$t(arr, i) || _nonIterableRest$t(); }
+function _nonIterableRest$t() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$t(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$t(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$t(o, minLen); }
+function _arrayLikeToArray$t(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$t(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$t(arr) { if (Array.isArray(arr)) return arr; }
+var CrmUpdates = function CrmUpdates(_ref) {
+  var handleNext = _ref.handleNext,
+    buttonsConfig = _ref.buttonsConfig,
+    wizardKey = _ref.wizardKey;
+    _ref.handleSkip;
+    var handleBack = _ref.handleBack;
+  var _useWizardContext = useWizardContext(),
+    getWizardProperties = _useWizardContext.getWizardProperties;
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  var _getWizardProperties = getWizardProperties(wizardKey),
+    activity = _getWizardProperties.bobject;
+  var _useSWRConfig = useSWRConfig(),
+    cache = _useSWRConfig.cache;
+    _useSWRConfig.mutate;
+  var type = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.TYPE);
+  var hasPreviousStep = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep : true;
+  var _useState = useState({}),
+    _useState2 = _slicedToArray$t(_useState, 2),
+    updates = _useState2[0],
+    setUpdates = _useState2[1];
+  var _useToasts = useToasts(),
+    createToast = _useToasts.createToast;
+  var acceptedObjects = useMemo(function () {
+    var _Object$entries;
+    return (_Object$entries = Object.entries(updates)) === null || _Object$entries === void 0 ? void 0 : _Object$entries.reduce(function (acc, _ref2) {
+      var _ref3 = _slicedToArray$t(_ref2, 2),
+        entity = _ref3[0],
+        entityUpdates = _ref3[1];
+      var aObj = Object.values(entityUpdates.objects).filter(function (obj) {
+        return obj.updates.filter(function (upd) {
+          return upd.status === 'accepted';
+        }).length > 0;
+      }).map(function (obj) {
+        return {
+          entityName: entity,
+          fields: obj.updates.filter(function (upd) {
+            return upd.status === 'accepted';
+          }),
+          objectName: obj.name,
+          objectId: obj.objectId
+        };
+      });
+      return [].concat(_toConsumableArray$2(acc), _toConsumableArray$2(aObj));
+    }, []);
+  }, [updates]);
+  var updateObjects = useCallback(function () {
+    if (acceptedObjects.length > 0) {
+      return Promise.all(acceptedObjects.map(function (objectUpdate) {
+        var _objectUpdate$fields;
+        return api.patch("/utils/service/salesforce/sobject/".concat(objectUpdate.entityName, "/").concat(objectUpdate.objectId), (_objectUpdate$fields = objectUpdate.fields) === null || _objectUpdate$fields === void 0 ? void 0 : _objectUpdate$fields.reduce(function (acc, field) {
+          acc[field.name] = field.acceptedValue;
+          return acc;
+        }, {}));
+      })).then(function () {
+        var pattern = new RegExp("/utils/service/salesforce/query");
+        var keys = Array.from(cache.keys());
+        keys.filter(function (key) {
+          return pattern.test(key);
+        }).forEach(function (key) {
+          return cache["delete"](key);
+        });
+        createToast({
+          type: 'success',
+          message: 'Objects in Salesforce updated successfully'
+        });
+      });
+    } else {
+      return Promise.resolve();
+    }
+  }, [acceptedObjects]);
+  var handleSaveUpdates = useCallback(function () {
+    updateObjects().then(handleNext);
+  }, [updateObjects]);
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsxs(ModalContent, {
+      children: [type === ACTIVITY_TYPES.MEETING ? /*#__PURE__*/jsx(MeetingInfo, {
+        activity: activity
+      }) : /*#__PURE__*/jsx(CallInfo, {
+        activity: activity
+      }), /*#__PURE__*/jsx(CrmUpdatesContent, {
+        activity: activity,
+        onUpdatesChange: setUpdates
+      })]
+    }), /*#__PURE__*/jsxs(ModalFooter, {
+      children: [hasPreviousStep && /*#__PURE__*/jsx(Button, {
+        variant: "clear",
+        onClick: function onClick() {
+          handleBack();
+        },
+        className: styles$n.back_button,
+        children: (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.previousButtonTitle) || t('wizards.common.back')
+      }), /*#__PURE__*/jsx(Button, {
+        dataTest: "Form-Save",
+        onClick: handleSaveUpdates,
+        children: (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.nextButtonTitle) || t('wizards.common.next')
+      })]
+    })]
+  });
+};
+
+function _typeof$v(obj) { "@babel/helpers - typeof"; return _typeof$v = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$v(obj); }
+function _regeneratorRuntime$3() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime$3 = function _regeneratorRuntime() { return exports; }; var exports = {}, Op = Object.prototype, hasOwn = Op.hasOwnProperty, defineProperty = Object.defineProperty || function (obj, key, desc) { obj[key] = desc.value; }, $Symbol = "function" == typeof Symbol ? Symbol : {}, iteratorSymbol = $Symbol.iterator || "@@iterator", asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator", toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag"; function define(obj, key, value) { return Object.defineProperty(obj, key, { value: value, enumerable: !0, configurable: !0, writable: !0 }), obj[key]; } try { define({}, ""); } catch (err) { define = function define(obj, key, value) { return obj[key] = value; }; } function wrap(innerFn, outerFn, self, tryLocsList) { var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator, generator = Object.create(protoGenerator.prototype), context = new Context(tryLocsList || []); return defineProperty(generator, "_invoke", { value: makeInvokeMethod(innerFn, self, context) }), generator; } function tryCatch(fn, obj, arg) { try { return { type: "normal", arg: fn.call(obj, arg) }; } catch (err) { return { type: "throw", arg: err }; } } exports.wrap = wrap; var ContinueSentinel = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var IteratorPrototype = {}; define(IteratorPrototype, iteratorSymbol, function () { return this; }); var getProto = Object.getPrototypeOf, NativeIteratorPrototype = getProto && getProto(getProto(values([]))); NativeIteratorPrototype && NativeIteratorPrototype !== Op && hasOwn.call(NativeIteratorPrototype, iteratorSymbol) && (IteratorPrototype = NativeIteratorPrototype); var Gp = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(IteratorPrototype); function defineIteratorMethods(prototype) { ["next", "throw", "return"].forEach(function (method) { define(prototype, method, function (arg) { return this._invoke(method, arg); }); }); } function AsyncIterator(generator, PromiseImpl) { function invoke(method, arg, resolve, reject) { var record = tryCatch(generator[method], generator, arg); if ("throw" !== record.type) { var result = record.arg, value = result.value; return value && "object" == _typeof$v(value) && hasOwn.call(value, "__await") ? PromiseImpl.resolve(value.__await).then(function (value) { invoke("next", value, resolve, reject); }, function (err) { invoke("throw", err, resolve, reject); }) : PromiseImpl.resolve(value).then(function (unwrapped) { result.value = unwrapped, resolve(result); }, function (error) { return invoke("throw", error, resolve, reject); }); } reject(record.arg); } var previousPromise; defineProperty(this, "_invoke", { value: function value(method, arg) { function callInvokeWithMethodAndArg() { return new PromiseImpl(function (resolve, reject) { invoke(method, arg, resolve, reject); }); } return previousPromise = previousPromise ? previousPromise.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(innerFn, self, context) { var state = "suspendedStart"; return function (method, arg) { if ("executing" === state) throw new Error("Generator is already running"); if ("completed" === state) { if ("throw" === method) throw arg; return doneResult(); } for (context.method = method, context.arg = arg;;) { var delegate = context.delegate; if (delegate) { var delegateResult = maybeInvokeDelegate(delegate, context); if (delegateResult) { if (delegateResult === ContinueSentinel) continue; return delegateResult; } } if ("next" === context.method) context.sent = context._sent = context.arg;else if ("throw" === context.method) { if ("suspendedStart" === state) throw state = "completed", context.arg; context.dispatchException(context.arg); } else "return" === context.method && context.abrupt("return", context.arg); state = "executing"; var record = tryCatch(innerFn, self, context); if ("normal" === record.type) { if (state = context.done ? "completed" : "suspendedYield", record.arg === ContinueSentinel) continue; return { value: record.arg, done: context.done }; } "throw" === record.type && (state = "completed", context.method = "throw", context.arg = record.arg); } }; } function maybeInvokeDelegate(delegate, context) { var methodName = context.method, method = delegate.iterator[methodName]; if (undefined === method) return context.delegate = null, "throw" === methodName && delegate.iterator["return"] && (context.method = "return", context.arg = undefined, maybeInvokeDelegate(delegate, context), "throw" === context.method) || "return" !== methodName && (context.method = "throw", context.arg = new TypeError("The iterator does not provide a '" + methodName + "' method")), ContinueSentinel; var record = tryCatch(method, delegate.iterator, context.arg); if ("throw" === record.type) return context.method = "throw", context.arg = record.arg, context.delegate = null, ContinueSentinel; var info = record.arg; return info ? info.done ? (context[delegate.resultName] = info.value, context.next = delegate.nextLoc, "return" !== context.method && (context.method = "next", context.arg = undefined), context.delegate = null, ContinueSentinel) : info : (context.method = "throw", context.arg = new TypeError("iterator result is not an object"), context.delegate = null, ContinueSentinel); } function pushTryEntry(locs) { var entry = { tryLoc: locs[0] }; 1 in locs && (entry.catchLoc = locs[1]), 2 in locs && (entry.finallyLoc = locs[2], entry.afterLoc = locs[3]), this.tryEntries.push(entry); } function resetTryEntry(entry) { var record = entry.completion || {}; record.type = "normal", delete record.arg, entry.completion = record; } function Context(tryLocsList) { this.tryEntries = [{ tryLoc: "root" }], tryLocsList.forEach(pushTryEntry, this), this.reset(!0); } function values(iterable) { if (iterable) { var iteratorMethod = iterable[iteratorSymbol]; if (iteratorMethod) return iteratorMethod.call(iterable); if ("function" == typeof iterable.next) return iterable; if (!isNaN(iterable.length)) { var i = -1, next = function next() { for (; ++i < iterable.length;) if (hasOwn.call(iterable, i)) return next.value = iterable[i], next.done = !1, next; return next.value = undefined, next.done = !0, next; }; return next.next = next; } } return { next: doneResult }; } function doneResult() { return { value: undefined, done: !0 }; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, defineProperty(Gp, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), defineProperty(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, toStringTagSymbol, "GeneratorFunction"), exports.isGeneratorFunction = function (genFun) { var ctor = "function" == typeof genFun && genFun.constructor; return !!ctor && (ctor === GeneratorFunction || "GeneratorFunction" === (ctor.displayName || ctor.name)); }, exports.mark = function (genFun) { return Object.setPrototypeOf ? Object.setPrototypeOf(genFun, GeneratorFunctionPrototype) : (genFun.__proto__ = GeneratorFunctionPrototype, define(genFun, toStringTagSymbol, "GeneratorFunction")), genFun.prototype = Object.create(Gp), genFun; }, exports.awrap = function (arg) { return { __await: arg }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, asyncIteratorSymbol, function () { return this; }), exports.AsyncIterator = AsyncIterator, exports.async = function (innerFn, outerFn, self, tryLocsList, PromiseImpl) { void 0 === PromiseImpl && (PromiseImpl = Promise); var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList), PromiseImpl); return exports.isGeneratorFunction(outerFn) ? iter : iter.next().then(function (result) { return result.done ? result.value : iter.next(); }); }, defineIteratorMethods(Gp), define(Gp, toStringTagSymbol, "Generator"), define(Gp, iteratorSymbol, function () { return this; }), define(Gp, "toString", function () { return "[object Generator]"; }), exports.keys = function (val) { var object = Object(val), keys = []; for (var key in object) keys.push(key); return keys.reverse(), function next() { for (; keys.length;) { var key = keys.pop(); if (key in object) return next.value = key, next.done = !1, next; } return next.done = !0, next; }; }, exports.values = values, Context.prototype = { constructor: Context, reset: function reset(skipTempReset) { if (this.prev = 0, this.next = 0, this.sent = this._sent = undefined, this.done = !1, this.delegate = null, this.method = "next", this.arg = undefined, this.tryEntries.forEach(resetTryEntry), !skipTempReset) for (var name in this) "t" === name.charAt(0) && hasOwn.call(this, name) && !isNaN(+name.slice(1)) && (this[name] = undefined); }, stop: function stop() { this.done = !0; var rootRecord = this.tryEntries[0].completion; if ("throw" === rootRecord.type) throw rootRecord.arg; return this.rval; }, dispatchException: function dispatchException(exception) { if (this.done) throw exception; var context = this; function handle(loc, caught) { return record.type = "throw", record.arg = exception, context.next = loc, caught && (context.method = "next", context.arg = undefined), !!caught; } for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i], record = entry.completion; if ("root" === entry.tryLoc) return handle("end"); if (entry.tryLoc <= this.prev) { var hasCatch = hasOwn.call(entry, "catchLoc"), hasFinally = hasOwn.call(entry, "finallyLoc"); if (hasCatch && hasFinally) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } else if (hasCatch) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); } else { if (!hasFinally) throw new Error("try statement without catch or finally"); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } } } }, abrupt: function abrupt(type, arg) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc <= this.prev && hasOwn.call(entry, "finallyLoc") && this.prev < entry.finallyLoc) { var finallyEntry = entry; break; } } finallyEntry && ("break" === type || "continue" === type) && finallyEntry.tryLoc <= arg && arg <= finallyEntry.finallyLoc && (finallyEntry = null); var record = finallyEntry ? finallyEntry.completion : {}; return record.type = type, record.arg = arg, finallyEntry ? (this.method = "next", this.next = finallyEntry.finallyLoc, ContinueSentinel) : this.complete(record); }, complete: function complete(record, afterLoc) { if ("throw" === record.type) throw record.arg; return "break" === record.type || "continue" === record.type ? this.next = record.arg : "return" === record.type ? (this.rval = this.arg = record.arg, this.method = "return", this.next = "end") : "normal" === record.type && afterLoc && (this.next = afterLoc), ContinueSentinel; }, finish: function finish(finallyLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.finallyLoc === finallyLoc) return this.complete(entry.completion, entry.afterLoc), resetTryEntry(entry), ContinueSentinel; } }, "catch": function _catch(tryLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc === tryLoc) { var record = entry.completion; if ("throw" === record.type) { var thrown = record.arg; resetTryEntry(entry); } return thrown; } } throw new Error("illegal catch attempt"); }, delegateYield: function delegateYield(iterable, resultName, nextLoc) { return this.delegate = { iterator: values(iterable), resultName: resultName, nextLoc: nextLoc }, "next" === this.method && (this.arg = undefined), ContinueSentinel; } }, exports; }
+function asyncGeneratorStep$3(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function _asyncToGenerator$3(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep$3(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep$3(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+function _defineProperty$u(obj, key, value) { key = _toPropertyKey$u(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$u(arg) { var key = _toPrimitive$u(arg, "string"); return _typeof$v(key) === "symbol" ? key : String(key); }
+function _toPrimitive$u(input, hint) { if (_typeof$v(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$v(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var relatedLeadFields = ['OPPORTUNITY__LEAD_USER', 'OPPORTUNITY__LEAD_PRIMARY_CONTACT', 'OPPORTUNITY__LEAD_INFLUENCER', 'OPPORTUNITY__LEAD_DECISION_MAKER', 'OPPORTUNITY__LEAD_APPROVER', 'OPPORTUNITY__LEAD_BUYER', 'OPPORTUNITY__LEAD_GATEKEEPER', 'OPPORTUNITY__LEAD_OTHER'];
+var relatedCompanyFields = ['OPPORTUNITY__COMPANY'];
+var searchOppByLeadOrCompany = function searchOppByLeadOrCompany(accountId, leadId, companyId, userId) {
+  var queries = [];
+  if (leadId) {
+    relatedLeadFields.forEach(function (field) {
+      queries.push(_defineProperty$u({}, field, [leadId]));
+    });
+  }
+  if (!leadId && companyId) {
+    relatedCompanyFields.forEach(function (field) {
+      queries.push(_defineProperty$u({}, field, [companyId]));
+    });
+  }
+  return api.post("/bobjects/".concat(accountId, "/Opportunity/search"), {
+    query: _defineProperty$u({}, OPPORTUNITY_FIELDS_LOGIC_ROLE.ASSIGNED_TO, userId),
+    queries: queries,
+    formFields: true,
+    pageSize: 50,
+    injectReferences: false
+    /* TODO check columns needed
+    columns: [
+      'OPPORTUNITY__NAME',
+      'OPPORTUNITY__STATUS',
+      'OPPORTUNITY__STAGE',
+      SALESFORCE_LOGIC_ROLES.SALESFORCE_OPPORTUNITY_STAGE,
+    ],*/
+  });
+};
+
+var getSalesforceIdField = function getSalesforceIdField(bobject) {
+  var _bobject$id;
+  switch (bobject === null || bobject === void 0 ? void 0 : (_bobject$id = bobject.id) === null || _bobject$id === void 0 ? void 0 : _bobject$id.typeName) {
+    case BobjectTypes.Lead:
+      return isContactSalesforce(bobject) ? {
+        crmId: SALESFORCE_LOGIC_ROLES.CONTACT_ID_FIELD,
+        crmObject: 'Contact'
+      } : {
+        crmId: SALESFORCE_LOGIC_ROLES.LEAD_ID_FIELD,
+        crmObject: 'Lead'
+      };
+    case BobjectTypes.Company:
+      return {
+        crmId: SALESFORCE_LOGIC_ROLES.ACCOUNT_ID_FIELD,
+        crmObject: 'Account'
+      };
+    case BobjectTypes.Opportunity:
+      return {
+        crmId: SALESFORCE_LOGIC_ROLES.OPPORTUNITY_ID_FIELD,
+        crmObject: 'Opportunity'
+      };
+    default:
+      return {
+        crmId: undefined,
+        crmObject: undefined
+      };
+  }
+};
+var searchReferenceLeadBobject = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator$3( /*#__PURE__*/_regeneratorRuntime$3().mark(function _callee(phoneNumber) {
+    var response, bobjects;
+    return _regeneratorRuntime$3().wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          _context.next = 2;
+          return api.post('/calls/whiteLabel/search', {
+            phoneNumber: phoneNumber,
+            includeTypes: ['LEAD']
+          });
+        case 2:
+          response = _context.sent;
+          if (!(response.status !== 200)) {
+            _context.next = 5;
+            break;
+          }
+          return _context.abrupt("return");
+        case 5:
+          bobjects = response.data;
+          if (!(bobjects.length === 0)) {
+            _context.next = 8;
+            break;
+          }
+          return _context.abrupt("return");
+        case 8:
+          return _context.abrupt("return", bobjects[0]);
+        case 9:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee);
+  }));
+  return function searchReferenceLeadBobject(_x) {
+    return _ref.apply(this, arguments);
+  };
+}();
+
+var css_248z$m = ".customActionsSalesforce-module__section__wrapper__LaGAK {\n  margin-bottom: 24px;\n}\n\n.customActionsSalesforce-module__content__wrapper__JypRq {\n  padding-top: 5px;\n  display: flex;\n  flex-flow: row;\n  justify-content: space-around;\n  width: 100%;\n}\n\n.customActionsSalesforce-module__list_status__Otsdb {\n  margin: auto;\n}\n\n.customActionsSalesforce-module__list_status__Otsdb > div {\n  display: flex;\n  flex-direction: column;\n  margin-bottom: 12px;\n  align-items: center;\n}\n\n.customActionsSalesforce-module__list_status__Otsdb > div > div,\n.customActionsSalesforce-module__currentStatus__wrapper__Mp3Ng > div {\n  width: 200px;\n}\n\n.customActionsSalesforce-module__radios_group__qRqO8 {\n  width: 100%;\n}\n\n.customActionsSalesforce-module__radios_list_status__INiF- {\n  display: flex;\n  justify-content: center;\n  padding-bottom: 20px;\n}\n\n.customActionsSalesforce-module__radios_list_status__INiF- > div > div {\n  letter-spacing: 0;\n  margin-bottom: 10px;\n  padding: 6px 35px;\n}\n\n.customActionsSalesforce-module__reason__wrapper__ZolYD {\n  margin-right: 15px;\n  width: 50%;\n}\n\n.customActionsSalesforce-module__buttons__wrapper__0NGg1 {\n  justify-content: flex-end;\n  display: flex;\n  width: 100%;\n}\n\n.customActionsSalesforce-module_skip_button__TabU8 {\n  margin-left: auto;\n  margin-right: 16px;\n}\n\n.customActionsSalesforce-module_back_button__B9gXa {\n  margin-left: 0px;\n  margin-right: auto;\n}\n\n.customActionsSalesforce-module_introText__CCCWS {\n  margin-bottom: 20px;\n}\n\n.customActionsSalesforce-module__formFields__O6y7h {\n  margin-bottom: 25px;\n}\n";
+var styles$m = {"_section__wrapper":"customActionsSalesforce-module__section__wrapper__LaGAK","_content__wrapper":"customActionsSalesforce-module__content__wrapper__JypRq","_list_status":"customActionsSalesforce-module__list_status__Otsdb","_currentStatus__wrapper":"customActionsSalesforce-module__currentStatus__wrapper__Mp3Ng","_radios_group":"customActionsSalesforce-module__radios_group__qRqO8","_radios_list_status":"customActionsSalesforce-module__radios_list_status__INiF-","_reason__wrapper":"customActionsSalesforce-module__reason__wrapper__ZolYD","_buttons__wrapper":"customActionsSalesforce-module__buttons__wrapper__0NGg1","skip_button":"customActionsSalesforce-module_skip_button__TabU8","back_button":"customActionsSalesforce-module_back_button__B9gXa","introText":"customActionsSalesforce-module_introText__CCCWS","_formFields":"customActionsSalesforce-module__formFields__O6y7h"};
+styleInject(css_248z$m);
+
+function _typeof$u(obj) { "@babel/helpers - typeof"; return _typeof$u = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$u(obj); }
+function ownKeys$l(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$l(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$l(Object(source), !0).forEach(function (key) { _defineProperty$t(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$l(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$t(obj, key, value) { key = _toPropertyKey$t(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$t(arg) { var key = _toPrimitive$t(arg, "string"); return _typeof$u(key) === "symbol" ? key : String(key); }
+function _toPrimitive$t(input, hint) { if (_typeof$u(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$u(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$s(arr, i) { return _arrayWithHoles$s(arr) || _iterableToArrayLimit$s(arr, i) || _unsupportedIterableToArray$s(arr, i) || _nonIterableRest$s(); }
+function _nonIterableRest$s() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$s(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$s(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$s(o, minLen); }
+function _arrayLikeToArray$s(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$s(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$s(arr) { if (Array.isArray(arr)) return arr; }
+var CustomActionsSalesforce = function CustomActionsSalesforce(_ref) {
+  var _referenceBobject$id, _buttonsConfig$custom, _customActions$object4, _customActions$object5, _customActions$object6, _customActions$object7;
+  var handleBack = _ref.handleBack,
+    handleNext = _ref.handleNext,
+    handleSkip = _ref.handleSkip,
+    buttonsConfig = _ref.buttonsConfig,
+    wizardKey = _ref.wizardKey,
+    machineContext = _ref.machineContext;
+  var _useWizardContext = useWizardContext(),
+    getWizardProperties = _useWizardContext.getWizardProperties;
+  var _getWizardProperties = getWizardProperties(wizardKey),
+    referenceBobject = _getWizardProperties.referenceBobject;
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards'
+    }),
+    t = _useTranslation.t;
+  var sfdcDataModel = useSalesforceDataModel();
+  var _useState = useState(null),
+    _useState2 = _slicedToArray$s(_useState, 2),
+    customActionSelected = _useState2[0],
+    setCustomActionSelected = _useState2[1];
+  var _useState3 = useState({}),
+    _useState4 = _slicedToArray$s(_useState3, 2),
+    formFields = _useState4[0],
+    setFormFields = _useState4[1];
+  var opportunityRelated = machineContext === null || machineContext === void 0 ? void 0 : machineContext.selectedOpportunityObject;
+  var objectType = opportunityRelated ? 'Opportunity' : referenceBobject === null || referenceBobject === void 0 ? void 0 : (_referenceBobject$id = referenceBobject.id) === null || _referenceBobject$id === void 0 ? void 0 : _referenceBobject$id.typeName;
+  var objectToUpdate = opportunityRelated || referenceBobject;
+  var customActions = buttonsConfig === null || buttonsConfig === void 0 ? void 0 : (_buttonsConfig$custom = buttonsConfig.customActions) === null || _buttonsConfig$custom === void 0 ? void 0 : _buttonsConfig$custom.find(function (customAction) {
+    return customAction.objectType == objectType;
+  });
+  var _useState5 = useState(null),
+    _useState6 = _slicedToArray$s(_useState5, 2),
+    isSubmitting = _useState6[0],
+    setIsSubmitting = _useState6[1];
+  var showSkipButton = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton : false;
+  var hasPreviousStep = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep : false;
+  var openCadenceControlOnClose = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip : false;
+  var handleFormFieldChange = function handleFormFieldChange(field, value) {
+    setFormFields(function (prevFields) {
+      return _objectSpread$l(_objectSpread$l({}, prevFields), {}, _defineProperty$t({}, field, value));
+    });
+  };
+  var handleActionChange = function handleActionChange(key) {
+    setCustomActionSelected(key);
+    setFormFields({});
+  };
+  var isSaveButtonEnabled = function isSaveButtonEnabled() {
+    var _customActions$object, _selectedActionObj$fi;
+    if (!customActionSelected) {
+      return true;
+    }
+    var selectedActionObj = customActions === null || customActions === void 0 ? void 0 : (_customActions$object = customActions.objectCustomActions) === null || _customActions$object === void 0 ? void 0 : _customActions$object.find(function (action) {
+      return action.key === customActionSelected;
+    });
+    if (!selectedActionObj || !selectedActionObj.fields) {
+      return true;
+    }
+    return selectedActionObj === null || selectedActionObj === void 0 ? void 0 : (_selectedActionObj$fi = selectedActionObj.fields) === null || _selectedActionObj$fi === void 0 ? void 0 : _selectedActionObj$fi.every(function (field) {
+      return formFields[field];
+    });
+  };
+  var buildDataToSend = function buildDataToSend() {
+    var _customActions$object2, _customActions$object3;
+    var _getSalesforceIdField = getSalesforceIdField(objectToUpdate),
+      crmId = _getSalesforceIdField.crmId,
+      crmObject = _getSalesforceIdField.crmObject;
+    var systemMappings = customActionSelected && (customActions === null || customActions === void 0 ? void 0 : (_customActions$object2 = customActions.objectCustomActions) === null || _customActions$object2 === void 0 ? void 0 : (_customActions$object3 = _customActions$object2.find(function (action) {
+      return action.key === customActionSelected;
+    })) === null || _customActions$object3 === void 0 ? void 0 : _customActions$object3.systemMappings);
+    return {
+      fieldsToUpdateInCRM: systemMappings ? _objectSpread$l(_objectSpread$l({}, formFields), systemMappings) : formFields,
+      crmObjectType: crmObject,
+      crmId: getValueFromLogicRole(objectToUpdate, crmId) || (objectToUpdate === null || objectToUpdate === void 0 ? void 0 : objectToUpdate.salesforceId)
+    };
+  };
+  var saveAndNext = function saveAndNext() {
+    setIsSubmitting(true);
+    var dataToSend = buildDataToSend();
+    if (customActionSelected && dataToSend !== null && dataToSend !== void 0 && dataToSend.fieldsToUpdateInCRM && Object.keys(dataToSend === null || dataToSend === void 0 ? void 0 : dataToSend.fieldsToUpdateInCRM).length !== 0) {
+      api.post("/utils/service/customWizard/updateCrmFields/", dataToSend).then(function () {
+        createToast({
+          message: t('steps.changeSalesforceStatus.toasts.success'),
+          type: 'success'
+        });
+        setIsSubmitting(false);
+        handleNext();
+      })["catch"](function (e) {
+        var _e$response, _e$response$data, _e$response2, _e$response2$data;
+        createToast({
+          message: t('steps.changeSalesforceStatus.toasts.errorUpdating', {
+            error: e !== null && e !== void 0 && (_e$response = e.response) !== null && _e$response !== void 0 && (_e$response$data = _e$response.data) !== null && _e$response$data !== void 0 && _e$response$data.message ? ": ".concat(e === null || e === void 0 ? void 0 : (_e$response2 = e.response) === null || _e$response2 === void 0 ? void 0 : (_e$response2$data = _e$response2.data) === null || _e$response2$data === void 0 ? void 0 : _e$response2$data.message) : '.'
+          }),
+          type: 'error'
+        });
+        setIsSubmitting(false);
+      });
+    } else {
+      handleNext();
+    }
+  };
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsx(ModalContent, {
+      children: /*#__PURE__*/jsx(ModalSection, {
+        size: "l",
+        title: (customActions === null || customActions === void 0 ? void 0 : customActions.title) || '',
+        children: /*#__PURE__*/jsxs("div", {
+          className: styles$m._radios_group,
+          children: [/*#__PURE__*/jsx("div", {
+            className: styles$m._radios_list_status,
+            children: /*#__PURE__*/jsx(RadioGroup, {
+              value: customActionSelected,
+              onChange: function onChange(selectedAction) {
+                handleActionChange(selectedAction);
+              },
+              children: customActions === null || customActions === void 0 ? void 0 : (_customActions$object4 = customActions.objectCustomActions) === null || _customActions$object4 === void 0 ? void 0 : _customActions$object4.map(function (action) {
+                return /*#__PURE__*/jsx(Radio, {
+                  size: "medium",
+                  value: action === null || action === void 0 ? void 0 : action.key,
+                  children: action === null || action === void 0 ? void 0 : action.label
+                }, action === null || action === void 0 ? void 0 : action.key);
+              })
+            })
+          }), customActionSelected && (customActions === null || customActions === void 0 ? void 0 : (_customActions$object5 = customActions.objectCustomActions) === null || _customActions$object5 === void 0 ? void 0 : (_customActions$object6 = _customActions$object5.find(function (action) {
+            return action.key === customActionSelected;
+          })) === null || _customActions$object6 === void 0 ? void 0 : (_customActions$object7 = _customActions$object6.fields) === null || _customActions$object7 === void 0 ? void 0 : _customActions$object7.map(function (field) {
+            var _sfdcDataModel$types, _sfdcDataModel$types$, _sfdcDataModel$types$2, _sfdcField$picklistVa, _sfdcField$picklistVa2;
+            var sfdcField = sfdcDataModel === null || sfdcDataModel === void 0 ? void 0 : (_sfdcDataModel$types = sfdcDataModel.types) === null || _sfdcDataModel$types === void 0 ? void 0 : (_sfdcDataModel$types$ = _sfdcDataModel$types[objectType.toLowerCase()]) === null || _sfdcDataModel$types$ === void 0 ? void 0 : (_sfdcDataModel$types$2 = _sfdcDataModel$types$.fields) === null || _sfdcDataModel$types$2 === void 0 ? void 0 : _sfdcDataModel$types$2.find(function (datamodelField) {
+              return datamodelField.name == field;
+            });
+            var formField = null;
+            switch (sfdcField === null || sfdcField === void 0 ? void 0 : sfdcField.type) {
+              case 'picklist':
+                formField = /*#__PURE__*/jsx("div", {
+                  className: styles$m._formFields,
+                  children: /*#__PURE__*/jsx(Select, {
+                    width: "100%",
+                    placeholder: sfdcField.label,
+                    onChange: function onChange(selected) {
+                      return handleFormFieldChange(field, selected);
+                    },
+                    defaultValue: '',
+                    autocomplete: (sfdcField === null || sfdcField === void 0 ? void 0 : (_sfdcField$picklistVa = sfdcField.picklistValues) === null || _sfdcField$picklistVa === void 0 ? void 0 : _sfdcField$picklistVa.length) > 6,
+                    children: sfdcField === null || sfdcField === void 0 ? void 0 : (_sfdcField$picklistVa2 = sfdcField.picklistValues) === null || _sfdcField$picklistVa2 === void 0 ? void 0 : _sfdcField$picklistVa2.map(function (answer) {
+                      return /*#__PURE__*/jsx(Item, {
+                        hidden: !answer.active,
+                        value: answer.value,
+                        label: answer.label,
+                        children: answer.label
+                      }, answer.value);
+                    })
+                  })
+                }, field);
+                break;
+              case 'string':
+                formField = /*#__PURE__*/jsx(Input, {
+                  width: "100%",
+                  placeholder: sfdcField.label,
+                  onChange: function onChange(selected) {
+                    return handleFormFieldChange(field, selected);
+                  },
+                  type: 'text',
+                  defaultValue: ''
+                });
+                break;
+            }
+            return formField;
+          }))]
+        })
+      })
+    }), /*#__PURE__*/jsx(ModalFooter, {
+      children: /*#__PURE__*/jsxs("div", {
+        className: styles$m._buttons__wrapper,
+        children: [hasPreviousStep && /*#__PURE__*/jsx(Button, {
+          variant: "clear",
+          onClick: handleBack,
+          className: styles$m.back_button,
+          children: (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.previousButtonTitle) || t('common.back')
+        }), showSkipButton && /*#__PURE__*/jsx(Button, {
+          variant: "secondary",
+          onClick: function onClick() {
+            return handleSkip(openCadenceControlOnClose);
+          },
+          className: styles$m.skip_button,
+          children: t('common.skipWizard')
+        }), /*#__PURE__*/jsx(Button, {
+          dataTest: "Form-Save",
+          onClick: saveAndNext,
+          disabled: !isSaveButtonEnabled(),
+          children: isSubmitting ? /*#__PURE__*/jsx(Spinner, {
+            name: "loadingCircle",
+            color: "white"
+          }) : (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.nextButtonTitle) || t('common.saveAndClose')
+        })]
+      })
+    })]
+  });
+};
+
+var css_248z$l = ".customObject-module__form__content__Tw7va {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 20px;\n  margin-left: 15px;\n}\n\n.customObject-module__field__wrapper__Ww6gM {\n  width: 47%;\n}\n\n.customObject-module_skip_button__c587R {\n  margin-left: auto;\n  margin-right: 16px;\n}\n\n.customObject-module_back_button__wZxSr {\n  margin-left: 0px;\n  margin-right: auto;\n}\n";
+var styles$l = {"_form__content":"customObject-module__form__content__Tw7va","_field__wrapper":"customObject-module__field__wrapper__Ww6gM","skip_button":"customObject-module_skip_button__c587R","back_button":"customObject-module_back_button__wZxSr"};
+styleInject(css_248z$l);
+
+function _slicedToArray$r(arr, i) { return _arrayWithHoles$r(arr) || _iterableToArrayLimit$r(arr, i) || _unsupportedIterableToArray$r(arr, i) || _nonIterableRest$r(); }
+function _nonIterableRest$r() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$r(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$r(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$r(o, minLen); }
+function _arrayLikeToArray$r(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$r(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$r(arr) { if (Array.isArray(arr)) return arr; }
+var CustomObject = function CustomObject(_ref) {
+  var handleBack = _ref.handleBack,
+    handleSkip = _ref.handleSkip,
+    buttonsConfig = _ref.buttonsConfig,
+    wizardKey = _ref.wizardKey,
+    handleNext = _ref.handleNext,
+    machineContext = _ref.machineContext,
+    customObjectConfig = _ref.customObjectConfig;
+  var _useWizardContext = useWizardContext(),
+    getWizardProperties = _useWizardContext.getWizardProperties;
+  var _getWizardProperties = getWizardProperties(wizardKey),
+    activity = _getWizardProperties.bobject;
+  var _useState = useState(false),
+    _useState2 = _slicedToArray$r(_useState, 2),
+    isSubmitting = _useState2[0],
+    setIsSubmitting = _useState2[1];
+  var _useActivityRelatedIn = useActivityRelatedInfo(wizardKey),
+    activityCompany = _useActivityRelatedIn.activityCompany,
+    activityLead = _useActivityRelatedIn.activityLead,
+    activityOpportunity = _useActivityRelatedIn.activityOpportunity;
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards.steps.customObject'
+    }),
+    t = _useTranslation.t;
+  var _useTranslation2 = useTranslation('translation', {
+      keyPrefix: 'wizards.common'
+    }),
+    commonT = _useTranslation2.t;
+  var _useForm = useForm(),
+    control = _useForm.control,
+    handleSubmit = _useForm.handleSubmit;
+  function getFieldDefaultValue(fieldtoMap) {
+    if (fieldtoMap) {
+      var fieldParts = fieldtoMap.split('.');
+      if (fieldParts.length === 2) {
+        switch (fieldParts[0]) {
+          case 'COMPANY':
+            return getValueFromLogicRole(activityCompany, fieldParts[1]);
+          case 'LEAD':
+            return getValueFromLogicRole(activityLead, fieldParts[1]);
+          case 'OPPORTUNITY':
+            return getValueFromLogicRole(activityOpportunity, fieldParts[1]);
+          case 'CONTEXT':
+            return machineContext === null || machineContext === void 0 ? void 0 : machineContext[fieldParts[1]];
+        }
+      }
+    }
+    return undefined;
+  }
+  var createCustomObject = function createCustomObject(formData) {
+    var _activity$id2;
+    setIsSubmitting(true);
+    function onComplete() {
+      setIsSubmitting(false);
+      handleNext();
+    }
+    function getMainBobjectId(mainBobjectType) {
+      if (mainBobjectType == 'Company') {
+        var _activityCompany$refe, _activityCompany$id;
+        return activityCompany !== null && activityCompany !== void 0 && activityCompany.referencedBobject ? activityCompany === null || activityCompany === void 0 ? void 0 : (_activityCompany$refe = activityCompany.referencedBobject.id) === null || _activityCompany$refe === void 0 ? void 0 : _activityCompany$refe.value : activityCompany === null || activityCompany === void 0 ? void 0 : (_activityCompany$id = activityCompany.id) === null || _activityCompany$id === void 0 ? void 0 : _activityCompany$id.value;
+      } else if (mainBobjectType == 'Lead') {
+        var _activityLead$referen, _activityLead$id;
+        return activityLead !== null && activityLead !== void 0 && activityLead.referencedBobject ? activityLead === null || activityLead === void 0 ? void 0 : (_activityLead$referen = activityLead.referencedBobject.id) === null || _activityLead$referen === void 0 ? void 0 : _activityLead$referen.value : activityLead === null || activityLead === void 0 ? void 0 : (_activityLead$id = activityLead.id) === null || _activityLead$id === void 0 ? void 0 : _activityLead$id.value;
+      } else if (mainBobjectType == 'Opportunity') {
+        var _activityOpportunity$, _activityOpportunity$2;
+        return activityOpportunity !== null && activityOpportunity !== void 0 && activityOpportunity.referencedBobject ? activityOpportunity === null || activityOpportunity === void 0 ? void 0 : (_activityOpportunity$ = activityOpportunity.referencedBobject.id) === null || _activityOpportunity$ === void 0 ? void 0 : _activityOpportunity$.value : activityOpportunity === null || activityOpportunity === void 0 ? void 0 : (_activityOpportunity$2 = activityOpportunity.id) === null || _activityOpportunity$2 === void 0 ? void 0 : _activityOpportunity$2.value;
+      } else {
+        var _activity$id;
+        return activity === null || activity === void 0 ? void 0 : (_activity$id = activity.id) === null || _activity$id === void 0 ? void 0 : _activity$id.value;
+      }
+    }
+    api.post('/utils/service/customWizard/createCustomObject', {
+      customObjectName: customObjectConfig === null || customObjectConfig === void 0 ? void 0 : customObjectConfig.customObjectName,
+      customObjectFormValues: formData,
+      mainBobjectTypeRelated: customObjectConfig === null || customObjectConfig === void 0 ? void 0 : customObjectConfig.mainBobjectType,
+      mainBobjectIdRelated: getMainBobjectId(customObjectConfig === null || customObjectConfig === void 0 ? void 0 : customObjectConfig.mainBobjectType),
+      referenceBobjectIdRelated: activity === null || activity === void 0 ? void 0 : (_activity$id2 = activity.id) === null || _activity$id2 === void 0 ? void 0 : _activity$id2.value,
+      customObjectSystemMapping: customObjectConfig === null || customObjectConfig === void 0 ? void 0 : customObjectConfig.systemMapping
+    }).then(onComplete)["catch"](function (e) {
+      var _e$response, _e$response$data, _e$response2, _e$response2$data;
+      createToast({
+        message: t('errorToast', {
+          error: e !== null && e !== void 0 && (_e$response = e.response) !== null && _e$response !== void 0 && (_e$response$data = _e$response.data) !== null && _e$response$data !== void 0 && _e$response$data.message ? ": ".concat(e === null || e === void 0 ? void 0 : (_e$response2 = e.response) === null || _e$response2 === void 0 ? void 0 : (_e$response2$data = _e$response2.data) === null || _e$response2$data === void 0 ? void 0 : _e$response2$data.message) : '.'
+        }),
+        type: 'error'
+      });
+      setIsSubmitting(false);
+    });
+  };
+  var showSkipButton = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton : false;
+  var hasPreviousStep = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep : true;
+  var openCadenceControlOnClose = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip : false;
+  var columns = [[], []];
+  customObjectConfig === null || customObjectConfig === void 0 ? void 0 : customObjectConfig.fields.forEach(function (field, index) {
+    return columns[index % 2].push(field);
+  });
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsx(ModalContent, {
+      children: /*#__PURE__*/jsx(ModalSection, {
+        size: "m",
+        title: customObjectConfig === null || customObjectConfig === void 0 ? void 0 : customObjectConfig.descriptionHeader,
+        children: /*#__PURE__*/jsx("div", {
+          className: styles$l._form__content,
+          children: customObjectConfig === null || customObjectConfig === void 0 ? void 0 : customObjectConfig.fields.map(function (field, index) {
+            var _customObjectConfig$f;
+            return /*#__PURE__*/jsx("div", {
+              className: styles$l._field__wrapper,
+              children: /*#__PURE__*/jsx(CustomObjectForm, {
+                name: field.name,
+                label: field.label,
+                type: field.type,
+                required: field.required,
+                picklistValues: field.picklistValues,
+                defaultValue: getFieldDefaultValue(customObjectConfig === null || customObjectConfig === void 0 ? void 0 : (_customObjectConfig$f = customObjectConfig.fieldsMapping) === null || _customObjectConfig$f === void 0 ? void 0 : _customObjectConfig$f[field.name]),
+                control: control
+              })
+            }, index);
+          })
+        })
+      })
+    }), /*#__PURE__*/jsxs(ModalFooter, {
+      children: [hasPreviousStep && /*#__PURE__*/jsx(Button, {
+        variant: "clear",
+        onClick: function onClick() {
+          handleBack();
+        },
+        className: styles$l.back_button,
+        children: (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.previousButtonTitle) || commonT('back')
+      }), showSkipButton && /*#__PURE__*/jsx(Button, {
+        variant: "secondary",
+        onClick: function onClick() {
+          return handleSkip(openCadenceControlOnClose);
+        },
+        className: styles$l.skip_button,
+        children: commonT('skipWizard')
+      }), /*#__PURE__*/jsx(Button, {
+        dataTest: "Form-Save",
+        onClick: handleSubmit(createCustomObject),
+        children: isSubmitting ? /*#__PURE__*/jsx(Spinner, {
+          color: "white",
+          size: 14,
+          name: "loadingCircle"
+        }) : (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.nextButtonTitle) || commonT('next')
+      })]
+    })]
+  });
+};
+
+var css_248z$k = ".informationPanel-module__informationPanel__9cyYH {\n  border: 1px solid var(--lightPurple);\n  border-radius: 4px;\n  background-color: var(--lightestPurple);\n  margin-left: 30px;\n  width: 232px;\n  padding: 16px;\n  overflow: overlay;\n}\n\n.informationPanel-module__info_header__7sruX {\n  margin-bottom: 8px;\n  line-height: 16px;\n}\n\n.informationPanel-module__stage_callout__wrapper__othYS {\n  display: flex;\n  flex-direction: row;\n  padding: 0 30px;\n}\n\n.informationPanel-module__stage_callout__icon__-GIML {\n  align-self: center;\n  width: 50px;\n  margin-right: 16px;\n}\n\n.informationPanel-module_actions_wrapper__mKV8r {\n  width: 302px;\n}\n\n.informationPanel-module_actions_wrapper__mKV8r > div {\n  display: flex;\n  flex-direction: column;\n}\n\n.informationPanel-module_actions_wrapper__mKV8r > div > div {\n  margin-bottom: 8px;\n  font-size: 12px;\n  letter-spacing: 0;\n}\n\n.informationPanel-module__cadence_preview_wrapper__IPgLh {\n  width: 564px;\n  margin-bottom: 24px;\n}\n\n.informationPanel-module__nurturing_preview_wrapper__O5Glf {\n  width: 564px;\n  margin-bottom: 24px;\n}\n\n.informationPanel-module__nurturing_preview_wrapper__O5Glf > div > span {\n  padding: 8px 0;\n}\n\n.informationPanel-module__section__wrapper__uqzgv {\n  margin-bottom: 12px;\n  display: flex;\n  flex-wrap: wrap;\n  flex-direction: row;\n  position: relative;\n}\n\n.informationPanel-module__list__wrapper__xEKBA {\n  flex-direction: column;\n  flex-basis: 100%;\n  flex: 1;\n  margin-right: 15px;\n}\n\n.informationPanel-module_hidden__peFFz {\n  display: none;\n}\n\n\n.informationPanel-module__text_block__FHX2f {\n  margin-bottom: 12px;\n}\n\n.informationPanel-module__text_block__FHX2f > a {\n  text-decoration: none;\n  color: var(--bloobirds);\n}\n\n.informationPanel-module__nurturing_text_block__sXi8E {\n  font-size: 11px;\n  margin-bottom: 8px;\n}\n\n.informationPanel-module__nurturing_text_block__sXi8E > a {\n  text-decoration: none;\n  color: var(--bloobirds);\n}\n\n.informationPanel-module__selects_wrapper__st-Tv {\n  margin-top: 20px;\n  margin-bottom: 20px;\n  width: 552px;\n  display: flex;\n  justify-content: space-between;\n}\n\n.informationPanel-module__selects_wrapper__st-Tv > div > div {\n  height: 40px;\n}\n\n.informationPanel-module__note_text_area__bb-bD {\n  text-align: start;\n  margin-top: 15px;\n}\n\n.informationPanel-module__reassign_selects_wrapper__0Qaz2 {\n  margin-top: 20px;\n  width: 552px;\n  display: flex;\n  justify-content: space-between;\n  margin-bottom: 12px;\n}\n\n.informationPanel-module__reassign_selects_wrapper__0Qaz2 > div > div {\n  height: 40px;\n}\n\n.informationPanel-module__add_task_module__d-L8m {\n  margin-top: 32px;\n  display: flex;\n  flex-direction: column;\n  width: 100%;\n  align-content: center;\n}\n\n.informationPanel-module__add_task_module__d-L8m > div[class*=\"BaseInput\"] {\n  height: 44px;\n}\n\n.informationPanel-module__add_task_module__d-L8m input:hover, .informationPanel-module__add_task_module__d-L8m input:focus {\n  box-shadow: none;\n}\n\n.informationPanel-module__add_task_title__MrfQH {\n  margin-bottom: 12px;\n}\n\n.informationPanel-module__configure_cadence_wrapper__xPpkJ {\n  margin-top: 18px;\n  display: flex;\n  flex-direction: column;\n  width: 100%;\n  align-content: center;\n  gap: 16px;\n}\n\n.informationPanel-module__configure_cadence_wrapper__xPpkJ > main {\n  padding: 0;\n}\n\n.informationPanel-module__previous_assign_section_wrapper__GdJig {\n  width: 100%;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  gap: 8px;\n}\n\n.informationPanel-module__previous_assign_radio_group__ksmIo {\n  max-width: 300px;\n}\n\n.informationPanel-module__previous_assign_radio_group__ksmIo > div {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n\n.informationPanel-module__previous_assign_radio_group__ksmIo > div > div {\n  font-size: 12px;\n}\n\n.informationPanel-module_box__7HkCE {\n  position: relative;\n  z-index: 99;\n\n  bottom: 73%;\n  left: 50%;\n  transform: translateX(-50%);\n\n  width: 700px;\n  background: #ffffff;\n\n  /* Main/peanut-light */\n  border: 1px solid #d4e0f1;\n\n  /* snackbar-shadow */\n  box-shadow: 0 2px 8px rgba(70, 79, 87, 0.33);\n  border-radius: 4px;\n}\n\n.informationPanel-module__nurturing_bottom__ecbA3 {\n  bottom: 68%;\n}\n";
+var styles$k = {"_informationPanel":"informationPanel-module__informationPanel__9cyYH","_info_header":"informationPanel-module__info_header__7sruX","_stage_callout__wrapper":"informationPanel-module__stage_callout__wrapper__othYS","_stage_callout__icon":"informationPanel-module__stage_callout__icon__-GIML","actions_wrapper":"informationPanel-module_actions_wrapper__mKV8r","_cadence_preview_wrapper":"informationPanel-module__cadence_preview_wrapper__IPgLh","_nurturing_preview_wrapper":"informationPanel-module__nurturing_preview_wrapper__O5Glf","_section__wrapper":"informationPanel-module__section__wrapper__uqzgv","_list__wrapper":"informationPanel-module__list__wrapper__xEKBA","hidden":"informationPanel-module_hidden__peFFz","_text_block":"informationPanel-module__text_block__FHX2f","_nurturing_text_block":"informationPanel-module__nurturing_text_block__sXi8E","_selects_wrapper":"informationPanel-module__selects_wrapper__st-Tv","_note_text_area":"informationPanel-module__note_text_area__bb-bD","_reassign_selects_wrapper":"informationPanel-module__reassign_selects_wrapper__0Qaz2","_add_task_module":"informationPanel-module__add_task_module__d-L8m","_add_task_title":"informationPanel-module__add_task_title__MrfQH","_configure_cadence_wrapper":"informationPanel-module__configure_cadence_wrapper__xPpkJ","_previous_assign_section_wrapper":"informationPanel-module__previous_assign_section_wrapper__GdJig","_previous_assign_radio_group":"informationPanel-module__previous_assign_radio_group__ksmIo","box":"informationPanel-module_box__7HkCE","_nurturing_bottom":"informationPanel-module__nurturing_bottom__ecbA3"};
+styleInject(css_248z$k);
+
+var INACTIVE_HANDLING_OPTIONS;
+(function (INACTIVE_HANDLING_OPTIONS) {
+  INACTIVE_HANDLING_OPTIONS["NEXT_STEP"] = "createNextStep";
+  INACTIVE_HANDLING_OPTIONS["NEW_CADENCE"] = "startNewCadence";
+  INACTIVE_HANDLING_OPTIONS["SEND_TO_NURTURING"] = "sendToNurturingAndSetCadence";
+  INACTIVE_HANDLING_OPTIONS["DISCARD"] = "discardCompanyAndLeads";
+  INACTIVE_HANDLING_OPTIONS["BACK_TO_BACKLOG"] = "setBacklogAndUnassign";
+  INACTIVE_HANDLING_OPTIONS["REASSIGN"] = "reassign";
+  INACTIVE_HANDLING_OPTIONS["ON_HOLD"] = "keepOnHold";
+})(INACTIVE_HANDLING_OPTIONS || (INACTIVE_HANDLING_OPTIONS = {}));
+
+function _typeof$t(obj) { "@babel/helpers - typeof"; return _typeof$t = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$t(obj); }
+function ownKeys$k(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$k(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$k(Object(source), !0).forEach(function (key) { _defineProperty$s(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$k(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$s(obj, key, value) { key = _toPropertyKey$s(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$s(arg) { var key = _toPrimitive$s(arg, "string"); return _typeof$t(key) === "symbol" ? key : String(key); }
+function _toPrimitive$s(input, hint) { if (_typeof$t(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$t(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$q(arr, i) { return _arrayWithHoles$q(arr) || _iterableToArrayLimit$q(arr, i) || _unsupportedIterableToArray$q(arr, i) || _nonIterableRest$q(); }
+function _nonIterableRest$q() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$q(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$q(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$q(o, minLen); }
+function _arrayLikeToArray$q(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$q(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$q(arr) { if (Array.isArray(arr)) return arr; }
+var INACTIVE_HANDLING_OPTIONS_KEYS;
+(function (INACTIVE_HANDLING_OPTIONS_KEYS) {
+  INACTIVE_HANDLING_OPTIONS_KEYS["createNextStep"] = "NEXT_STEP";
+  INACTIVE_HANDLING_OPTIONS_KEYS["startNewCadence"] = "START_NEW_CADENCE";
+  INACTIVE_HANDLING_OPTIONS_KEYS["sendToNurturingAndSetCadence"] = "SEND_TO_NURTURING_AND_SET_CADENCE";
+  INACTIVE_HANDLING_OPTIONS_KEYS["discardCompanyAndLeads"] = "DISCARD";
+  INACTIVE_HANDLING_OPTIONS_KEYS["setBacklogAndUnassign"] = "BACK_TO_BACKLOG";
+  INACTIVE_HANDLING_OPTIONS_KEYS["reassign"] = "REASSIGN";
+  INACTIVE_HANDLING_OPTIONS_KEYS["keepOnHold"] = "ON_HOLD";
+})(INACTIVE_HANDLING_OPTIONS_KEYS || (INACTIVE_HANDLING_OPTIONS_KEYS = {}));
+function getMixpanelKey(type, bobjectType) {
+  var info = "ACTION_SET_IN_INACTIVE_MODAL_".concat(INACTIVE_HANDLING_OPTIONS_KEYS[type]);
+  if (type === INACTIVE_HANDLING_OPTIONS.DISCARD) {
+    info = "ACTION_SET_IN_INACTIVE_MODAL_".concat(INACTIVE_HANDLING_OPTIONS_KEYS[type], "_").concat(bobjectType.toUpperCase());
+  }
+  return "ACTION_SET_IN_INACTIVE_MODAL_".concat(info);
+}
+function getFieldValues(dataModel, logicRole) {
+  var _dataModelFields$find;
+  var dataModelFields = dataModel === null || dataModel === void 0 ? void 0 : dataModel.getFieldsByBobjectType(getBobjectFromLogicRole(logicRole));
+  return dataModelFields === null || dataModelFields === void 0 ? void 0 : (_dataModelFields$find = dataModelFields.find(function (datamodelField) {
+    return datamodelField.logicRole === logicRole;
+  })) === null || _dataModelFields$find === void 0 ? void 0 : _dataModelFields$find.values;
+}
+var useInactiveHandlingModalInfo = function useInactiveHandlingModalInfo() {
+  var _getFieldValues$filte;
+  var activeUserId = useActiveUserId();
+  var dataModel = useDataModel();
+  var discardedReasons = getFieldValues(dataModel, COMPANY_FIELDS_LOGIC_ROLE.DISCARDED_REASONS);
+  var closedLostReason = getFieldValues(dataModel, OPPORTUNITY_FIELDS_LOGIC_ROLE.CLOSED_LOST_REASON);
+  var onHoldReasons = getFieldValues(dataModel, COMPANY_FIELDS_LOGIC_ROLE.ON_HOLD_REASONS);
+  var users = (_getFieldValues$filte = getFieldValues(dataModel, COMPANY_FIELDS_LOGIC_ROLE.ASSIGNED_TO).filter(function (user) {
+    return !user.name.includes('Deleted') && user.isEnabled;
+  })) === null || _getFieldValues$filte === void 0 ? void 0 : _getFieldValues$filte.sort(function (a, b) {
+    return a.name < b.name ? -1 : 1;
+  });
+  return {
+    users: users,
+    discardedReasons: discardedReasons,
+    closedLostReason: closedLostReason,
+    onHoldReasons: onHoldReasons,
+    activeUserId: activeUserId
+  };
+};
+var useInactiveHandlingModalData = function useInactiveHandlingModalData() {
+  var _FIELDS_LOGIC_ROLE, _getFieldByLogicRole, _FIELDS_LOGIC_ROLE$bo;
+  var activeUserId = useActiveUserId();
+  var dataModel = useDataModel();
+  var accountId = dataModel === null || dataModel === void 0 ? void 0 : dataModel.getAccountId();
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards.steps.inactiveHandling.toasts'
+    }),
+    t = _useTranslation.t;
+  var _useTranslation2 = useTranslation('translation', {
+      keyPrefix: 'bobjectTypes'
+    }),
+    bobjectT = _useTranslation2.t;
+  var _useBobject = useBobject(BobjectTypes.Lead, accountId),
+    bulkPatchBobjects = _useBobject.bulkPatchBobjects;
+  var _useState = useState(false),
+    _useState2 = _slicedToArray$q(_useState, 2),
+    isSubmitting = _useState2[0],
+    setIsSubmitting = _useState2[1];
+  var _useWizardContext = useWizardContext(),
+    getWizardProperties = _useWizardContext.getWizardProperties;
+  var wizardContext = getWizardProperties('NEXT_STEP');
+  var bobject = wizardContext.bobject;
+  var onSave = wizardContext.onSaveCallback;
+  var _useState3 = useState({
+      type: INACTIVE_HANDLING_OPTIONS.NEXT_STEP,
+      data: {}
+    }),
+    _useState4 = _slicedToArray$q(_useState3, 2),
+    selectedOptionData = _useState4[0],
+    setSelectedOptionData = _useState4[1];
+  // const { getPicklistValues } = useFieldsData(modalState?.bobject?.id?.typeName);
+  // const cadence = getPicklistValues({logicRole: COMPANY_FIELDS_LOGIC_ROLE.CADENCE})
+  var resetModalState = function resetModalState() {
+    setTimeout(function () {
+      onSave === null || onSave === void 0 ? void 0 : onSave();
+    }, 500);
+    // resetWizardProperties('NEXT_STEP');
+  };
+
+  var _ref = selectedOptionData || {},
+    type = _ref.type,
+    actionData = _ref.data;
+  var bobjectIdFields = bobject === null || bobject === void 0 ? void 0 : bobject.id;
+  var bobjectType = bobjectIdFields === null || bobjectIdFields === void 0 ? void 0 : bobjectIdFields.typeName;
+  var _useCadenceInfo = useCadenceInfo(bobject),
+    defaultCadence = _useCadenceInfo.defaultCadence;
+  var isInSalesStage = getTextFromLogicRole(bobject, (_FIELDS_LOGIC_ROLE = FIELDS_LOGIC_ROLE[bobjectType]) === null || _FIELDS_LOGIC_ROLE === void 0 ? void 0 : _FIELDS_LOGIC_ROLE.STAGE) === 'Sales' || bobjectType === BobjectTypes.Opportunity;
+  var bobjectCadence = (_getFieldByLogicRole = getFieldByLogicRole(bobject, (_FIELDS_LOGIC_ROLE$bo = FIELDS_LOGIC_ROLE[bobjectType]) === null || _FIELDS_LOGIC_ROLE$bo === void 0 ? void 0 : _FIELDS_LOGIC_ROLE$bo.CADENCE)) === null || _getFieldByLogicRole === void 0 ? void 0 : _getFieldByLogicRole.value;
+  function generateRequestInfo() {
+    var cadenceId = (actionData === null || actionData === void 0 ? void 0 : actionData.cadenceId) || bobjectCadence || (defaultCadence === null || defaultCadence === void 0 ? void 0 : defaultCadence.id);
+    var generateReasonedStatusesBody = function generateReasonedStatusesBody(selectedStatus) {
+      var isDiscarded = selectedStatus === 'DISCARDED';
+      switch (bobjectType) {
+        case 'Company':
+          return isInSalesStage ? _defineProperty$s(_defineProperty$s({}, COMPANY_FIELDS_LOGIC_ROLE.SALES_STATUS, COMPANY_SALES_STATUS_VALUES_LOGIC_ROLE[selectedStatus]), COMPANY_FIELDS_LOGIC_ROLE[isDiscarded ? 'SALES_DISCARDED_REASONS' : 'SALES_ON_HOLD_REASONS'], isDiscarded ? actionData === null || actionData === void 0 ? void 0 : actionData.discardedValue : actionData === null || actionData === void 0 ? void 0 : actionData.onHoldedValue) : _defineProperty$s(_defineProperty$s({}, COMPANY_FIELDS_LOGIC_ROLE.STATUS, COMPANY_STATUS_LOGIC_ROLE[selectedStatus]), COMPANY_FIELDS_LOGIC_ROLE[isDiscarded ? 'DISCARDED_REASONS' : 'ON_HOLD_REASONS'], isDiscarded ? actionData === null || actionData === void 0 ? void 0 : actionData.discardedValue : actionData === null || actionData === void 0 ? void 0 : actionData.onHoldedValue);
+        case 'Lead':
+          return isInSalesStage ? _defineProperty$s(_defineProperty$s({}, LEAD_FIELDS_LOGIC_ROLE.SALES_STATUS, LEAD_SALES_STATUS_VALUES_LOGIC_ROLE[selectedStatus]), LEAD_FIELDS_LOGIC_ROLE[isDiscarded ? 'SALES_DISCARDED_REASONS' : 'SALES_ON_HOLD_REASONS'], isDiscarded ? actionData === null || actionData === void 0 ? void 0 : actionData.discardedValue : actionData === null || actionData === void 0 ? void 0 : actionData.onHoldedValue) : _defineProperty$s(_defineProperty$s({}, LEAD_FIELDS_LOGIC_ROLE.STATUS, LEAD_STATUS_LOGIC_ROLE[selectedStatus]), LEAD_FIELDS_LOGIC_ROLE[isDiscarded ? 'DISCARDED_REASONS' : 'ON_HOLD_REASONS'], isDiscarded ? actionData === null || actionData === void 0 ? void 0 : actionData.discardedValue : actionData === null || actionData === void 0 ? void 0 : actionData.onHoldedValue);
+        case 'Opportunity':
+          return _defineProperty$s(_defineProperty$s({}, OPPORTUNITY_FIELDS_LOGIC_ROLE.STATUS, OPPORTUNITY_STATUS_LOGIC_ROLE.CLOSED_LOST), OPPORTUNITY_FIELDS_LOGIC_ROLE.CLOSED_LOST_REASON, actionData === null || actionData === void 0 ? void 0 : actionData.discardedValue);
+        default:
+          throw new Error('Invalid bobject type passed to discarded req body generator');
+      }
+    };
+    var discardBody = generateReasonedStatusesBody('DISCARDED');
+    var onHoldBody = generateReasonedStatusesBody('ON_HOLD');
+    switch (type) {
+      case INACTIVE_HANDLING_OPTIONS.NEXT_STEP:
+        return {
+          url: "/bobjects/".concat(accountId, "/Task"),
+          body: {
+            contents: _defineProperty$s(_defineProperty$s(_defineProperty$s(_defineProperty$s(_defineProperty$s(_defineProperty$s({}, TASK_FIELDS_LOGIC_ROLE[bobjectType.toUpperCase()], bobjectIdFields.value), TASK_FIELDS_LOGIC_ROLE.TITLE, actionData === null || actionData === void 0 ? void 0 : actionData.title), TASK_FIELDS_LOGIC_ROLE.ASSIGNED_TO, (actionData === null || actionData === void 0 ? void 0 : actionData.assignedTo) || activeUserId), TASK_FIELDS_LOGIC_ROLE.SCHEDULED_DATETIME, (actionData === null || actionData === void 0 ? void 0 : actionData.date) || new Date()), TASK_FIELDS_LOGIC_ROLE.TASK_TYPE, TASK_TYPE.NEXT_STEP), TASK_FIELDS_LOGIC_ROLE.STATUS, TASK_STATUS_VALUE_LOGIC_ROLE.TODO),
+            params: {
+              duplicateValidation: true
+            }
+          },
+          toastMessage: t('nextStep')
+        };
+      case INACTIVE_HANDLING_OPTIONS.NEW_CADENCE:
+      case INACTIVE_HANDLING_OPTIONS.SEND_TO_NURTURING:
+        return {
+          url: "/messaging/cadences/".concat(cadenceId, "/start"),
+          body: {
+            bobjectId: bobjectIdFields.objectId,
+            bobjectType: bobjectType,
+            startCadence: (actionData === null || actionData === void 0 ? void 0 : actionData.startCadenceDate) || new Date()
+          },
+          toastMessage: type === INACTIVE_HANDLING_OPTIONS.SEND_TO_NURTURING ? t('sendToNurturing', {
+            bobjectType: bobjectT(bobjectType.toLowerCase())
+          }) : t('newCadence')
+        };
+      case INACTIVE_HANDLING_OPTIONS.BACK_TO_BACKLOG:
+        return {
+          url: "/bobjects/".concat(bobjectIdFields.value, "/raw"),
+          body: _defineProperty$s(_defineProperty$s({}, FIELDS_LOGIC_ROLE[bobjectType].ASSIGNED_TO, null), FIELDS_LOGIC_ROLE[bobjectType].STATUS, STATUS_VALUES_LOGIC_ROLES[bobjectType].BACKLOG),
+          toastMessage: t('backToBacklog', {
+            bobjectType: toSentenceCase(bobjectT(bobjectType.toLowerCase()))
+          })
+        };
+      case INACTIVE_HANDLING_OPTIONS.REASSIGN:
+        return {
+          url: "/bobjects/".concat(bobjectIdFields.value, "/raw"),
+          body: _defineProperty$s({}, FIELDS_LOGIC_ROLE[bobjectType].ASSIGNED_TO, actionData === null || actionData === void 0 ? void 0 : actionData.assignedTo),
+          toastMessage: t('reassign', {
+            bobjectType: toSentenceCase(bobjectT(bobjectType.toLowerCase()))
+          })
+        };
+      case INACTIVE_HANDLING_OPTIONS.DISCARD:
+        return {
+          url: "/bobjects/".concat(bobjectIdFields.value, "/raw"),
+          body: discardBody,
+          toastMessage: bobjectType === 'Company' ? t('discardCompany') : t('discard', {
+            bobjectType: bobjectT(bobjectType.toLowerCase())
+          })
+        };
+      case INACTIVE_HANDLING_OPTIONS.ON_HOLD:
+        return {
+          url: "/bobjects/".concat(bobjectIdFields.value, "/raw"),
+          body: onHoldBody,
+          toastMessage: bobjectType === 'Company' ? t('onHoldCompany') : t('onHold', {
+            bobjectType: bobjectT(bobjectType.toLowerCase())
+          })
+        };
+      default:
+        throw new Error('Invalid action type');
+    }
+  }
+  function handleSubmit() {
+    var _selectedOptionData$d, _selectedOptionData$d2, _selectedOptionData$d3;
+    var _generateRequestInfo = generateRequestInfo(),
+      url = _generateRequestInfo.url,
+      body = _generateRequestInfo.body,
+      toastMessage = _generateRequestInfo.toastMessage;
+    var type = selectedOptionData.type;
+    setIsSubmitting(true);
+    function onComplete() {
+      var mixpanelKey = getMixpanelKey(type, bobjectType);
+      mixpanel.track(mixpanelKey);
+      createToast({
+        type: 'success',
+        message: toastMessage
+      });
+      resetModalState();
+      setIsSubmitting(false);
+    }
+    onSave === null || onSave === void 0 ? void 0 : onSave();
+    switch (type) {
+      case INACTIVE_HANDLING_OPTIONS.NEW_CADENCE:
+      case INACTIVE_HANDLING_OPTIONS.SEND_TO_NURTURING:
+        // eslint-disable-next-line no-case-declarations
+        var hasPreviousStep = INACTIVE_HANDLING_OPTIONS.SEND_TO_NURTURING === (selectedOptionData === null || selectedOptionData === void 0 ? void 0 : selectedOptionData.type) || (selectedOptionData === null || selectedOptionData === void 0 ? void 0 : (_selectedOptionData$d = selectedOptionData.data) === null || _selectedOptionData$d === void 0 ? void 0 : _selectedOptionData$d.previousAssign) === 'assignToMe';
+
+        // eslint-disable-next-line no-case-declarations
+        var patchOptions = _objectSpread$k(_objectSpread$k({}, INACTIVE_HANDLING_OPTIONS.SEND_TO_NURTURING === (selectedOptionData === null || selectedOptionData === void 0 ? void 0 : selectedOptionData.type) ? _defineProperty$s({}, FIELDS_LOGIC_ROLE[bobjectType][isInSalesStage ? 'SALES_STATUS' : 'STATUS'], isInSalesStage ? SALES_STATUS_VALUES_LOGIC_ROLES[bobjectType].NURTURING : bobjectType === 'Opportunity' ? selectedOptionData === null || selectedOptionData === void 0 ? void 0 : (_selectedOptionData$d2 = selectedOptionData.data) === null || _selectedOptionData$d2 === void 0 ? void 0 : _selectedOptionData$d2.nurturingStage : STATUS_VALUES_LOGIC_ROLES[bobjectType].NURTURING) : {}), (selectedOptionData === null || selectedOptionData === void 0 ? void 0 : (_selectedOptionData$d3 = selectedOptionData.data) === null || _selectedOptionData$d3 === void 0 ? void 0 : _selectedOptionData$d3.previousAssign) === 'assignToMe' ? _defineProperty$s({}, (bobjectType === null || bobjectType === void 0 ? void 0 : bobjectType.toUpperCase()) + '__ASSIGNED_TO', activeUserId) : {});
+
+        // eslint-disable-next-line no-case-declarations
+        var patchPromise = hasPreviousStep ? api.patch("/bobjects/".concat(bobjectIdFields.value, "/raw"), patchOptions) : Promise.resolve();
+        patchPromise.then(function () {
+          return api.put(url, body).then(onComplete);
+        });
+        break;
+      case INACTIVE_HANDLING_OPTIONS.BACK_TO_BACKLOG:
+      case INACTIVE_HANDLING_OPTIONS.REASSIGN:
+        api.patch(url, body).then(onComplete)["catch"](function () {
+          return setIsSubmitting(false);
+        });
+        break;
+      case INACTIVE_HANDLING_OPTIONS.DISCARD:
+        api.patch(url, body).then(function () {
+          if (bobjectType === 'Company') {
+            //get leads related to the company
+            api.post("/bobjects/".concat(accountId, "/Lead/search"), {
+              query: _defineProperty$s({}, LEAD_FIELDS_LOGIC_ROLE.COMPANY, [bobjectIdFields === null || bobjectIdFields === void 0 ? void 0 : bobjectIdFields.value]),
+              formFields: true,
+              pageSize: 50
+            }).then(function (_ref9) {
+              var contents = _ref9.data.contents;
+              var data = _defineProperty$s({}, LEAD_FIELDS_LOGIC_ROLE.STATUS, LEAD_STATUS_LOGIC_ROLE.DISCARDED);
+              var leadsData = {};
+              contents.forEach(function (element) {
+                var _element$id;
+                leadsData = _objectSpread$k(_objectSpread$k({}, leadsData), {}, _defineProperty$s({}, element === null || element === void 0 ? void 0 : (_element$id = element.id) === null || _element$id === void 0 ? void 0 : _element$id.objectId, data));
+              });
+              return bulkPatchBobjects(leadsData);
+            }).then(onComplete)["catch"](function () {
+              return setIsSubmitting(false);
+            });
+          } else {
+            onComplete();
+          }
+        });
+        break;
+      case INACTIVE_HANDLING_OPTIONS.ON_HOLD:
+        api.patch(url, body).then(function () {
+          if (bobjectType === 'Company') {
+            //get leads related to the company
+            api.post("/bobjects/".concat(accountId, "/Lead/search"), {
+              query: _defineProperty$s({}, LEAD_FIELDS_LOGIC_ROLE.COMPANY, [bobjectIdFields === null || bobjectIdFields === void 0 ? void 0 : bobjectIdFields.value]),
+              formFields: true,
+              pageSize: 50
+            }).then(function (_ref10) {
+              var contents = _ref10.data.contents;
+              var data = _defineProperty$s({}, LEAD_FIELDS_LOGIC_ROLE.STATUS, LEAD_STATUS_LOGIC_ROLE.ON_HOLD);
+              //TODO this should be optional
+              var leadsData = {};
+              contents.forEach(function (element) {
+                var _element$id2;
+                leadsData = _objectSpread$k(_objectSpread$k({}, leadsData), {}, _defineProperty$s({}, element === null || element === void 0 ? void 0 : (_element$id2 = element.id) === null || _element$id2 === void 0 ? void 0 : _element$id2.objectId, data));
+              });
+              return bulkPatchBobjects(leadsData);
+            }).then(onComplete)["catch"](function () {
+              return setIsSubmitting(false);
+            });
+          } else {
+            onComplete();
+          }
+        });
+        break;
+      case INACTIVE_HANDLING_OPTIONS.NEXT_STEP:
+        api.post(url, body).then(onComplete)["catch"](function () {
+          return setIsSubmitting(false);
+        });
+        break;
+      default:
+        throw new Error('Action not supported');
+    }
+  }
+  var modalTextByBobjectType = useMemo(function () {
+    switch (bobjectType) {
+      case 'Company':
+        return t('companyAndLeads');
+      case 'Opportunity':
+      case 'Lead':
+        return "".concat(bobjectType.toLowerCase());
+      default:
+        return 'Invalid bobjectType';
+    }
+  }, [bobjectType]);
+  function getIsMissingInfo(_ref11) {
+    var _ref11$selectedOption = _ref11.selectedOptionData,
+      type = _ref11$selectedOption.type,
+      data = _ref11$selectedOption.data,
+      hasNeededNurturingInfo = _ref11.hasNeededNurturingInfo,
+      hasOnHoldReasons = _ref11.hasOnHoldReasons;
+    switch (type) {
+      case INACTIVE_HANDLING_OPTIONS.DISCARD:
+        return !(data !== null && data !== void 0 && data.discardedValue);
+      case INACTIVE_HANDLING_OPTIONS.ON_HOLD:
+        return isInSalesStage ? false : hasOnHoldReasons ? !(data !== null && data !== void 0 && data.onHoldedValue) : false;
+      case INACTIVE_HANDLING_OPTIONS.NEXT_STEP:
+        return !(data !== null && data !== void 0 && data.title);
+      case INACTIVE_HANDLING_OPTIONS.SEND_TO_NURTURING:
+        return !hasNeededNurturingInfo;
+      case INACTIVE_HANDLING_OPTIONS.REASSIGN:
+        return !(data !== null && data !== void 0 && data.assignedTo);
+      default:
+        return false;
+    }
+  }
+  return {
+    handleSubmit: handleSubmit,
+    getIsMissingInfo: getIsMissingInfo,
+    isInSalesStage: isInSalesStage,
+    cadenceInfo: {
+      bobjectCadence: bobjectCadence,
+      defaultCadence: ''
+    },
+    modalTextByBobjectType: modalTextByBobjectType,
+    isSubmitting: isSubmitting,
+    activeUserId: activeUserId,
+    selectedOptionData: selectedOptionData,
+    setSelectedOptionData: setSelectedOptionData
+  };
+};
+
+function _typeof$s(obj) { "@babel/helpers - typeof"; return _typeof$s = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$s(obj); }
+function ownKeys$j(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$j(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$j(Object(source), !0).forEach(function (key) { _defineProperty$r(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$j(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$r(obj, key, value) { key = _toPropertyKey$r(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$r(arg) { var key = _toPrimitive$r(arg, "string"); return _typeof$s(key) === "symbol" ? key : String(key); }
+function _toPrimitive$r(input, hint) { if (_typeof$s(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$s(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$p(arr, i) { return _arrayWithHoles$p(arr) || _iterableToArrayLimit$p(arr, i) || _unsupportedIterableToArray$p(arr, i) || _nonIterableRest$p(); }
+function _nonIterableRest$p() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$p(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$p(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$p(o, minLen); }
+function _arrayLikeToArray$p(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$p(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$p(arr) { if (Array.isArray(arr)) return arr; }
+var AddTaskComponent = function AddTaskComponent(_ref) {
+  var _sortBy;
+  var handleData = _ref.handleData,
+    inactiveModalInfo = _ref.inactiveModalInfo;
+  var users = inactiveModalInfo.users,
+    activeUserId = inactiveModalInfo.activeUserId;
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards.steps.inactiveHandling.actionForm.addTask'
+    }),
+    t = _useTranslation.t;
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$k._add_task_module,
+    children: [/*#__PURE__*/jsx(Text, {
+      size: "m",
+      weight: "bold",
+      align: "center",
+      className: styles$k._add_task_title,
+      children: t('title')
+    }), /*#__PURE__*/jsx(Input, {
+      placeholder: t('placeholders.title'),
+      width: "552px",
+      onChange: function onChange(title) {
+        handleData({
+          title: title
+        });
+      }
+    }), /*#__PURE__*/jsxs("div", {
+      className: styles$k._selects_wrapper,
+      children: [/*#__PURE__*/jsx(Select, {
+        placeholder: t('placeholders.assignedTo'),
+        width: "270px",
+        defaultValue: activeUserId,
+        onChange: function onChange(assignedTo) {
+          return handleData({
+            assignedTo: assignedTo
+          });
+        },
+        children: (_sortBy = sortBy(users, 'value')) === null || _sortBy === void 0 ? void 0 : _sortBy.map(function (item) {
+          return /*#__PURE__*/jsx(Item, {
+            value: item.id,
+            children: item.value || (item === null || item === void 0 ? void 0 : item.name)
+          }, item.id);
+        })
+      }), /*#__PURE__*/jsx(DateTimePicker, {
+        placeholder: t('placeholders.scheduleTime'),
+        defaultValue: new Date(),
+        width: "270px",
+        onChange: function onChange(date) {
+          return handleData({
+            date: date
+          });
+        }
+      })]
+    })]
+  });
+};
+var DiscardComponent = function DiscardComponent(_ref2) {
+  var _bobject$id, _bobject$id2, _bobject$id2$typeName, _sortBy2;
+  var bobject = _ref2.bobject,
+    handleData = _ref2.handleData,
+    inactiveModalInfo = _ref2.inactiveModalInfo;
+  var discardedReasons = inactiveModalInfo.discardedReasons,
+    closedLostReason = inactiveModalInfo.closedLostReason;
+  var _useTranslation2 = useTranslation('translation', {
+      keyPrefix: 'wizards.steps.inactiveHandling.actionForm.discard'
+    }),
+    t = _useTranslation2.t;
+  var _useTranslation3 = useTranslation('translation', {
+      keyPrefix: 'wizards.steps.inactiveHandling'
+    }),
+    generalT = _useTranslation3.t;
+  var isOpportunity = (bobject === null || bobject === void 0 ? void 0 : (_bobject$id = bobject.id) === null || _bobject$id === void 0 ? void 0 : _bobject$id.typeName) === BobjectTypes.Opportunity;
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$k._add_task_module,
+    children: [/*#__PURE__*/jsxs(Text, {
+      size: "m",
+      weight: "bold",
+      align: "center",
+      children: [generalT("".concat(bobject === null || bobject === void 0 ? void 0 : (_bobject$id2 = bobject.id) === null || _bobject$id2 === void 0 ? void 0 : (_bobject$id2$typeName = _bobject$id2.typeName) === null || _bobject$id2$typeName === void 0 ? void 0 : _bobject$id2$typeName.toLowerCase(), ".actionText")), "?"]
+    }), /*#__PURE__*/jsx("div", {
+      className: styles$k._selects_wrapper,
+      children: /*#__PURE__*/jsx(Select, {
+        placeholder: isOpportunity ? t('titleOpp') : t('title'),
+        width: "557px",
+        onChange: function onChange(discardedValue) {
+          return handleData({
+            discardedValue: discardedValue
+          });
+        },
+        children: (_sortBy2 = sortBy(isOpportunity ? closedLostReason : discardedReasons, 'value')) === null || _sortBy2 === void 0 ? void 0 : _sortBy2.map(function (item) {
+          return /*#__PURE__*/jsx(Item, {
+            value: item.id,
+            children: item.value || (item === null || item === void 0 ? void 0 : item.name)
+          }, item.id);
+        })
+      })
+    })]
+  });
+};
+var OnHoldComponent = function OnHoldComponent(_ref3) {
+  var _sortBy3;
+  var handleData = _ref3.handleData,
+    inactiveModalInfo = _ref3.inactiveModalInfo;
+  var onHoldReasons = inactiveModalInfo.onHoldReasons;
+  var _useTranslation4 = useTranslation('translation', {
+      keyPrefix: 'wizards.steps.inactiveHandling.actionForm.onHold'
+    }),
+    t = _useTranslation4.t;
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$k._add_task_module,
+    children: [/*#__PURE__*/jsx(Text, {
+      size: "m",
+      weight: "bold",
+      align: "center",
+      children: t('title')
+    }), /*#__PURE__*/jsx("div", {
+      className: styles$k._selects_wrapper,
+      children: /*#__PURE__*/jsx(Select, {
+        placeholder: t('placeholder'),
+        width: "557px",
+        onChange: function onChange(onHoldedValue) {
+          handleData({
+            onHoldedValue: onHoldedValue
+          });
+        },
+        children: (_sortBy3 = sortBy(onHoldReasons, 'value')) === null || _sortBy3 === void 0 ? void 0 : _sortBy3.map(function (item) {
+          return /*#__PURE__*/jsx(Item, {
+            value: item.id,
+            children: item.name
+          }, item.id);
+        })
+      })
+    })]
+  });
+};
+var ReassignComponent = function ReassignComponent(_ref4) {
+  var _sortBy4;
+  var handleData = _ref4.handleData,
+    inactiveModalInfo = _ref4.inactiveModalInfo;
+  var users = inactiveModalInfo.users;
+  var _useTranslation5 = useTranslation('translation', {
+      keyPrefix: 'wizards.steps.inactiveHandling.actionForm.reassign'
+    }),
+    t = _useTranslation5.t;
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$k._add_task_module,
+    children: [/*#__PURE__*/jsx(Text, {
+      size: "m",
+      weight: "bold",
+      align: "center",
+      children: t('title')
+    }), /*#__PURE__*/jsx("div", {
+      className: styles$k._reassign_selects_wrapper,
+      children: /*#__PURE__*/jsx(Select, {
+        placeholder: t('placeholder'),
+        width: "557px",
+        onChange: function onChange(assignedTo) {
+          return handleData({
+            assignedTo: assignedTo
+          });
+        },
+        children: (_sortBy4 = sortBy(users, 'value')) === null || _sortBy4 === void 0 ? void 0 : _sortBy4.map(function (item) {
+          return /*#__PURE__*/jsx(Item, {
+            value: item.id,
+            children: item.value || (item === null || item === void 0 ? void 0 : item.name)
+          }, item.id);
+        })
+      })
+    })]
+  });
+};
+var PreviousAssign = function PreviousAssign(_ref5) {
+  var bobjectType = _ref5.bobjectType,
+    handleData = _ref5.handleData;
+  var _useState = useState('assignToMe'),
+    _useState2 = _slicedToArray$p(_useState, 2),
+    assignMode = _useState2[0],
+    setAssignMode = _useState2[1];
+  var _useTranslation6 = useTranslation('translation', {
+      keyPrefix: 'wizards.steps.inactiveHandling.actionForm.previousAssign'
+    }),
+    t = _useTranslation6.t;
+  var _useTranslation7 = useTranslation('translation', {
+      keyPrefix: 'bobjectTypes'
+    }),
+    bobjectT = _useTranslation7.t;
+  useEffect(function () {
+    handleData({
+      previousAssign: assignMode
+    });
+  }, [assignMode]);
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$k._previous_assign_section_wrapper,
+    children: [/*#__PURE__*/jsx(Text, {
+      size: "m",
+      weight: "bold",
+      align: "center",
+      children: t('title')
+    }), /*#__PURE__*/jsx(Text, {
+      size: "xs",
+      children: /*#__PURE__*/jsx(Trans, {
+        i18nKey: "wizards.steps.inactiveHandling.actionForm.previousAssign.subtitle",
+        values: {
+          bobjectType: bobjectT(bobjectType === null || bobjectType === void 0 ? void 0 : bobjectType.toLowerCase())
+        }
+      })
+    }), /*#__PURE__*/jsx("div", {
+      className: styles$k._previous_assign_radio_group,
+      children: /*#__PURE__*/jsxs(RadioGroup, {
+        defaultValue: "assignToMe",
+        onChange: function onChange(value) {
+          setAssignMode(value);
+        },
+        children: [/*#__PURE__*/jsx(Radio, {
+          value: "assignToMe",
+          size: "small",
+          expand: true,
+          defaultChecked: true,
+          children: t('assignToMe')
+        }), /*#__PURE__*/jsx(Radio, {
+          value: "keepOwner",
+          size: "small",
+          expand: true,
+          children: t('keepOwner')
+        })]
+      })
+    })]
+  });
+};
+var SetCadence = function SetCadence(_ref6) {
+  var _bobject$id3, _settings$user, _settings$user2, _settings$user2$permi;
+  var bobject = _ref6.bobject,
+    handleData = _ref6.handleData,
+    inactiveModalInfo = _ref6.inactiveModalInfo;
+  var bobjectType = bobject === null || bobject === void 0 ? void 0 : (_bobject$id3 = bobject.id) === null || _bobject$id3 === void 0 ? void 0 : _bobject$id3.typeName;
+  var assignedTo = 'assignedTo' in bobject ? bobject === null || bobject === void 0 ? void 0 : bobject.assignedTo : getValueFromLogicRole(bobject, FIELDS_LOGIC_ROLE[bobjectType].ASSIGNED_TO);
+  var activeUserId = inactiveModalInfo.activeUserId;
+  var _useActiveUserSetting = useActiveUserSettings(),
+    settings = _useActiveUserSetting.settings;
+  var hasPermissions = (settings === null || settings === void 0 ? void 0 : (_settings$user = settings.user) === null || _settings$user === void 0 ? void 0 : _settings$user.accountAdmin) && (settings === null || settings === void 0 ? void 0 : (_settings$user2 = settings.user) === null || _settings$user2 === void 0 ? void 0 : (_settings$user2$permi = _settings$user2.permissions) === null || _settings$user2$permi === void 0 ? void 0 : _settings$user2$permi.includes(UserPermission.EDIT_ALL));
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$k._configure_cadence_wrapper,
+    children: [assignedTo !== activeUserId && hasPermissions && /*#__PURE__*/jsx(PreviousAssign, {
+      bobjectType: bobjectType,
+      handleData: handleData
+    }), /*#__PURE__*/jsx(ConfigureCadenceStep, {
+      handleBack: function handleBack() {},
+      handleNext: null,
+      previousStep: null,
+      bobject: bobject,
+      onCadenceChange: function onCadenceChange(cadenceId) {
+        return handleData({
+          cadenceId: cadenceId
+        });
+      },
+      onDateChange: function onDateChange(startCadence) {
+        return handleData({
+          startCadenceDate: startCadence
+        });
+      }
+    })]
+  });
+};
+var ActionForm = function ActionForm(_ref7) {
+  var selectedOptionHandler = _ref7.selectedOptionHandler,
+    bobject = _ref7.bobject,
+    isSalesBobject = _ref7.isSalesBobject;
+  var _selectedOptionHandle = _slicedToArray$p(selectedOptionHandler, 2),
+    selectedOption = _selectedOptionHandle[0],
+    setSelectedOption = _selectedOptionHandle[1];
+  var component;
+  var inactiveModalInfo = useInactiveHandlingModalInfo();
+  switch (selectedOption === null || selectedOption === void 0 ? void 0 : selectedOption.type) {
+    case INACTIVE_HANDLING_OPTIONS.NEXT_STEP:
+      component = /*#__PURE__*/jsx(AddTaskComponent, {});
+      break;
+    case INACTIVE_HANDLING_OPTIONS.SEND_TO_NURTURING:
+    case INACTIVE_HANDLING_OPTIONS.NEW_CADENCE:
+      component = /*#__PURE__*/jsx(SetCadence, {
+        bobject: bobject
+      });
+      break;
+    case INACTIVE_HANDLING_OPTIONS.REASSIGN:
+      component = /*#__PURE__*/jsx(ReassignComponent, {});
+      break;
+    case INACTIVE_HANDLING_OPTIONS.DISCARD:
+      component = /*#__PURE__*/jsx(DiscardComponent, {
+        bobject: bobject
+      });
+      break;
+    case INACTIVE_HANDLING_OPTIONS.ON_HOLD:
+      component = isSalesBobject ? /*#__PURE__*/jsx(Fragment, {}) : /*#__PURE__*/jsx(OnHoldComponent, {});
+      break;
+    case INACTIVE_HANDLING_OPTIONS.BACK_TO_BACKLOG:
+    default:
+      component = /*#__PURE__*/jsx(Fragment, {});
+      break;
+  }
+  return /*#__PURE__*/React.cloneElement(component, {
+    inactiveModalInfo: inactiveModalInfo,
+    handleData: function handleData(data) {
+      setSelectedOption(_objectSpread$j(_objectSpread$j({}, selectedOption), {}, {
+        data: _objectSpread$j(_objectSpread$j({}, selectedOption.data), data)
+      }));
+    }
+  });
+};
+
+function _slicedToArray$o(arr, i) { return _arrayWithHoles$o(arr) || _iterableToArrayLimit$o(arr, i) || _unsupportedIterableToArray$o(arr, i) || _nonIterableRest$o(); }
+function _nonIterableRest$o() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$o(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$o(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$o(o, minLen); }
+function _arrayLikeToArray$o(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$o(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$o(arr) { if (Array.isArray(arr)) return arr; }
+var ActionSelector = function ActionSelector(_ref) {
+  var selectedOptionHandler = _ref.selectedOptionHandler,
+    bobjectType = _ref.bobjectType,
+    isInSalesStage = _ref.isInSalesStage;
+  var _selectedOptionHandle = _slicedToArray$o(selectedOptionHandler, 2),
+    selectedOption = _selectedOptionHandle[0],
+    setSelectedOption = _selectedOptionHandle[1];
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards.steps.inactiveHandling'
+    }),
+    t = _useTranslation.t;
+  return /*#__PURE__*/jsx("div", {
+    className: styles$k.actions_wrapper,
+    children: /*#__PURE__*/jsxs(RadioGroup, {
+      value: selectedOption === null || selectedOption === void 0 ? void 0 : selectedOption.type,
+      onChange: function onChange(value) {
+        return setSelectedOption({
+          type: value,
+          data: undefined
+        });
+      },
+      children: [/*#__PURE__*/jsx(Radio, {
+        expand: true,
+        size: "small",
+        value: INACTIVE_HANDLING_OPTIONS.NEXT_STEP,
+        children: t('actions.createNextStep')
+      }), /*#__PURE__*/jsx(Radio, {
+        size: "small",
+        value: INACTIVE_HANDLING_OPTIONS.NEW_CADENCE,
+        children: t('actions.enrollCadence')
+      }), /*#__PURE__*/jsx(Radio, {
+        size: "small",
+        value: INACTIVE_HANDLING_OPTIONS.SEND_TO_NURTURING,
+        children: t('actions.sendToNurturing')
+      }), /*#__PURE__*/jsx(Radio, {
+        size: "small",
+        value: INACTIVE_HANDLING_OPTIONS.DISCARD,
+        children: t("".concat(bobjectType.toLowerCase(), ".discardedRadioText"))
+      }), !isInSalesStage && bobjectType !== BobjectTypes.Opportunity ? /*#__PURE__*/jsx(Radio, {
+        size: "small",
+        value: INACTIVE_HANDLING_OPTIONS.BACK_TO_BACKLOG,
+        children: t('actions.backlogUnassign')
+      }) : /*#__PURE__*/jsx(Fragment, {}), /*#__PURE__*/jsx(Radio, {
+        size: "small",
+        value: INACTIVE_HANDLING_OPTIONS.REASSIGN,
+        children: t('actions.reassign')
+      }), bobjectType !== BobjectTypes.Opportunity ? /*#__PURE__*/jsx(Radio, {
+        size: "small",
+        value: INACTIVE_HANDLING_OPTIONS.ON_HOLD,
+        children: t('actions.sendToHold')
+      }) : /*#__PURE__*/jsx(Fragment, {})]
+    })
+  });
+};
+
+var InformationPanel = function InformationPanel(_ref) {
+  var _bobject$id;
+  var type = _ref.selectedOption.type,
+    bobject = _ref.bobject;
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards.steps.inactiveHandling.informationPanel'
+    }),
+    t = _useTranslation.t;
+  var _useTranslation2 = useTranslation('translation', {
+      keyPrefix: 'wizards.steps.inactiveHandling'
+    }),
+    generalT = _useTranslation2.t;
+  var bobjectType = bobject === null || bobject === void 0 ? void 0 : (_bobject$id = bobject.id) === null || _bobject$id === void 0 ? void 0 : _bobject$id.typeName;
+  var modalText = type === INACTIVE_HANDLING_OPTIONS.BACK_TO_BACKLOG || type === INACTIVE_HANDLING_OPTIONS.DISCARD ? generalT("".concat(bobjectType === null || bobjectType === void 0 ? void 0 : bobjectType.toLowerCase(), ".").concat(type)) : 'undefined';
+  var SelectedOptionInfoDisplay = function SelectedOptionInfoDisplay() {
+    switch (type) {
+      case INACTIVE_HANDLING_OPTIONS.BACK_TO_BACKLOG:
+        return /*#__PURE__*/jsxs(Fragment, {
+          children: [/*#__PURE__*/jsx(Text, {
+            size: "xs",
+            weight: "bold",
+            className: styles$k._info_header,
+            children: t('backToBacklog.title')
+          }), /*#__PURE__*/jsx(Text, {
+            size: "xs",
+            children: modalText
+          })]
+        });
+      case INACTIVE_HANDLING_OPTIONS.DISCARD:
+        return /*#__PURE__*/jsxs(Fragment, {
+          children: [/*#__PURE__*/jsx(Text, {
+            size: "xs",
+            weight: "bold",
+            className: styles$k._info_header,
+            children: t('discard.title')
+          }), /*#__PURE__*/jsx(Text, {
+            size: "xs",
+            className: styles$k._text_block,
+            children: modalText
+          }), /*#__PURE__*/jsx(Text, {
+            size: "xs",
+            className: styles$k._text_block,
+            children: t('discard.subtitle')
+          })]
+        });
+      case INACTIVE_HANDLING_OPTIONS.NEW_CADENCE:
+        return /*#__PURE__*/jsxs(Fragment, {
+          children: [/*#__PURE__*/jsx(Text, {
+            size: "xs",
+            weight: "bold",
+            className: styles$k._info_header,
+            children: t('newCadence.title')
+          }), /*#__PURE__*/jsx(Text, {
+            size: "xs",
+            className: styles$k._text_block,
+            children: t('newCadence.subtitle')
+          }), /*#__PURE__*/jsx(Text, {
+            size: "xs",
+            className: styles$k._text_block,
+            children: t('newCadence.description')
+          }), /*#__PURE__*/jsx(Text, {
+            size: "xs",
+            className: styles$k._text_block,
+            children: /*#__PURE__*/jsx(Trans, {
+              i18nKey: "wizards.steps.inactiveHandling.informationPanel.newCadence.link",
+              components: [/*#__PURE__*/jsx("a", {
+                href: 'https://support.bloobirds.com/hc/en-us/articles/4821987345308-Cadence',
+                target: "_blank",
+                rel: "noreferrer",
+                children: ''
+              }, "0")]
+            })
+          })]
+        });
+      case INACTIVE_HANDLING_OPTIONS.NEXT_STEP:
+        return /*#__PURE__*/jsxs(Fragment, {
+          children: [/*#__PURE__*/jsx(Text, {
+            size: "xs",
+            weight: "bold",
+            className: styles$k._info_header,
+            children: t('nextStep.title')
+          }), /*#__PURE__*/jsx(Text, {
+            size: "xs",
+            className: styles$k._text_block,
+            children: t('nextStep.subtitle')
+          }), /*#__PURE__*/jsx(Text, {
+            size: "xs",
+            className: styles$k._text_block,
+            children: t('nextStep.description')
+          }), /*#__PURE__*/jsx(Text, {
+            size: "xs",
+            className: styles$k._text_block,
+            children: /*#__PURE__*/jsx(Trans, {
+              i18nKey: "wizards.steps.inactiveHandling.informationPanel.nextStep.link1",
+              components: [/*#__PURE__*/jsx("a", {
+                href: 'https://support.bloobirds.com/hc/en-us/articles/4861712344860-Reminders',
+                target: "_blank",
+                rel: "noreferrer",
+                children: ''
+              }, "0")]
+            })
+          }), /*#__PURE__*/jsx(Text, {
+            size: "xs",
+            className: styles$k._text_block,
+            children: /*#__PURE__*/jsx(Trans, {
+              i18nKey: "wizards.steps.inactiveHandling.informationPanel.nextStep.link2",
+              components: [/*#__PURE__*/jsx("a", {
+                href: 'https://support.bloobirds.com/hc/en-us/sections/360003357720-Tasks',
+                target: "_blank",
+                rel: "noreferrer",
+                children: ''
+              }, "0")]
+            })
+          })]
+        });
+      case INACTIVE_HANDLING_OPTIONS.REASSIGN:
+        return /*#__PURE__*/jsxs(Fragment, {
+          children: [/*#__PURE__*/jsx(Text, {
+            size: "xs",
+            weight: "bold",
+            className: styles$k._info_header,
+            children: t('reassign.title')
+          }), /*#__PURE__*/jsx(Text, {
+            size: "xs",
+            children: t('reassign.subtitle')
+          })]
+        });
+      case INACTIVE_HANDLING_OPTIONS.SEND_TO_NURTURING:
+        return /*#__PURE__*/jsxs(Fragment, {
+          children: [/*#__PURE__*/jsx(Text, {
+            size: "xs",
+            weight: "bold",
+            className: styles$k._info_header,
+            children: t('sendToNurturing.title')
+          }), /*#__PURE__*/jsx(Text, {
+            size: "xs",
+            className: styles$k._text_block,
+            children: t('sendToNurturing.subtitle')
+          }), ' ', /*#__PURE__*/jsx(Text, {
+            size: "xs",
+            className: styles$k._text_block,
+            children: /*#__PURE__*/jsx(Trans, {
+              i18nKey: "wizards.steps.inactiveHandling.informationPanel.sendToNurturing.link1",
+              components: [/*#__PURE__*/jsx("a", {
+                href: ' https://support.bloobirds.com/hc/en-us/articles/4821987345308-Cadence',
+                target: "_blank",
+                rel: "noreferrer",
+                children: ''
+              }, "0")]
+            })
+          }), ' ', /*#__PURE__*/jsx(Text, {
+            size: "xs",
+            className: styles$k._text_block,
+            children: /*#__PURE__*/jsx(Trans, {
+              i18nKey: "wizards.steps.inactiveHandling.informationPanel.sendToNurturing.link2",
+              components: [/*#__PURE__*/jsx("a", {
+                href: 'https://support.bloobirds.com/hc/en-us/articles/5856774476188',
+                target: "_blank",
+                rel: "noreferrer",
+                children: ''
+              }, "0")]
+            })
+          })]
+        });
+      case INACTIVE_HANDLING_OPTIONS.ON_HOLD:
+        return /*#__PURE__*/jsxs(Fragment, {
+          children: [/*#__PURE__*/jsx(Text, {
+            size: "xs",
+            weight: "bold",
+            className: styles$k._info_header,
+            children: t('onHold.title')
+          }), /*#__PURE__*/jsx(Text, {
+            size: "xs",
+            children: t('onHold.subtitle')
+          })]
+        });
+      default:
+        return /*#__PURE__*/jsx(Fragment, {});
+    }
+  };
+  return /*#__PURE__*/jsx("div", {
+    className: styles$k._informationPanel,
+    children: /*#__PURE__*/jsx(SelectedOptionInfoDisplay, {})
+  });
+};
+
+var css_248z$j = ".inactiveHandling-module__modal_content__2Kerf {\n  box-sizing: border-box;\n  padding: 32px 58px 15px;\n}\n\n.inactiveHandling-module__modal_footer__IDAF4 {\n  box-sizing: border-box;\n  padding: 0 32px 40px 32px;\n}\n\n.inactiveHandling-module__modal_content__2Kerf > div > section > div {\n  display: flex;\n  flex-direction: column;\n}\n\n.inactiveHandling-module__sections_container__8tWxH {\n  display: flex;\n  height: 272px;\n}\n";
+var styles$j = {"_modal_content":"inactiveHandling-module__modal_content__2Kerf","_modal_footer":"inactiveHandling-module__modal_footer__IDAF4","_sections_container":"inactiveHandling-module__sections_container__8tWxH"};
+styleInject(css_248z$j);
+
+var InactiveHandling = function InactiveHandling(_ref) {
+  var _bobject$id, _bobject$id2;
+  var handleNext = _ref.handleNext,
+    handleSkip = _ref.handleSkip,
+    buttonsConfig = _ref.buttonsConfig,
+    wizardKey = _ref.wizardKey;
+  var _useInactiveHandlingM = useInactiveHandlingModalData(),
+    getIsMissingInfo = _useInactiveHandlingM.getIsMissingInfo,
+    isInSalesStage = _useInactiveHandlingM.isInSalesStage,
+    isSubmitting = _useInactiveHandlingM.isSubmitting,
+    selectedOptionData = _useInactiveHandlingM.selectedOptionData,
+    setSelectedOptionData = _useInactiveHandlingM.setSelectedOptionData,
+    handleSubmit = _useInactiveHandlingM.handleSubmit;
+  var _useWizardContext = useWizardContext(),
+    resetWizardProperties = _useWizardContext.resetWizardProperties,
+    getWizardProperties = _useWizardContext.getWizardProperties;
+  var _getWizardProperties = getWizardProperties(wizardKey),
+    bobject = _getWizardProperties.bobject;
+  var isMissingInfo = getIsMissingInfo({
+    selectedOptionData: selectedOptionData,
+    hasNeededNurturingInfo: true,
+    hasOnHoldReasons: (bobject === null || bobject === void 0 ? void 0 : (_bobject$id = bobject.id) === null || _bobject$id === void 0 ? void 0 : _bobject$id.typeName) !== 'Opportunity'
+  });
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards.common'
+    }),
+    t = _useTranslation.t;
+  var submitModal = function submitModal() {
+    handleSubmit();
+    var hasNextStep = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasNextStep) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasNextStep : false;
+    if (!hasNextStep) {
+      resetWizardProperties(wizardKey);
+    } else {
+      if (handleNext) {
+        handleNext();
+      }
+    }
+  };
+  var showSkipButton = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton : true;
+  var openCadenceControlOnClose = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip : false;
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsxs(ModalContent, {
+      className: styles$j._modal_content,
+      children: [/*#__PURE__*/jsxs("div", {
+        className: styles$j._sections_container,
+        children: [/*#__PURE__*/jsx(ActionSelector, {
+          selectedOptionHandler: [selectedOptionData, setSelectedOptionData],
+          bobjectType: bobject === null || bobject === void 0 ? void 0 : (_bobject$id2 = bobject.id) === null || _bobject$id2 === void 0 ? void 0 : _bobject$id2.typeName,
+          isInSalesStage: isInSalesStage
+        }), /*#__PURE__*/jsx(InformationPanel, {
+          selectedOption: selectedOptionData,
+          bobject: bobject
+        })]
+      }), /*#__PURE__*/jsx(ActionForm, {
+        selectedOptionHandler: [selectedOptionData, setSelectedOptionData],
+        bobject: bobject,
+        isSalesBobject: isInSalesStage
+      })]
+    }), /*#__PURE__*/jsxs(ModalFooter, {
+      className: styles$j._modal_footer,
+      children: [/*#__PURE__*/jsx("div", {
+        children: showSkipButton && /*#__PURE__*/jsx(Button, {
+          variant: "clear",
+          onClick: function onClick() {
+            return handleSkip(openCadenceControlOnClose);
+          },
+          uppercase: true,
+          children: t('cancel')
+        })
+      }), /*#__PURE__*/jsx(Tooltip, {
+        title: isMissingInfo ? t('requiredMessage') : '',
+        position: "top",
+        children: /*#__PURE__*/jsx(Button, {
+          onClick: submitModal,
+          disabled: isMissingInfo || isSubmitting,
+          uppercase: true,
+          children: (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.nextButtonTitle) || t('confirm')
+        })
+      })]
+    })]
+  });
+};
+
+var css_248z$i = ".loadingStep-module_content__OkyvI {\n  min-height: 300px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n";
+var styles$i = {"content":"loadingStep-module_content__OkyvI"};
+styleInject(css_248z$i);
+
+var LoadingStep = function LoadingStep() {
+  return /*#__PURE__*/jsx(Fragment, {
+    children: /*#__PURE__*/jsx(ModalContent, {
+      children: /*#__PURE__*/jsx("div", {
+        className: styles$i.content,
+        children: /*#__PURE__*/jsx(Spinner, {
+          name: "loadingCircle"
+        })
+      })
+    })
+  });
+};
+
+var css_248z$h = ".reportResultFirstStep-module__section__wrapper__RSIDT {\n  margin-bottom: 24px;\n}\n\n.reportResultFirstStep-module__section_title__wrapper__p1Q9N {\n  margin-bottom: 16px;\n}\n\n.reportResultFirstStep-module__labels__wrapper__5zQQN {\n  display: flex;\n  flex-direction: column;\n  flex-wrap: wrap;\n  align-content: space-around;\n  height: 336px;\n  overflow-y: auto;\n}\n\n.reportResultFirstStep-module__label__content__7i0pq {\n  display: flex;\n  flex-direction: column;\n  width: 225px;\n  margin-bottom: 12px;\n}\n\n.reportResultFirstStep-module__label__content__7i0pq > div {\n  margin-bottom: 12px;\n}\n\n.reportResultFirstStep-module__buttons__wrapper__lbvR- {\n  display: flex;\n  width: 100%;\n}\n\n.reportResultFirstStep-module__buttons__wrapper__lbvR- > button:nth-child(2) {\n  margin-left: auto;\n  margin-right: 16px;\n}\n\n.reportResultFirstStep-module__skip_button__lOJ7G {\n  margin-left: auto;\n  margin-right: 16px;\n}\n\n.reportResultFirstStep-module__back_button__Hr0ZT {\n  margin-left: 0px;\n  margin-right: auto;\n}\n";
+var styles$h = {"_section__wrapper":"reportResultFirstStep-module__section__wrapper__RSIDT","_section_title__wrapper":"reportResultFirstStep-module__section_title__wrapper__p1Q9N","_labels__wrapper":"reportResultFirstStep-module__labels__wrapper__5zQQN","_label__content":"reportResultFirstStep-module__label__content__7i0pq","_buttons__wrapper":"reportResultFirstStep-module__buttons__wrapper__lbvR-","_skip_button":"reportResultFirstStep-module__skip_button__lOJ7G","_back_button":"reportResultFirstStep-module__back_button__Hr0ZT"};
+styleInject(css_248z$h);
+
+function _slicedToArray$n(arr, i) { return _arrayWithHoles$n(arr) || _iterableToArrayLimit$n(arr, i) || _unsupportedIterableToArray$n(arr, i) || _nonIterableRest$n(); }
+function _nonIterableRest$n() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$n(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$n(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$n(o, minLen); }
+function _arrayLikeToArray$n(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$n(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$n(arr) { if (Array.isArray(arr)) return arr; }
+var MeetingReportResult = function MeetingReportResult(_ref) {
+  var _referencedBobject$id;
+  var handleNext = _ref.handleNext,
+    buttonsConfig = _ref.buttonsConfig,
+    wizardKey = _ref.wizardKey,
+    machineContext = _ref.machineContext;
+  var _useWizardContext = useWizardContext(),
+    getWizardProperties = _useWizardContext.getWizardProperties,
+    resetWizardProperties = _useWizardContext.resetWizardProperties,
+    hasCustomWizardsEnabled = _useWizardContext.hasCustomWizardsEnabled;
+  var _getWizardProperties = getWizardProperties(wizardKey),
+    activity = _getWizardProperties.bobject,
+    onSave = _getWizardProperties.onSaveCallback;
+  var dataModel = useDataModel();
+  var defaultMeetingResult = getValueFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.MEETING_RESULT);
+  var defaultMeetingType = getValueFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.MEETING_MAIN_TYPE);
+  var mainTypeField = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.MEETING_MAIN_TYPE);
+  var _useState = useState(defaultMeetingResult),
+    _useState2 = _slicedToArray$n(_useState, 2),
+    selectedMeetingResultId = _useState2[0],
+    setSelectedMeetingResultId = _useState2[1];
+  var _useState3 = useState(defaultMeetingType),
+    _useState4 = _slicedToArray$n(_useState3, 2),
+    selectedMeetingTypeId = _useState4[0],
+    setSelectedMeetingTypeId = _useState4[1];
+  var _useMeetingReportResu = useMeetingReportResult(dataModel, selectedMeetingTypeId),
+    reportResult = _useMeetingReportResu.reportResult,
+    meetingResults = _useMeetingReportResu.meetingResults;
+  var _usePicklist = usePicklist(mainTypeField === null || mainTypeField === void 0 ? void 0 : mainTypeField.name),
+    meetingTypes = _usePicklist.data;
+  var types = meetingTypes === null || meetingTypes === void 0 ? void 0 : meetingTypes.filter(function (i) {
+    return i.enabled;
+  }).sort(function (a, b) {
+    return a.ordering - b.ordering;
+  });
+  var referencedBobject = getReferencedBobject(activity);
+  var referencedBobjectName = getTextFromLogicRole(referencedBobject, getNameFieldLRFromBobjectType(referencedBobject === null || referencedBobject === void 0 ? void 0 : (_referencedBobject$id = referencedBobject.id) === null || _referencedBobject$id === void 0 ? void 0 : _referencedBobject$id.typeName));
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  function handleClose() {
+    mixpanel.track(MIXPANEL_EVENTS.CLICK_ON_CLOSE_IN_WIZARD_STEP_ + 'MEETING_RESULT');
+    resetWizardProperties(wizardKey);
+    setTimeout(function () {
+      if (onSave) onSave();
+    }, 500);
+  }
+  function handleSubmit(mustContinue) {
+    var _machineContext$wizar, _machineContext$wizar2, _machineContext$wizar3;
+    var markAsReported = !hasCustomWizardsEnabled || (machineContext === null || machineContext === void 0 ? void 0 : (_machineContext$wizar = machineContext.wizardConfig) === null || _machineContext$wizar === void 0 ? void 0 : _machineContext$wizar.markReportedAtStart) === true || (machineContext === null || machineContext === void 0 ? void 0 : (_machineContext$wizar2 = machineContext.wizardConfig) === null || _machineContext$wizar2 === void 0 ? void 0 : _machineContext$wizar2.markReportedAtStart) === undefined || (machineContext === null || machineContext === void 0 ? void 0 : (_machineContext$wizar3 = machineContext.wizardConfig) === null || _machineContext$wizar3 === void 0 ? void 0 : _machineContext$wizar3.markReportedAtStart) === false && !mustContinue;
+    reportResult(activity, selectedMeetingTypeId, selectedMeetingResultId, markAsReported).then(function () {
+      mixpanel.track(MIXPANEL_EVENTS.CLICK_ON_REPORT_MEETING_RESULT_FROM_TAB_OTO);
+      window.dispatchEvent(new CustomEvent('ACTIVE_BOBJECT_UPDATED', {
+        detail: {
+          type: BobjectTypes.Activity
+        }
+      }));
+      if (mustContinue) {
+        if (handleNext) {
+          handleNext();
+        }
+      } else {
+        handleClose();
+      }
+    });
+  }
+  useEffect(function () {
+    if (!selectedMeetingResultId) {
+      setSelectedMeetingResultId(defaultMeetingResult);
+    } else {
+      var result = meetingResults === null || meetingResults === void 0 ? void 0 : meetingResults.find(function (result) {
+        return result.id === selectedMeetingResultId;
+      });
+      if (!result) {
+        setSelectedMeetingResultId(null);
+      }
+    }
+    if (!selectedMeetingTypeId) {
+      setSelectedMeetingTypeId(defaultMeetingType);
+    }
+  }, []);
+  var showSkipButton = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton : false;
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsx(ModalContent, {
+      children: /*#__PURE__*/jsxs(ModalSection, {
+        size: "m",
+        title: t('wizards.steps.meetingReportResult.title', {
+          name: referencedBobjectName
+        }),
+        icon: "calendar",
+        children: [/*#__PURE__*/jsxs("div", {
+          className: styles$h._section__wrapper,
+          children: [/*#__PURE__*/jsx("div", {
+            className: styles$h._section_title__wrapper,
+            children: /*#__PURE__*/jsx(Text, {
+              size: "m",
+              weight: "medium",
+              color: "peanut",
+              children: t('wizards.steps.meetingReportResult.meetingType')
+            })
+          }), /*#__PURE__*/jsx(ChipGroup, {
+            value: selectedMeetingTypeId,
+            onChange: setSelectedMeetingTypeId,
+            children: types === null || types === void 0 ? void 0 : types.map(function (type) {
+              return /*#__PURE__*/jsx(Chip, {
+                size: "small",
+                value: type === null || type === void 0 ? void 0 : type.id,
+                children: type === null || type === void 0 ? void 0 : type.value
+              }, type === null || type === void 0 ? void 0 : type.id);
+            })
+          })]
+        }), /*#__PURE__*/jsx("div", {
+          className: styles$h._section__wrapper,
+          children: /*#__PURE__*/jsx("div", {
+            className: styles$h._section_title__wrapper,
+            children: /*#__PURE__*/jsx(Text, {
+              size: "m",
+              weight: "medium",
+              color: "peanut",
+              children: t('wizards.steps.meetingReportResult.meetingResult')
+            })
+          })
+        }), /*#__PURE__*/jsx("div", {
+          className: styles$h._labels__wrapper,
+          children: /*#__PURE__*/jsx("div", {
+            className: styles$h._label__content,
+            children: meetingResults && (meetingResults === null || meetingResults === void 0 ? void 0 : meetingResults.map(function (result) {
+              return /*#__PURE__*/jsx(Label, {
+                uppercase: false,
+                inline: false,
+                align: "center",
+                selected: result.id === selectedMeetingResultId,
+                onClick: function onClick() {
+                  return setSelectedMeetingResultId(result.id);
+                },
+                children: result === null || result === void 0 ? void 0 : result.name
+              }, "meeting-result-".concat(result === null || result === void 0 ? void 0 : result.id));
+            }))
+          })
+        })]
+      })
+    }), /*#__PURE__*/jsxs(ModalFooter, {
+      children: [showSkipButton && /*#__PURE__*/jsx(Button, {
+        variant: "clear",
+        onClick: handleClose,
+        className: styles$h._back_button,
+        children: t('common.close')
+      }), /*#__PURE__*/jsx(Button, {
+        dataTest: "Form-Save",
+        onClick: function onClick() {
+          return handleSubmit(false);
+        },
+        variant: "secondary",
+        className: styles$h._skip_button,
+        disabled: !selectedMeetingResultId,
+        children: t('wizards.common.skipWizard')
+      }), /*#__PURE__*/jsx(Button, {
+        dataTest: "Form-Save-And-Add-notes",
+        onClick: function onClick() {
+          return handleSubmit(true);
+        },
+        disabled: !selectedMeetingResultId,
+        children: t('wizards.common.next')
+      })]
+    })]
+  });
+};
+
+var css_248z$g = ".reportResultSecondStep-module_notes_section_container__HVdIj {\n  display: flex;\n  max-height: 430px;\n  margin-bottom: 36px;\n}\n\n.reportResultSecondStep-module_notes_container__PgJJs {\n  max-height: 300px;\n  overflow: auto;\n  flex-grow: 1;\n}\n\n.reportResultSecondStep-module_notes_section__DoSef {\n  display: flex;\n  width: 64%;\n  flex-direction: column;\n}\n\n.reportResultSecondStep-module_notes_feed__sUJJF {\n  display: flex;\n  width: 36%;\n  flex-direction: column;\n}\n\n.reportResultSecondStep-module_notes_section__DoSef div[class*=\"noteForm-module_body_wrapper\"] {\n  max-height: 260px;\n  overflow-x: hidden;\n}\n\n.reportResultSecondStep-module_notes_section__DoSef div[class*=\"bobjectSelector-module_link_button__q3JAC\"] {\n  max-width: 162px;\n}\n\n.reportResultSecondStep-module_notes_section__DoSef div[class*=\"bobjectSelector-module_link_button__q3JAC\"] > svg {\n  min-width: 12px;\n}\n\n\n.reportResultSecondStep-module_notes_title__u9r4z {\n  display: flex;\n  align-items: center;\n  margin: 0 0 12px 0;\n  justify-content: space-between;\n}\n\n.reportResultSecondStep-module_divider__c4gJJ {\n  height: auto;\n  margin: 12px 12px 8px;\n  border: 1px solid var(--lightestGray);\n}\n\n.reportResultSecondStep-module_empty_placeholder__i-4A2 {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  gap: 8px;\n  height: 100%;\n  width: 100%;\n}\n\n.reportResultSecondStep-module_notes_container__PgJJs:has(> .reportResultSecondStep-module_empty_placeholder__i-4A2) {\n  flex-grow: 1;\n}\n\n.reportResultSecondStep-module_alternativeFooter__REyQe {\n  display: flex;\n  gap: 8px;\n  justify-content: flex-end;\n}\n";
+var styles$g = {"notes_section_container":"reportResultSecondStep-module_notes_section_container__HVdIj","notes_container":"reportResultSecondStep-module_notes_container__PgJJs","notes_section":"reportResultSecondStep-module_notes_section__DoSef","notes_feed":"reportResultSecondStep-module_notes_feed__sUJJF","notes_title":"reportResultSecondStep-module_notes_title__u9r4z","divider":"reportResultSecondStep-module_divider__c4gJJ","empty_placeholder":"reportResultSecondStep-module_empty_placeholder__i-4A2","alternativeFooter":"reportResultSecondStep-module_alternativeFooter__REyQe"};
+styleInject(css_248z$g);
+
+function _typeof$r(obj) { "@babel/helpers - typeof"; return _typeof$r = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$r(obj); }
+function _toConsumableArray$1(arr) { return _arrayWithoutHoles$1(arr) || _iterableToArray$2(arr) || _unsupportedIterableToArray$m(arr) || _nonIterableSpread$1(); }
+function _nonIterableSpread$1() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray$2(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function _arrayWithoutHoles$1(arr) { if (Array.isArray(arr)) return _arrayLikeToArray$m(arr); }
+function _defineProperty$q(obj, key, value) { key = _toPropertyKey$q(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$q(arg) { var key = _toPrimitive$q(arg, "string"); return _typeof$r(key) === "symbol" ? key : String(key); }
+function _toPrimitive$q(input, hint) { if (_typeof$r(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$r(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$m(arr, i) { return _arrayWithHoles$m(arr) || _iterableToArrayLimit$m(arr, i) || _unsupportedIterableToArray$m(arr, i) || _nonIterableRest$m(); }
+function _nonIterableRest$m() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$m(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$m(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$m(o, minLen); }
+function _arrayLikeToArray$m(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$m(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$m(arr) { if (Array.isArray(arr)) return arr; }
+var PAGE_SIZE = 25;
+var useNoteActivities = function useNoteActivities(props) {
+  var _activity$id2, _injectReferencesSear;
+  var leadId = props.leadId,
+    companyId = props.companyId,
+    opportunityId = props.opportunityId,
+    accountId = props.accountId,
+    activityId = props.activityId,
+    activity = props.activity;
+  var _useState = useState(1),
+    _useState2 = _slicedToArray$m(_useState, 2),
+    page = _useState2[0],
+    setPage = _useState2[1];
+  var fetchNextPage = function fetchNextPage() {
+    setPage(page + 1);
+  };
+  var activeBobjectId = leadId || companyId || opportunityId || null;
+  var query = _defineProperty$q({}, ACTIVITY_FIELDS_LOGIC_ROLE.TYPE, [ACTIVITY_TYPES_VALUES_LOGIC_ROLE.NOTE]);
+  var queries = [_defineProperty$q({}, ACTIVITY_FIELDS_LOGIC_ROLE.LEAD, [leadId]), _defineProperty$q({}, ACTIVITY_FIELDS_LOGIC_ROLE.COMPANY, [companyId]), _defineProperty$q({}, ACTIVITY_FIELDS_LOGIC_ROLE.OPPORTUNITY, [opportunityId])].filter(function (obj) {
+    return !!Object.values(obj)[0][0];
+  });
+  var fetchActivities = function fetchActivities() {
+    return accountId && activeBobjectId && api.post('/bobjects/' + accountId + '/Activity/search', {
+      query: query,
+      queries: (queries === null || queries === void 0 ? void 0 : queries.length) !== 0 ? queries : null,
+      page: 0,
+      formFields: true,
+      pageSize: page ? page * PAGE_SIZE : 1000,
+      injectReferences: true,
+      sort: [{
+        field: ACTIVITY_FIELDS_LOGIC_ROLE.TIME,
+        direction: 'DESC'
+      }]
+    });
+  };
+  var _useSWR = useSWR(activityId && "/activityFeed/".concat(activityId, "/").concat(page, "/notes"), fetchActivities, {
+      revalidateOnFocus: true,
+      use: [keepPreviousResponse]
+    }),
+    data = _useSWR.data,
+    mutate = _useSWR.mutate,
+    isLoading = _useSWR.isLoading;
+  var fetchMainActivity = function fetchMainActivity() {
+    var _activity$id;
+    return activity && api.get('/bobjects/' + (activity === null || activity === void 0 ? void 0 : (_activity$id = activity.id) === null || _activity$id === void 0 ? void 0 : _activity$id.value) + '/form');
+  };
+  var _useSWR2 = useSWR(activity && "/activityFeed/".concat(activity === null || activity === void 0 ? void 0 : (_activity$id2 = activity.id) === null || _activity$id2 === void 0 ? void 0 : _activity$id2.value, "/").concat(page, "/main"), fetchMainActivity, {
+      revalidateOnFocus: true,
+      use: [keepPreviousResponse]
+    }),
+    mainActivityData = _useSWR2.data,
+    mutateMainActivity = _useSWR2.mutate,
+    isMainActivityLoading = _useSWR2.isLoading;
+  var totalMatching = useMemo(function () {
+    return data === null || data === void 0 ? void 0 : data.data.totalMatching;
+  }, [data]);
+  var activities = data && activeBobjectId && ((_injectReferencesSear = injectReferencesSearchProcess(data === null || data === void 0 ? void 0 : data.data)) === null || _injectReferencesSear === void 0 ? void 0 : _injectReferencesSear.contents);
+  var mainActivity = mainActivityData && (mainActivityData === null || mainActivityData === void 0 ? void 0 : mainActivityData.data);
+  return {
+    isLoading: isLoading || isMainActivityLoading,
+    activities: [mainActivity].concat(_toConsumableArray$1(activities || [])),
+    mainActivity: mainActivity,
+    mutateMainActivity: mutateMainActivity,
+    data: data,
+    totalMatching: totalMatching + (activity ? 1 : 0),
+    fetchNextPage: fetchNextPage,
+    mutate: mutate
+  };
+};
+
+function _slicedToArray$l(arr, i) { return _arrayWithHoles$l(arr) || _iterableToArrayLimit$l(arr, i) || _unsupportedIterableToArray$l(arr, i) || _nonIterableRest$l(); }
+function _nonIterableRest$l() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$l(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$l(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$l(o, minLen); }
+function _arrayLikeToArray$l(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$l(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$l(arr) { if (Array.isArray(arr)) return arr; }
+var AlternativeFooter = function AlternativeFooter(_ref) {
+  var onSubmit = _ref.onSubmit,
+    handleClose = _ref.handleClose,
+    buttonsConfig = _ref.buttonsConfig,
+    handleNext = _ref.handleNext;
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards.common'
+    }),
+    t = _useTranslation.t;
+  var showSkipButton = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton : true;
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$g.alternativeFooter,
+    children: [showSkipButton && /*#__PURE__*/jsx(Button, {
+      variant: "secondary",
+      onClick: handleClose,
+      children: t('skipWizard')
+    }), /*#__PURE__*/jsx(Button, {
+      variant: "primary",
+      onClick: function onClick() {
+        onSubmit();
+        handleNext();
+      },
+      children: (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.nextButtonTitle) || t('next')
+    })]
+  });
+};
+var MeetingResultNotes = function MeetingResultNotes(_ref2) {
+  var _activity$id, _lead$referencedBobje, _company$referencedBo, _opportunity$referenc, _getFieldByLogicRole;
+  var wizardKey = _ref2.wizardKey,
+    handleNext = _ref2.handleNext,
+    buttonsConfig = _ref2.buttonsConfig,
+    handleBack = _ref2.handleBack,
+    machineContext = _ref2.machineContext;
+  var _useWizardContext = useWizardContext(),
+    getWizardProperties = _useWizardContext.getWizardProperties;
+  var _getWizardProperties = getWizardProperties(wizardKey),
+    activity = _getWizardProperties.bobject,
+    onSave = _getWizardProperties.onSaveCallback;
+  var dataModel = useDataModel();
+  var accountId = dataModel === null || dataModel === void 0 ? void 0 : dataModel.getAccountId();
+  var _useState = useState(activity),
+    _useState2 = _slicedToArray$l(_useState, 2),
+    selectedActivity = _useState2[0],
+    setSelectedActivity = _useState2[1];
+  var lead = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.LEAD);
+  var company = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.COMPANY);
+  var opportunity = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.OPPORTUNITY);
+  var _useTranslation2 = useTranslation(),
+    t = _useTranslation2.t;
+  var ref = useRef();
+  var _useState3 = useState(),
+    _useState4 = _slicedToArray$l(_useState3, 2),
+    setCurrRef = _useState4[1];
+  function handleNextStep() {
+    handleNext();
+    setTimeout(function () {
+      onSave === null || onSave === void 0 ? void 0 : onSave();
+    }, 500);
+  }
+  var _useNoteActivities = useNoteActivities({
+      activityId: activity === null || activity === void 0 ? void 0 : (_activity$id = activity.id) === null || _activity$id === void 0 ? void 0 : _activity$id.value,
+      accountId: dataModel === null || dataModel === void 0 ? void 0 : dataModel.getAccountId(),
+      leadId: lead !== null && lead !== void 0 && lead.referencedBobject ? lead === null || lead === void 0 ? void 0 : (_lead$referencedBobje = lead.referencedBobject.id) === null || _lead$referencedBobje === void 0 ? void 0 : _lead$referencedBobje.value : lead === null || lead === void 0 ? void 0 : lead.value,
+      companyId: company !== null && company !== void 0 && company.referencedBobject ? company === null || company === void 0 ? void 0 : (_company$referencedBo = company.referencedBobject.id) === null || _company$referencedBo === void 0 ? void 0 : _company$referencedBo.value : company === null || company === void 0 ? void 0 : company.value,
+      opportunityId: opportunity !== null && opportunity !== void 0 && opportunity.referencedBobject ? opportunity === null || opportunity === void 0 ? void 0 : (_opportunity$referenc = opportunity.referencedBobject.id) === null || _opportunity$referenc === void 0 ? void 0 : _opportunity$referenc.value : opportunity === null || opportunity === void 0 ? void 0 : opportunity.value,
+      activity: activity
+    }),
+    activities = _useNoteActivities.activities,
+    isLoading = _useNoteActivities.isLoading,
+    totalMatching = _useNoteActivities.totalMatching,
+    fetchNextPage = _useNoteActivities.fetchNextPage,
+    mutate = _useNoteActivities.mutate,
+    mutateMainActivity = _useNoteActivities.mutateMainActivity;
+  var activityType = (_getFieldByLogicRole = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.TYPE)) === null || _getFieldByLogicRole === void 0 ? void 0 : _getFieldByLogicRole.valueLogicRole;
+  // Not pretty, I know, but it's the only way to rerender and force the ref to be present
+  useEffect(function () {
+    setCurrRef(ref);
+  }, [ref.current]);
+  function getStepTitle() {
+    switch (activityType) {
+      case ACTIVITY_TYPES_VALUES_LOGIC_ROLE.MEETING:
+        return t('wizards.steps.meetingResultNotes.addMeetingNotes');
+      case ACTIVITY_TYPES_VALUES_LOGIC_ROLE.CALL:
+        return t('wizards.steps.meetingResultNotes.addCallNotes');
+      default:
+        return t('wizards.steps.meetingResultNotes.addNotes');
+    }
+  }
+  var hasPreviousStep = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep : true;
+  return /*#__PURE__*/jsx(Fragment, {
+    children: /*#__PURE__*/jsx(ModalContent, {
+      children: /*#__PURE__*/jsxs("section", {
+        className: styles$g.notes_section_container,
+        children: [/*#__PURE__*/jsxs("article", {
+          className: styles$g.notes_feed,
+          children: [/*#__PURE__*/jsxs("div", {
+            className: styles$g.notes_title,
+            children: [/*#__PURE__*/jsx(Text, {
+              size: "m",
+              weight: "bold",
+              children: getStepTitle()
+            }), /*#__PURE__*/jsx(Button, {
+              variant: "clear",
+              iconLeft: "plus",
+              size: "small",
+              uppercase: false,
+              onClick: function onClick() {
+                return setSelectedActivity(null);
+              },
+              children: t('wizards.steps.meetingResultNotes.createNew')
+            })]
+          }), /*#__PURE__*/jsx("div", {
+            ref: ref,
+            className: styles$g.notes_container,
+            children: !isLoading && activities.length === 0 ? /*#__PURE__*/jsxs("div", {
+              className: styles$g.empty_placeholder,
+              children: [/*#__PURE__*/jsx(Text, {
+                size: "xl",
+                children: "\uD83D\uDC49"
+              }), /*#__PURE__*/jsx(Text, {
+                size: "m",
+                color: "softPeanut",
+                children: /*#__PURE__*/jsxs(Trans, {
+                  i18nKey: 'wizards.steps.meetingResultNotes.emptyPlaceholder',
+                  children: ["You do not have any notes on this object yet, ", /*#__PURE__*/jsx("b", {
+                    children: "create one to continue!"
+                  })]
+                })
+              })]
+            }) : /*#__PURE__*/jsx(ActivityFeed, {
+              activities: activities,
+              isLoading: isLoading,
+              dataModel: dataModel,
+              handleOnClick: function handleOnClick(bobject) {
+                return setSelectedActivity(bobject);
+              },
+              fetchNextPage: fetchNextPage,
+              parentRef: ref,
+              total: totalMatching,
+              showTooltipBlock: false
+            })
+          }), /*#__PURE__*/jsx("div", {
+            className: styles$g.skipButton,
+            children: hasPreviousStep && /*#__PURE__*/jsx(Button, {
+              variant: "clear",
+              onClick: handleBack,
+              children: (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.previousButtonTitle) || t('wizards.common.back')
+            })
+          })]
+        }), /*#__PURE__*/jsx("div", {
+          className: styles$g.divider
+        }), /*#__PURE__*/jsx("article", {
+          className: styles$g.notes_section,
+          children: selectedActivity ? /*#__PURE__*/jsx(Note, {
+            accountId: accountId,
+            activity: selectedActivity,
+            onSave: function onSave(id) {
+              var _activity$id2;
+              window.dispatchEvent(new CustomEvent(MessagesEvents.ActiveBobjectUpdated, {
+                detail: {
+                  type: BobjectTypes.Activity
+                }
+              }));
+              (activity === null || activity === void 0 ? void 0 : (_activity$id2 = activity.id) === null || _activity$id2 === void 0 ? void 0 : _activity$id2.value) === id ? mutateMainActivity() : mutate();
+            },
+            alternativeFooter: /*#__PURE__*/jsx(AlternativeFooter, {
+              handleClose: function handleClose() {
+                var _machineContext$handl;
+                machineContext === null || machineContext === void 0 ? void 0 : (_machineContext$handl = machineContext.handleClose) === null || _machineContext$handl === void 0 ? void 0 : _machineContext$handl.call(machineContext);
+              },
+              buttonsConfig: buttonsConfig,
+              handleNext: handleNextStep
+            })
+          }) : /*#__PURE__*/jsx(Note, {
+            accountId: accountId,
+            relatedCompany: company === null || company === void 0 ? void 0 : company.referencedBobject,
+            relatedLead: lead === null || lead === void 0 ? void 0 : lead.referencedBobject,
+            relatedOpportunity: opportunity === null || opportunity === void 0 ? void 0 : opportunity.referencedBobject,
+            onSave: function onSave(id) {
+              mutate().then(function (data) {
+                var _injectReferencesSear;
+                var activities = (_injectReferencesSear = injectReferencesSearchProcess(data === null || data === void 0 ? void 0 : data.data)) === null || _injectReferencesSear === void 0 ? void 0 : _injectReferencesSear.contents;
+                var find = activities.find(function (activity) {
+                  return activity.id.value === id;
+                });
+                setSelectedActivity(find);
+              });
+            },
+            alternativeFooter: /*#__PURE__*/jsx(AlternativeFooter, {
+              handleClose: function handleClose() {
+                var _machineContext$handl2;
+                machineContext === null || machineContext === void 0 ? void 0 : (_machineContext$handl2 = machineContext.handleClose) === null || _machineContext$handl2 === void 0 ? void 0 : _machineContext$handl2.call(machineContext);
+              },
+              buttonsConfig: buttonsConfig,
+              handleNext: handleNextStep
+            })
+          })
+        })]
+      })
+    })
+  });
+};
+
+var css_248z$f = ".qualifyingQuestionPlaceholder-module_list__nZgDx {\n  margin-top: 32px;\n}\n\n.qualifyingQuestionPlaceholder-module_question__gv2Wg {\n  margin-bottom: 32px;\n}\n\n.qualifyingQuestionPlaceholder-module_questionTitle__q-m1E {\n  margin-bottom: 10px;\n}\n\n.qualifyingQuestionPlaceholder-module__fade_enter__dXFjZ {\n  opacity: 0;\n}\n.qualifyingQuestionPlaceholder-module__fade_enter_active__ApcMq {\n  opacity: 1;\n  transition: opacity 300ms;\n}\n\n.qualifyingQuestionPlaceholder-module__fade_exit__IIDBW {\n  opacity: 1;\n}\n.qualifyingQuestionPlaceholder-module__fade_exit_active__a-fmb {\n  opacity: 0;\n  transition: opacity 300ms;\n}\n";
+var styles$f = {"list":"qualifyingQuestionPlaceholder-module_list__nZgDx","question":"qualifyingQuestionPlaceholder-module_question__gv2Wg","questionTitle":"qualifyingQuestionPlaceholder-module_questionTitle__q-m1E","_fade_enter":"qualifyingQuestionPlaceholder-module__fade_enter__dXFjZ","_fade_enter_active":"qualifyingQuestionPlaceholder-module__fade_enter_active__ApcMq","_fade_exit":"qualifyingQuestionPlaceholder-module__fade_exit__IIDBW","_fade_exit_active":"qualifyingQuestionPlaceholder-module__fade_exit_active__a-fmb"};
+styleInject(css_248z$f);
+
+var classNames = {
+  fade: {
+    appear: styles$f._fade_enter,
+    appearActive: styles$f._fade_enter_active,
+    enter: styles$f._fade_enter,
+    enterActive: styles$f._fade_enter_active,
+    exit: styles$f._fade_exit,
+    exitActive: styles$f._fade_exit_active
+  }
+};
+var Transition = function Transition(_ref) {
+  var children = _ref.children,
+    visible = _ref.visible,
+    type = _ref.type;
+  return /*#__PURE__*/jsx(CSSTransition, {
+    appear: true,
+    "in": visible,
+    unmountOnExit: true,
+    timeout: 300,
+    classNames: classNames[type],
+    children: children
+  });
+};
+var QualifiyingQuestionSkeleton = function QualifiyingQuestionSkeleton(_ref2) {
+  var width = _ref2.width;
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$f.question,
+    children: [/*#__PURE__*/jsx("header", {
+      className: styles$f.questionTitle,
+      children: /*#__PURE__*/jsx(Skeleton, {
+        variant: "text",
+        width: 250,
+        height: 24
+      })
+    }), /*#__PURE__*/jsx(Skeleton, {
+      variant: "rect",
+      width: width,
+      height: 50
+    })]
+  });
+};
+var QualifiyingQuestionsPlaceholder = function QualifiyingQuestionsPlaceholder(_ref3) {
+  var _ref3$width = _ref3.width,
+    width = _ref3$width === void 0 ? 480 : _ref3$width;
+  return /*#__PURE__*/jsx(Transition, {
+    type: "fade",
+    visible: true,
+    children: /*#__PURE__*/jsx("div", {
+      className: styles$f.list,
+      children: range(10).map(function (number) {
+        return /*#__PURE__*/jsx(React.Fragment, {
+          children: /*#__PURE__*/jsx(QualifiyingQuestionSkeleton, {
+            width: width
+          })
+        }, number);
+      })
+    })
+  });
+};
+
+var css_248z$e = ".qualifyingQuestion-module_header__hv3dT {\n  display: flex;\n  margin-bottom: 10px;\n  margin-top: 16px;\n  align-items: center;\n}\n\n.qualifyingQuestion-module_header__hv3dT > p {\n  overflow-x: hidden;\n  overflow-y: hidden;\n  text-overflow: ellipsis;\n  max-width: 280px;\n  white-space: nowrap;\n}\n\n.qualifyingQuestion-module_headerOnlyQQs__haATL {\n  display: flex;\n  margin-bottom: 10px;\n  margin-top: 16px;\n  align-items: center;\n}\n\n.qualifyingQuestion-module_headerOnlyQQs__haATL > p {\n  overflow-x: hidden;\n  overflow-y: hidden;\n  text-overflow: ellipsis;\n  max-width: 590px;\n  white-space: nowrap;\n}\n\n.qualifyingQuestion-module_headerIcon__sLi6w {\n  margin-right: 10px;\n  flex-shrink: 0;\n}\n";
+var styles$e = {"header":"qualifyingQuestion-module_header__hv3dT","headerOnlyQQs":"qualifyingQuestion-module_headerOnlyQQs__haATL","headerIcon":"qualifyingQuestion-module_headerIcon__sLi6w"};
+styleInject(css_248z$e);
+
+function _slicedToArray$k(arr, i) { return _arrayWithHoles$k(arr) || _iterableToArrayLimit$k(arr, i) || _unsupportedIterableToArray$k(arr, i) || _nonIterableRest$k(); }
+function _nonIterableRest$k() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$k(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$k(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$k(o, minLen); }
+function _arrayLikeToArray$k(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$k(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$k(arr) { if (Array.isArray(arr)) return arr; }
+var QualifyingQuestion = function QualifyingQuestion(_ref) {
+  var type = _ref.type,
+    disabled = _ref.disabled,
+    value = _ref.value,
+    question = _ref.question,
+    answers = _ref.answers,
+    _onChange = _ref.onChange,
+    showNotes = _ref.showNotes;
+  var _useState = useState(value),
+    _useState2 = _slicedToArray$k(_useState, 2),
+    internalValue = _useState2[0],
+    setInternalValue = _useState2[1];
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  useEffect(function () {
+    var isPicklist = type === 'GLOBAL_PICKLIST' || type === 'MULTI_GLOBAL_PICKLIST';
+    setInternalValue(isPicklist ? value || 'none' : value);
+  }, []);
+  return /*#__PURE__*/jsxs("div", {
+    children: [/*#__PURE__*/jsxs("header", {
+      className: showNotes ? styles$e.header : styles$e.headerOnlyQQs,
+      children: [/*#__PURE__*/jsx(Icon, {
+        className: styles$e.headerIcon,
+        name: "chatSupport",
+        color: "softPeanut"
+      }), /*#__PURE__*/jsx(Text, {
+        size: "s",
+        color: "peanut",
+        children: question
+      })]
+    }), type === 'TEXT' && /*#__PURE__*/jsx(Input, {
+      disabled: disabled,
+      width: "100%",
+      value: internalValue,
+      onChange: function onChange(newValue) {
+        _onChange(newValue);
+        setInternalValue(newValue);
+      }
+    }), type === 'GLOBAL_PICKLIST' && /*#__PURE__*/jsxs(Select, {
+      disabled: disabled,
+      width: "100%",
+      value: internalValue,
+      onChange: function onChange(newValue) {
+        _onChange(newValue);
+        setInternalValue(newValue);
+      },
+      autocomplete: answers.length > 6,
+      children: [/*#__PURE__*/jsx(Item, {
+        value: "none",
+        children: t('common.none')
+      }), answers.map(function (answer) {
+        return /*#__PURE__*/jsx(Item, {
+          hidden: !answer.enabled,
+          value: answer.id,
+          label: answer.value,
+          children: answer.value
+        }, answer.id);
+      })]
+    }), type === 'MULTI_GLOBAL_PICKLIST' && /*#__PURE__*/jsxs(MultiSelect, {
+      autocomplete: answers.length > 6,
+      size: "medium",
+      value: internalValue,
+      onChange: function onChange(newValue) {
+        _onChange(newValue);
+        setInternalValue(newValue);
+      },
+      width: "100%",
+      selectAllOption: true,
+      children: [/*#__PURE__*/jsx(CheckItem, {
+        value: "",
+        children: "None"
+      }), answers.map(function (answer) {
+        return /*#__PURE__*/jsx(CheckItem, {
+          dataTest: answer.value,
+          value: answer.id,
+          label: answer.value,
+          children: answer.value
+        }, answer.value);
+      })]
+    })]
+  });
+};
+
+function _typeof$q(obj) { "@babel/helpers - typeof"; return _typeof$q = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$q(obj); }
+var _excluded$6 = ["id"];
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray$1(arr) || _unsupportedIterableToArray$j(arr) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray$1(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray$j(arr); }
+function _objectWithoutProperties$6(source, excluded) { if (source == null) return {}; var target = _objectWithoutPropertiesLoose$6(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
+function _objectWithoutPropertiesLoose$6(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
+function ownKeys$i(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$i(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$i(Object(source), !0).forEach(function (key) { _defineProperty$p(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$i(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _regeneratorRuntime$2() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime$2 = function _regeneratorRuntime() { return exports; }; var exports = {}, Op = Object.prototype, hasOwn = Op.hasOwnProperty, defineProperty = Object.defineProperty || function (obj, key, desc) { obj[key] = desc.value; }, $Symbol = "function" == typeof Symbol ? Symbol : {}, iteratorSymbol = $Symbol.iterator || "@@iterator", asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator", toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag"; function define(obj, key, value) { return Object.defineProperty(obj, key, { value: value, enumerable: !0, configurable: !0, writable: !0 }), obj[key]; } try { define({}, ""); } catch (err) { define = function define(obj, key, value) { return obj[key] = value; }; } function wrap(innerFn, outerFn, self, tryLocsList) { var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator, generator = Object.create(protoGenerator.prototype), context = new Context(tryLocsList || []); return defineProperty(generator, "_invoke", { value: makeInvokeMethod(innerFn, self, context) }), generator; } function tryCatch(fn, obj, arg) { try { return { type: "normal", arg: fn.call(obj, arg) }; } catch (err) { return { type: "throw", arg: err }; } } exports.wrap = wrap; var ContinueSentinel = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var IteratorPrototype = {}; define(IteratorPrototype, iteratorSymbol, function () { return this; }); var getProto = Object.getPrototypeOf, NativeIteratorPrototype = getProto && getProto(getProto(values([]))); NativeIteratorPrototype && NativeIteratorPrototype !== Op && hasOwn.call(NativeIteratorPrototype, iteratorSymbol) && (IteratorPrototype = NativeIteratorPrototype); var Gp = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(IteratorPrototype); function defineIteratorMethods(prototype) { ["next", "throw", "return"].forEach(function (method) { define(prototype, method, function (arg) { return this._invoke(method, arg); }); }); } function AsyncIterator(generator, PromiseImpl) { function invoke(method, arg, resolve, reject) { var record = tryCatch(generator[method], generator, arg); if ("throw" !== record.type) { var result = record.arg, value = result.value; return value && "object" == _typeof$q(value) && hasOwn.call(value, "__await") ? PromiseImpl.resolve(value.__await).then(function (value) { invoke("next", value, resolve, reject); }, function (err) { invoke("throw", err, resolve, reject); }) : PromiseImpl.resolve(value).then(function (unwrapped) { result.value = unwrapped, resolve(result); }, function (error) { return invoke("throw", error, resolve, reject); }); } reject(record.arg); } var previousPromise; defineProperty(this, "_invoke", { value: function value(method, arg) { function callInvokeWithMethodAndArg() { return new PromiseImpl(function (resolve, reject) { invoke(method, arg, resolve, reject); }); } return previousPromise = previousPromise ? previousPromise.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(innerFn, self, context) { var state = "suspendedStart"; return function (method, arg) { if ("executing" === state) throw new Error("Generator is already running"); if ("completed" === state) { if ("throw" === method) throw arg; return doneResult(); } for (context.method = method, context.arg = arg;;) { var delegate = context.delegate; if (delegate) { var delegateResult = maybeInvokeDelegate(delegate, context); if (delegateResult) { if (delegateResult === ContinueSentinel) continue; return delegateResult; } } if ("next" === context.method) context.sent = context._sent = context.arg;else if ("throw" === context.method) { if ("suspendedStart" === state) throw state = "completed", context.arg; context.dispatchException(context.arg); } else "return" === context.method && context.abrupt("return", context.arg); state = "executing"; var record = tryCatch(innerFn, self, context); if ("normal" === record.type) { if (state = context.done ? "completed" : "suspendedYield", record.arg === ContinueSentinel) continue; return { value: record.arg, done: context.done }; } "throw" === record.type && (state = "completed", context.method = "throw", context.arg = record.arg); } }; } function maybeInvokeDelegate(delegate, context) { var methodName = context.method, method = delegate.iterator[methodName]; if (undefined === method) return context.delegate = null, "throw" === methodName && delegate.iterator["return"] && (context.method = "return", context.arg = undefined, maybeInvokeDelegate(delegate, context), "throw" === context.method) || "return" !== methodName && (context.method = "throw", context.arg = new TypeError("The iterator does not provide a '" + methodName + "' method")), ContinueSentinel; var record = tryCatch(method, delegate.iterator, context.arg); if ("throw" === record.type) return context.method = "throw", context.arg = record.arg, context.delegate = null, ContinueSentinel; var info = record.arg; return info ? info.done ? (context[delegate.resultName] = info.value, context.next = delegate.nextLoc, "return" !== context.method && (context.method = "next", context.arg = undefined), context.delegate = null, ContinueSentinel) : info : (context.method = "throw", context.arg = new TypeError("iterator result is not an object"), context.delegate = null, ContinueSentinel); } function pushTryEntry(locs) { var entry = { tryLoc: locs[0] }; 1 in locs && (entry.catchLoc = locs[1]), 2 in locs && (entry.finallyLoc = locs[2], entry.afterLoc = locs[3]), this.tryEntries.push(entry); } function resetTryEntry(entry) { var record = entry.completion || {}; record.type = "normal", delete record.arg, entry.completion = record; } function Context(tryLocsList) { this.tryEntries = [{ tryLoc: "root" }], tryLocsList.forEach(pushTryEntry, this), this.reset(!0); } function values(iterable) { if (iterable) { var iteratorMethod = iterable[iteratorSymbol]; if (iteratorMethod) return iteratorMethod.call(iterable); if ("function" == typeof iterable.next) return iterable; if (!isNaN(iterable.length)) { var i = -1, next = function next() { for (; ++i < iterable.length;) if (hasOwn.call(iterable, i)) return next.value = iterable[i], next.done = !1, next; return next.value = undefined, next.done = !0, next; }; return next.next = next; } } return { next: doneResult }; } function doneResult() { return { value: undefined, done: !0 }; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, defineProperty(Gp, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), defineProperty(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, toStringTagSymbol, "GeneratorFunction"), exports.isGeneratorFunction = function (genFun) { var ctor = "function" == typeof genFun && genFun.constructor; return !!ctor && (ctor === GeneratorFunction || "GeneratorFunction" === (ctor.displayName || ctor.name)); }, exports.mark = function (genFun) { return Object.setPrototypeOf ? Object.setPrototypeOf(genFun, GeneratorFunctionPrototype) : (genFun.__proto__ = GeneratorFunctionPrototype, define(genFun, toStringTagSymbol, "GeneratorFunction")), genFun.prototype = Object.create(Gp), genFun; }, exports.awrap = function (arg) { return { __await: arg }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, asyncIteratorSymbol, function () { return this; }), exports.AsyncIterator = AsyncIterator, exports.async = function (innerFn, outerFn, self, tryLocsList, PromiseImpl) { void 0 === PromiseImpl && (PromiseImpl = Promise); var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList), PromiseImpl); return exports.isGeneratorFunction(outerFn) ? iter : iter.next().then(function (result) { return result.done ? result.value : iter.next(); }); }, defineIteratorMethods(Gp), define(Gp, toStringTagSymbol, "Generator"), define(Gp, iteratorSymbol, function () { return this; }), define(Gp, "toString", function () { return "[object Generator]"; }), exports.keys = function (val) { var object = Object(val), keys = []; for (var key in object) keys.push(key); return keys.reverse(), function next() { for (; keys.length;) { var key = keys.pop(); if (key in object) return next.value = key, next.done = !1, next; } return next.done = !0, next; }; }, exports.values = values, Context.prototype = { constructor: Context, reset: function reset(skipTempReset) { if (this.prev = 0, this.next = 0, this.sent = this._sent = undefined, this.done = !1, this.delegate = null, this.method = "next", this.arg = undefined, this.tryEntries.forEach(resetTryEntry), !skipTempReset) for (var name in this) "t" === name.charAt(0) && hasOwn.call(this, name) && !isNaN(+name.slice(1)) && (this[name] = undefined); }, stop: function stop() { this.done = !0; var rootRecord = this.tryEntries[0].completion; if ("throw" === rootRecord.type) throw rootRecord.arg; return this.rval; }, dispatchException: function dispatchException(exception) { if (this.done) throw exception; var context = this; function handle(loc, caught) { return record.type = "throw", record.arg = exception, context.next = loc, caught && (context.method = "next", context.arg = undefined), !!caught; } for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i], record = entry.completion; if ("root" === entry.tryLoc) return handle("end"); if (entry.tryLoc <= this.prev) { var hasCatch = hasOwn.call(entry, "catchLoc"), hasFinally = hasOwn.call(entry, "finallyLoc"); if (hasCatch && hasFinally) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } else if (hasCatch) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); } else { if (!hasFinally) throw new Error("try statement without catch or finally"); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } } } }, abrupt: function abrupt(type, arg) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc <= this.prev && hasOwn.call(entry, "finallyLoc") && this.prev < entry.finallyLoc) { var finallyEntry = entry; break; } } finallyEntry && ("break" === type || "continue" === type) && finallyEntry.tryLoc <= arg && arg <= finallyEntry.finallyLoc && (finallyEntry = null); var record = finallyEntry ? finallyEntry.completion : {}; return record.type = type, record.arg = arg, finallyEntry ? (this.method = "next", this.next = finallyEntry.finallyLoc, ContinueSentinel) : this.complete(record); }, complete: function complete(record, afterLoc) { if ("throw" === record.type) throw record.arg; return "break" === record.type || "continue" === record.type ? this.next = record.arg : "return" === record.type ? (this.rval = this.arg = record.arg, this.method = "return", this.next = "end") : "normal" === record.type && afterLoc && (this.next = afterLoc), ContinueSentinel; }, finish: function finish(finallyLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.finallyLoc === finallyLoc) return this.complete(entry.completion, entry.afterLoc), resetTryEntry(entry), ContinueSentinel; } }, "catch": function _catch(tryLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc === tryLoc) { var record = entry.completion; if ("throw" === record.type) { var thrown = record.arg; resetTryEntry(entry); } return thrown; } } throw new Error("illegal catch attempt"); }, delegateYield: function delegateYield(iterable, resultName, nextLoc) { return this.delegate = { iterator: values(iterable), resultName: resultName, nextLoc: nextLoc }, "next" === this.method && (this.arg = undefined), ContinueSentinel; } }, exports; }
+function _defineProperty$p(obj, key, value) { key = _toPropertyKey$p(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$p(arg) { var key = _toPrimitive$p(arg, "string"); return _typeof$q(key) === "symbol" ? key : String(key); }
+function _toPrimitive$p(input, hint) { if (_typeof$q(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$q(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function asyncGeneratorStep$2(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function _asyncToGenerator$2(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep$2(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep$2(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+function _slicedToArray$j(arr, i) { return _arrayWithHoles$j(arr) || _iterableToArrayLimit$j(arr, i) || _unsupportedIterableToArray$j(arr, i) || _nonIterableRest$j(); }
+function _nonIterableRest$j() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$j(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$j(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$j(o, minLen); }
+function _arrayLikeToArray$j(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$j(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$j(arr) { if (Array.isArray(arr)) return arr; }
+function NoteRichTextEditor(_ref) {
+  var note = _ref.note,
+    onChange = _ref.onChange;
+  var plugins = useRichTextEditorPlugins({
+    images: false,
+    replaceParagraphs: true
+  });
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  return /*#__PURE__*/jsx("div", {
+    className: styles$n._note,
+    children: /*#__PURE__*/jsx(RichTextEditor, {
+      defaultValue: note,
+      plugins: plugins,
+      placeholder: t('wizards.steps.notesAndQQs.placeholder'),
+      onChange: onChange,
+      style: {
+        padding: '12px 28px 4px 28px'
+      },
+      children: function children(editor) {
+        return /*#__PURE__*/jsxs(Fragment, {
+          children: [/*#__PURE__*/jsx("div", {
+            className: styles$n.editorContent,
+            children: editor
+          }), /*#__PURE__*/jsx(NoteRichTextEditorToolbar, {})]
+        });
+      }
+    })
+  });
+}
+var NoteRichTextEditorToolbar = /*#__PURE__*/React.memo(function () {
+  return /*#__PURE__*/jsx("div", {
+    className: styles$n.toolbar,
+    children: /*#__PURE__*/jsxs(EditorToolbar, {
+      backgroundColor: "white",
+      children: [/*#__PURE__*/jsx(EditorToolbarControlsSection, {
+        color: "peanut"
+      }), /*#__PURE__*/jsx(EditorToolbarFontStylesSection, {
+        color: "peanut"
+      }), /*#__PURE__*/jsx(EditorToolbarTextMarksSection, {
+        color: "peanut"
+      }), /*#__PURE__*/jsx(EditorToolbarListsSection, {
+        color: "peanut"
+      })]
+    })
+  });
+});
+var NoteAndQQ = function NoteAndQQ(_ref2) {
+  var _getFieldByLogicRole, _getFieldByLogicRole2;
+  var handleNext = _ref2.handleNext,
+    handleBack = _ref2.handleBack,
+    handleSkip = _ref2.handleSkip,
+    buttonsConfig = _ref2.buttonsConfig,
+    wizardKey = _ref2.wizardKey,
+    showNotes = _ref2.showNotes;
+  var _useWizardContext = useWizardContext(),
+    getWizardProperties = _useWizardContext.getWizardProperties;
+  var _getWizardProperties = getWizardProperties(wizardKey),
+    activity = _getWizardProperties.bobject,
+    referenceBobject = _getWizardProperties.referenceBobject;
+  var _useActivityRelatedIn = useActivityRelatedInfo(wizardKey),
+    activityLead = _useActivityRelatedIn.activityLead,
+    activityCompany = _useActivityRelatedIn.activityCompany;
+  var _useNoteStepData = useNoteStepData(),
+    noteStepData = _useNoteStepData.noteStepData,
+    setNoteStepData = _useNoteStepData.setNoteStepData;
+  var _useContactFlowData = useContactFlowData(),
+    handleSubmit = _useContactFlowData.handleSubmit;
+  var _useState = useState([]),
+    _useState2 = _slicedToArray$j(_useState, 2),
+    qualifyingQuestionsToSave = _useState2[0],
+    setQualifyingQuestionsToSave = _useState2[1];
+  var _useState3 = useState(false),
+    _useState4 = _slicedToArray$j(_useState3, 2),
+    isSubmitting = _useState4[0],
+    setIsSubmitting = _useState4[1];
+  var _useState5 = useState(false),
+    _useState6 = _slicedToArray$j(_useState5, 2),
+    hasChanges = _useState6[0],
+    setHasChanges = _useState6[1];
+  var _useState7 = useState(false),
+    _useState8 = _slicedToArray$j(_useState7, 2),
+    isAST = _useState8[0],
+    setIsAST = _useState8[1];
+  var bobjectStage = activityLead ? (_getFieldByLogicRole = getFieldByLogicRole(activityLead, LEAD_FIELDS_LOGIC_ROLE.STAGE)) === null || _getFieldByLogicRole === void 0 ? void 0 : _getFieldByLogicRole.valueLogicRole : (_getFieldByLogicRole2 = getFieldByLogicRole(activityCompany, COMPANY_FIELDS_LOGIC_ROLE.STAGE)) === null || _getFieldByLogicRole2 === void 0 ? void 0 : _getFieldByLogicRole2.valueLogicRole;
+  var stage = bobjectStage === LEAD_STAGE_LOGIC_ROLE.SALES || bobjectStage === COMPANY_STAGE_LOGIC_ROLE.SALES ? TemplateStage.Sales : TemplateStage.Prospecting;
+  var _useTranslation2 = useTranslation(),
+    t = _useTranslation2.t;
+  var bobjectType = !activityLead ? 'Company' : 'Lead';
+  var _useQualifyingQuestio = useQualifyingQuestions({
+      enabled: true,
+      stage: stage,
+      segmentationValues: {},
+      bobjectType: bobjectType
+    }),
+    isLoading = _useQualifyingQuestio.isLoading,
+    qualifyingQuestions = _useQualifyingQuestio.qualifyingQuestions,
+    updateQualifyingQuestionsValue = _useQualifyingQuestio.updateQualifyingQuestionsValue;
+  var showSkipButton = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton : true;
+  var hasPreviousStep = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep : true;
+  var openCadenceControlOnClose = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip : false;
+  var plugins = useRichTextEditorPlugins({
+    images: false,
+    replaceParagraphs: true
+  });
+  useEffect(function () {
+    if (activity && !noteStepData && showNotes) {
+      var noteField = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.NOTE);
+      if (isHtml(noteField === null || noteField === void 0 ? void 0 : noteField.value)) {
+        setNoteStepData({
+          value: deserialize(noteField === null || noteField === void 0 ? void 0 : noteField.value, {
+            format: 'HTML',
+            plugins: plugins
+          }),
+          fieldId: noteField === null || noteField === void 0 ? void 0 : noteField.name
+        });
+        setIsAST(true);
+      } else {
+        setNoteStepData({
+          value: noteField.text,
+          fieldId: noteField.name
+        });
+      }
+    }
+  }, [activity]);
+  var saveAndNext = /*#__PURE__*/function () {
+    var _ref3 = _asyncToGenerator$2( /*#__PURE__*/_regeneratorRuntime$2().mark(function _callee() {
+      var data;
+      return _regeneratorRuntime$2().wrap(function _callee$(_context) {
+        while (1) switch (_context.prev = _context.next) {
+          case 0:
+            setIsSubmitting(true);
+            if (noteStepData !== null && noteStepData !== void 0 && noteStepData.value) {
+              data = _defineProperty$p({}, ACTIVITY_FIELDS_LOGIC_ROLE.NOTE, isAST ? serialize(noteStepData === null || noteStepData === void 0 ? void 0 : noteStepData.value, {
+                format: 'AST',
+                plugins: plugins
+              }) : noteStepData === null || noteStepData === void 0 ? void 0 : noteStepData.value);
+              handleSubmit({
+                activity: activity,
+                data: data
+              });
+            }
+            if ((qualifyingQuestionsToSave === null || qualifyingQuestionsToSave === void 0 ? void 0 : qualifyingQuestionsToSave.length) > 0) {
+              updateQualifyingQuestionsValue(referenceBobject, qualifyingQuestionsToSave).then(function () {
+                setIsSubmitting(false);
+                setHasChanges(false);
+              });
+            }
+            handleNext();
+          case 4:
+          case "end":
+            return _context.stop();
+        }
+      }, _callee);
+    }));
+    return function saveAndNext() {
+      return _ref3.apply(this, arguments);
+    };
+  }();
+  var textarea = isAST ? /*#__PURE__*/jsx(NoteRichTextEditor, {
+    note: noteStepData === null || noteStepData === void 0 ? void 0 : noteStepData.value,
+    onChange: function onChange(value) {
+      return setNoteStepData(_objectSpread$i(_objectSpread$i({}, noteStepData), {}, {
+        value: value
+      }));
+    }
+  }) : /*#__PURE__*/jsx(TextArea, {
+    value: noteStepData === null || noteStepData === void 0 ? void 0 : noteStepData.value,
+    rows: 15,
+    placeholder: !(noteStepData !== null && noteStepData !== void 0 && noteStepData.value) ? t('wizards.steps.notesAndQQs.addANote') : null,
+    width: "100%",
+    onChange: function onChange(value) {
+      return setNoteStepData(_objectSpread$i(_objectSpread$i({}, noteStepData), {}, {
+        value: value
+      }));
+    }
+  });
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$n.wrapper,
+    children: [/*#__PURE__*/jsx(ModalContent, {
+      children: /*#__PURE__*/jsx("div", {
+        "data-test": "Text-Modal-Note&QQ",
+        className: styles$n._content__wrapper,
+        children: /*#__PURE__*/jsxs(Fragment, {
+          children: [showNotes && /*#__PURE__*/jsxs("section", {
+            className: styles$n.column,
+            children: [/*#__PURE__*/jsxs("header", {
+              className: styles$n.sectionHeader,
+              children: [/*#__PURE__*/jsx(Icon, {
+                name: "chat",
+                size: 24,
+                color: "softPeanut"
+              }), /*#__PURE__*/jsx(Text, {
+                size: "m",
+                color: "softPeanut",
+                weight: "medium",
+                htmlTag: "h2",
+                children: t('wizards.steps.notesAndQQs.howWasTheCall')
+              })]
+            }), /*#__PURE__*/jsx("div", {
+              className: styles$n._section__wrapper,
+              children: textarea
+            })]
+          }), /*#__PURE__*/jsxs("section", {
+            className: showNotes ? styles$n.column : styles$n.columnOnyQQs,
+            children: [/*#__PURE__*/jsxs("header", {
+              className: styles$n.sectionHeader,
+              children: [/*#__PURE__*/jsx(Icon, {
+                name: "chat",
+                size: 24,
+                color: "softPeanut"
+              }), /*#__PURE__*/jsx(Text, {
+                size: "m",
+                color: "softPeanut",
+                weight: "medium",
+                htmlTag: "h2",
+                children: t('wizards.steps.notesAndQQs.fillTheQQs')
+              })]
+            }), /*#__PURE__*/jsx("div", {
+              className: styles$n._section__wrapper,
+              children: isLoading ? /*#__PURE__*/jsx(QualifiyingQuestionsPlaceholder, {
+                width: 400
+              }) : /*#__PURE__*/jsx(Fragment, {
+                children: sortBy(qualifyingQuestions, 'question').map(function (_ref4) {
+                  var _referenceBobject$raw, _referenceBobject$raw2, _referenceBobject$raw3, _qualifyingQuestionsT;
+                  var id = _ref4.id,
+                    props = _objectWithoutProperties$6(_ref4, _excluded$6);
+                  var qqFieldValue = referenceBobject !== null && referenceBobject !== void 0 && referenceBobject.rawBobject ? //@ts-ignore
+                  (_referenceBobject$raw = referenceBobject.rawBobject) === null || _referenceBobject$raw === void 0 ? void 0 : _referenceBobject$raw[id] : referenceBobject === null || referenceBobject === void 0 ? void 0 : (_referenceBobject$raw2 = referenceBobject.raw) === null || _referenceBobject$raw2 === void 0 ? void 0 : (_referenceBobject$raw3 = _referenceBobject$raw2.contents) === null || _referenceBobject$raw3 === void 0 ? void 0 : _referenceBobject$raw3[id];
+                  var currentValue = (_qualifyingQuestionsT = qualifyingQuestionsToSave.find(function (_ref5) {
+                    var qqId = _ref5.id;
+                    return qqId === id;
+                  })) === null || _qualifyingQuestionsT === void 0 ? void 0 : _qualifyingQuestionsT.value;
+                  var qqValue = currentValue || qqFieldValue;
+                  return /*#__PURE__*/createElement(QualifyingQuestion, _objectSpread$i(_objectSpread$i({}, props), {}, {
+                    key: id,
+                    value: qqValue,
+                    showNotes: showNotes,
+                    onChange: function onChange(value) {
+                      var _referenceBobject$id;
+                      var shouldRemoveQQToSave = (qqFieldValue || '') === value;
+                      var qqCleaned = qualifyingQuestionsToSave.filter(function (_ref6) {
+                        var qqId = _ref6.id;
+                        return qqId !== id;
+                      });
+                      var qqToSave = shouldRemoveQQToSave ? qqCleaned : [].concat(_toConsumableArray(qqCleaned), [{
+                        id: id,
+                        value: value,
+                        bobjectId: referenceBobject === null || referenceBobject === void 0 ? void 0 : (_referenceBobject$id = referenceBobject.id) === null || _referenceBobject$id === void 0 ? void 0 : _referenceBobject$id.objectId
+                      }]);
+                      setQualifyingQuestionsToSave(qqToSave);
+                      if (!hasChanges) {
+                        setHasChanges(true);
+                      }
+                      if (qqToSave.length === 0) {
+                        setHasChanges(false);
+                      }
+                    }
+                  }));
+                })
+              })
+            })]
+          })]
+        })
+      })
+    }), /*#__PURE__*/jsxs(ModalFooter, {
+      children: [hasPreviousStep && /*#__PURE__*/jsx(Button, {
+        variant: "clear",
+        onClick: function onClick() {
+          setHasChanges(false);
+          setQualifyingQuestionsToSave([]);
+          handleBack();
+        },
+        className: styles$n.back_button,
+        children: (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.previousButtonTitle) || t('wizards.common.back')
+      }), showSkipButton && /*#__PURE__*/jsx(Button, {
+        variant: "secondary",
+        onClick: function onClick() {
+          return handleSkip(openCadenceControlOnClose);
+        },
+        className: styles$n.skip_button,
+        children: t('wizards.common.skipWizard')
+      }), /*#__PURE__*/jsx(Button, {
+        dataTest: "Form-Save",
+        onClick: saveAndNext,
+        children: isSubmitting ? /*#__PURE__*/jsx(Spinner, {
+          color: "white",
+          size: 14,
+          name: "loadingCircle"
+        }) : (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.nextButtonTitle) || t('wizards.common.next')
+      })]
+    })]
+  });
+};
+
+var css_248z$d = ".opportunityControl-module__actionContainer__o8xGg {\n  margin-bottom: 40px;\n}\n\n.opportunityControl-module__actionContainer__o8xGg > p {\n  margin-bottom: 16px;\n}\n\n.opportunityControl-module__actionContainer__o8xGg > div > div:not(:first-child) {\n  margin-left: 8px;\n}\n\n.opportunityControl-module__opportunityContainer__HaOUj > p {\n  margin-bottom: 8px;\n}\n\n.opportunityControl-module__selectedOpportunity__container__4rs-v {\n  display: flex;\n  justify-content: center;\n  margin-top: 42px;\n}\n\n.opportunityControl-module__buttons__wrapper__bSItF {\n  margin-top: 36px;\n  justify-content: flex-end;\n  display: flex;\n  width: 100%;\n}\n\n.opportunityControl-module__forward__buttons__enrEB > button {\n  margin-left: 18px;\n}\n\n.opportunityControl-module_hideButton__K4No6 {\n  visibility: hidden;\n}\n\n.opportunityControl-module_skip_button__LPwf0 {\n  margin-left: auto;\n  margin-right: 16px;\n}\n\n.opportunityControl-module_back_button__sFJSS {\n  margin-left: 0px;\n  margin-right: auto;\n}\n";
+var styles$d = {"_actionContainer":"opportunityControl-module__actionContainer__o8xGg","_opportunityContainer":"opportunityControl-module__opportunityContainer__HaOUj","_selectedOpportunity__container":"opportunityControl-module__selectedOpportunity__container__4rs-v","_buttons__wrapper":"opportunityControl-module__buttons__wrapper__bSItF","_forward__buttons":"opportunityControl-module__forward__buttons__enrEB","hideButton":"opportunityControl-module_hideButton__K4No6","skip_button":"opportunityControl-module_skip_button__LPwf0","back_button":"opportunityControl-module_back_button__sFJSS"};
+styleInject(css_248z$d);
+
+var css_248z$c = ".opportunityDetails-module__container__Zdurv {\n  border: 1px solid var(--white);\n  box-sizing: border-box;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  position: relative;\n  width: 340px;\n  margin-bottom: 12px;\n}\n\n.opportunityDetails-module__title__container__bhy81 {\n  margin-bottom: 16px;\n}\n\n.opportunityDetails-module__content__container__O-988 {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n}\n\n.opportunityDetails-module__tag__container__CZ28c {\n  width: 300px;\n  padding: 16px 0;\n  background: var(--lightestBloobirds);\n  border-radius: 16px;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n}\n\n.opportunityDetails-module__tag__content__vm9WU > span {\n  margin-top: -4px;\n  margin-bottom: 4px;\n  display: block;\n}\n\n.opportunityDetails-module__status__container__kT-nl {\n  margin-top: -13px;\n}\n\n.opportunityDetails-module__creationDate__container__4o5L6 {\n  margin-top: 10px;\n}\n";
+var styles$c = {"_container":"opportunityDetails-module__container__Zdurv","_title__container":"opportunityDetails-module__title__container__bhy81","_content__container":"opportunityDetails-module__content__container__O-988","_tag__container":"opportunityDetails-module__tag__container__CZ28c","_tag__content":"opportunityDetails-module__tag__content__vm9WU","_status__container":"opportunityDetails-module__status__container__kT-nl","_creationDate__container":"opportunityDetails-module__creationDate__container__4o5L6"};
+styleInject(css_248z$c);
+
+var OpportunityDetails = function OpportunityDetails(_ref) {
+  var _parsedOpportunity$st, _parsedOpportunity$st2;
+  var opportunity = _ref.opportunity;
+  var dataModel = useDataModel();
+  var statusDataModelField = dataModel === null || dataModel === void 0 ? void 0 : dataModel.findFieldByLogicRole('OPPORTUNITY__STATUS');
+  var parsedOpportunity = useMemo(function () {
+    return {
+      nameField: opportunity.name,
+      amount: opportunity.amount,
+      status: statusDataModelField ? statusDataModelField.values.find(function (value) {
+        return value.id === opportunity.status;
+      }) : null,
+      closeDate: opportunity.closeDate,
+      // type: getFieldByName(opportunity, 'Type'),
+      creationDate: opportunity.creationDateTime
+    };
+  }, [opportunity]);
+  var amountDataModelField = dataModel === null || dataModel === void 0 ? void 0 : dataModel.findFieldByLogicRole('OPPORTUNITY__AMOUNT');
+  var amountFieldPrefix = amountDataModelField ? amountDataModelField === null || amountDataModelField === void 0 ? void 0 : amountDataModelField.prefix : '€';
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$c._container,
+    children: [/*#__PURE__*/jsx("div", {
+      className: styles$c._title__container,
+      children: /*#__PURE__*/jsxs(Text, {
+        dataTest: "Text-opportunityName",
+        size: "l",
+        align: "center",
+        children: ["\"", parsedOpportunity.nameField, "\""]
+      })
+    }), /*#__PURE__*/jsxs("div", {
+      className: styles$c._content__container,
+      children: [/*#__PURE__*/jsx("div", {
+        className: styles$c._tag__container,
+        children: /*#__PURE__*/jsxs("div", {
+          className: styles$c._tag__content,
+          children: [/*#__PURE__*/jsx(Text, {
+            dataTest: "Text-opportunityAmount",
+            weight: "bold",
+            align: "center",
+            size: "xxxl",
+            children: "".concat(amountFieldPrefix).concat(Number(parsedOpportunity === null || parsedOpportunity === void 0 ? void 0 : parsedOpportunity.amount).toFixed(2))
+          }), /*#__PURE__*/jsx(Text, {
+            align: "center",
+            size: "s",
+            htmlTag: "span",
+            children: parsedOpportunity.type
+          })]
+        })
+      }), ((_parsedOpportunity$st = parsedOpportunity.status) === null || _parsedOpportunity$st === void 0 ? void 0 : _parsedOpportunity$st.name) && /*#__PURE__*/jsx("div", {
+        className: styles$c._status__container,
+        children: /*#__PURE__*/jsx(Label, {
+          dataTest: "opportunityStatus",
+          overrideStyle: {
+            color: parsedOpportunity === null || parsedOpportunity === void 0 ? void 0 : parsedOpportunity.status.textColor,
+            backgroundColor: parsedOpportunity === null || parsedOpportunity === void 0 ? void 0 : parsedOpportunity.status.backgroundColor,
+            borderColor: 'var(--white)'
+          },
+          children: ellipsis(parsedOpportunity === null || parsedOpportunity === void 0 ? void 0 : (_parsedOpportunity$st2 = parsedOpportunity.status) === null || _parsedOpportunity$st2 === void 0 ? void 0 : _parsedOpportunity$st2.name, 26)
+        })
+      })]
+    }), /*#__PURE__*/jsx("div", {
+      className: styles$c._creationDate__container,
+      children: /*#__PURE__*/jsx(Text, {
+        size: "s",
+        color: "softPeanut",
+        children: "Created ".concat(formatDate(new Date(parsedOpportunity === null || parsedOpportunity === void 0 ? void 0 : parsedOpportunity.creationDate), "MMM dd 'at' hh:mm OOO"))
+      })
+    })]
+  });
+};
+
+function _slicedToArray$i(arr, i) { return _arrayWithHoles$i(arr) || _iterableToArrayLimit$i(arr, i) || _unsupportedIterableToArray$i(arr, i) || _nonIterableRest$i(); }
+function _nonIterableRest$i() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$i(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$i(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$i(o, minLen); }
+function _arrayLikeToArray$i(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$i(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$i(arr) { if (Array.isArray(arr)) return arr; }
+var CONTROL_MODES = Object.seal({
+  NEW: 'NEW',
+  EDIT: 'EDIT'
+});
+var OpportunityControlOTO = function OpportunityControlOTO(_ref) {
+  var _statusDataModelField;
+  var handleBack = _ref.handleBack,
+    buttonsConfig = _ref.buttonsConfig,
+    wizardKey = _ref.wizardKey,
+    handleNext = _ref.handleNext,
+    send = _ref.send;
+  var _useWizardContext = useWizardContext(),
+    getWizardProperties = _useWizardContext.getWizardProperties;
+  var _getWizardProperties = getWizardProperties(wizardKey),
+    referenceBobject = _getWizardProperties.referenceBobject;
+  var _useState = useState(CONTROL_MODES.NEW),
+    _useState2 = _slicedToArray$i(_useState, 2),
+    controlMode = _useState2[0],
+    setControlMode = _useState2[1];
+  var _useState3 = useState(null),
+    _useState4 = _slicedToArray$i(_useState3, 2),
+    selectedOpportunityId = _useState4[0],
+    setSelectedOpportunity = _useState4[1];
+  var _useState5 = useState([]),
+    _useState6 = _slicedToArray$i(_useState5, 2),
+    opportunitiesOfLead = _useState6[0],
+    setOpportunitiesOfLead = _useState6[1];
+  var dataModel = useDataModel();
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  useEffect(function () {
+    var bobjectType = referenceBobject.id.typeName;
+    var objectId = referenceBobject.id.objectId;
+    api.get("/linkedin/context/".concat(bobjectType, "/").concat(objectId)).then(function (response) {
+      var _response$data;
+      setOpportunitiesOfLead(response === null || response === void 0 ? void 0 : (_response$data = response.data) === null || _response$data === void 0 ? void 0 : _response$data.opportunities);
+    });
+  }, [referenceBobject]);
+  var selectedOpportunity = useMemo(function () {
+    return opportunitiesOfLead === null || opportunitiesOfLead === void 0 ? void 0 : opportunitiesOfLead.find(function (opp) {
+      return opp.id.value === selectedOpportunityId;
+    });
+  }, [selectedOpportunityId]);
+  var showSkipButton = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton : true;
+  var hasPreviousStep = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep : false;
+  useEffect(function () {
+    if (controlMode === CONTROL_MODES.NEW) {
+      setSelectedOpportunity(null);
+    }
+  }, [controlMode]);
+  var statusDataModelField = dataModel === null || dataModel === void 0 ? void 0 : dataModel.findFieldByLogicRole('OPPORTUNITY__STATUS');
+  var finalOppStatus = statusDataModelField ? statusDataModelField === null || statusDataModelField === void 0 ? void 0 : (_statusDataModelField = statusDataModelField.values) === null || _statusDataModelField === void 0 ? void 0 : _statusDataModelField.filter(function (field) {
+    return field.name == 'Closed Lost' || field.name == 'Closed Won';
+  }) : null;
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsxs(ModalContent, {
+      children: [/*#__PURE__*/jsxs("div", {
+        className: styles$d._actionContainer,
+        children: [/*#__PURE__*/jsx(Text, {
+          dataTest: "Text-Modal-OpportunityControl",
+          size: "m",
+          weight: "medium",
+          children: t('wizards.steps.opportunityControl.title')
+        }), /*#__PURE__*/jsxs(ChipGroup, {
+          value: controlMode,
+          onChange: setControlMode,
+          children: [/*#__PURE__*/jsx(Chip, {
+            dataTest: "contactFlowEditOpportunity",
+            value: CONTROL_MODES.EDIT,
+            disabled: !opportunitiesOfLead || (opportunitiesOfLead === null || opportunitiesOfLead === void 0 ? void 0 : opportunitiesOfLead.length) === 0,
+            children: t('wizards.steps.opportunityControl.edit')
+          }), /*#__PURE__*/jsx(Chip, {
+            value: CONTROL_MODES.NEW,
+            children: "Create a new one"
+          })]
+        })]
+      }), /*#__PURE__*/jsxs("div", {
+        className: styles$d._opportunityContainer,
+        children: [/*#__PURE__*/jsx(Text, {
+          size: "m",
+          weight: "medium",
+          children: t('wizards.steps.opportunityControl.choose')
+        }), /*#__PURE__*/jsxs(Select, {
+          dataTest: "opportunityDropdown",
+          defaultValue: selectedOpportunityId,
+          value: selectedOpportunityId,
+          onChange: setSelectedOpportunity,
+          disabled: (opportunitiesOfLead === null || opportunitiesOfLead === void 0 ? void 0 : opportunitiesOfLead.length) === 0 || controlMode === CONTROL_MODES.NEW,
+          width: "100%",
+          children: [/*#__PURE__*/jsx(Item, {
+            value: "",
+            children: /*#__PURE__*/jsx("em", {
+              children: t('common.none')
+            })
+          }), opportunitiesOfLead === null || opportunitiesOfLead === void 0 ? void 0 : opportunitiesOfLead.filter(function (opp) {
+            var _finalOppStatus$filte;
+            return finalOppStatus ? ((_finalOppStatus$filte = finalOppStatus.filter(function (status) {
+              return status.id === opp.status;
+            })) === null || _finalOppStatus$filte === void 0 ? void 0 : _finalOppStatus$filte.length) == 0 : true;
+          }).map(function (opportunity) {
+            return /*#__PURE__*/jsx(Item, {
+              dataTest: "opportunityDropdownName",
+              value: opportunity.id.value,
+              children: opportunity.name
+            }, "opportunity-".concat(opportunity.id.value));
+          })]
+        }), selectedOpportunityId && /*#__PURE__*/jsx("div", {
+          className: styles$d._selectedOpportunity__container,
+          children: /*#__PURE__*/jsx(OpportunityDetails, {
+            opportunity: selectedOpportunity
+          })
+        })]
+      })]
+    }), /*#__PURE__*/jsx(ModalFooter, {
+      children: /*#__PURE__*/jsxs("div", {
+        className: styles$d._buttons__wrapper,
+        children: [hasPreviousStep && /*#__PURE__*/jsx(Button, {
+          className: styles$d.back_button,
+          variant: "clear",
+          onClick: handleBack,
+          children: (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.previousButtonTitle) || t('wizards.common.back')
+        }), showSkipButton && /*#__PURE__*/jsx(Button, {
+          dataTest: "Form-Skip",
+          variant: "secondary",
+          onClick: function onClick() {
+            return send(EVENTS.SKIP);
+          },
+          className: styles$d.skip_button,
+          children: t('wizards.steps.opportunityControl.continue')
+        }), /*#__PURE__*/jsx(Button, {
+          dataTest: "formContinue",
+          disabled: controlMode === CONTROL_MODES.EDIT && !selectedOpportunity,
+          onClick: function onClick() {
+            return handleNext(selectedOpportunityId);
+          },
+          children: (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.nextButtonTitle) || t('wizards.common.next')
+        })]
+      })
+    })]
+  });
+};
+
+var ScheduleShortTimes;
+(function (ScheduleShortTimes) {
+  ScheduleShortTimes["tenMinutes"] = "in_10_minutes";
+  ScheduleShortTimes["thirtyMinutes"] = "in_30_minutes";
+  ScheduleShortTimes["oneHour"] = "in_1_hour";
+  ScheduleShortTimes["twoHours"] = "in_2_hours";
+  ScheduleShortTimes["fourHours"] = "in_4_hours";
+  ScheduleShortTimes["oneDay"] = "in_1_day";
+  ScheduleShortTimes["twoDays"] = "in_2_days";
+  ScheduleShortTimes["custom"] = "custom";
+})(ScheduleShortTimes || (ScheduleShortTimes = {}));
+var Unit;
+(function (Unit) {
+  Unit["minutes"] = "minutes";
+  Unit["hours"] = "hours";
+  Unit["days"] = "days";
+})(Unit || (Unit = {}));
+var ScheduleShortTimesValues = {
+  in_10_minutes: {
+    unit: 'minutes',
+    amount: 10
+  },
+  in_30_minutes: {
+    unit: 'minutes',
+    amount: 30
+  },
+  in_1_hour: {
+    unit: 'hours',
+    amount: 1
+  },
+  in_2_hours: {
+    unit: 'hours',
+    amount: 2
+  },
+  in_4_hours: {
+    unit: 'hours',
+    amount: 4
+  },
+  in_1_day: {
+    unit: 'days',
+    amount: 1
+  },
+  in_2_days: {
+    unit: 'days',
+    amount: 2
+  }
+};
+
+var css_248z$b = ".scheduleNextSteps-module_container__rUUBb {\n  border: 1px solid #9ACFFF;\n  box-sizing: border-box;\n  box-shadow: 0 2px 20px rgb(25 145 255 / 15%);\n  border-radius: 8px;\n  background-color: white;\n  width: 320px;\n  animation: scheduleNextSteps-module_floatingMenu-module_popup__v8iVF__6JQgV 150ms ease-in-out;\n  display: inline-block;\n  position: relative;\n  pointer-events: all;\n}\n\n.scheduleNextSteps-module_content_container__OUTFY {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-between;\n  height: 100%;\n}\n\n.scheduleNextSteps-module_bottom_bar__d2isd {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 12px;\n}\n\n.scheduleNextSteps-module_text__KsxRz {\n  margin-left: 4px;\n}\n\n.scheduleNextSteps-module_record_related__9bkt0 {\n  display: flex;\n  align-items: center;\n}\n\n.scheduleNextSteps-module_editor__oMnAW {\n  display: flex;\n  flex-direction: column;\n}\n\n.scheduleNextSteps-module_wrapper__4AXtw {\n  position: fixed;\n  top: 0;\n  left: 0;\n  width: 100vw;\n  height: 100vh;\n  z-index: 2;\n  pointer-events: none;\n}\n\n.scheduleNextSteps-module_dragging__bhfRT {\n  pointer-events: unset;\n}\n\n.scheduleNextSteps-module_divider__x1k8q {\n  width: 100%;\n  text-align: center;\n  border-top: 1px solid var(--verySoftPeanut);\n  align-self: center;\n}\n\n.scheduleNextSteps-module_bobject_selector__-oaod {\n  margin-left: 8px;\n}\n\n.scheduleNextSteps-module_toolbar__LHnY0 {\n  border-top: 1px solid var(--verySoftPeanut);\n  border-bottom: 1px solid var(--verySoftPeanut);\n}\n\n.scheduleNextSteps-module_mainNote__ZZXNG {\n  margin-right: 4px;\n}\n\n.scheduleNextSteps-module_modal_title__oXVmE {\n  display: flex;\n  margin: 8px 0;\n  align-items: center;\n}\n\n.scheduleNextSteps-module_priorityWrapper__Kd-Xb {\n  margin-left: -8px;\n}\n\n.scheduleNextSteps-module_modal_title__oXVmE > * {\n  margin-right: 8px;\n}\n\n.scheduleNextSteps-module_textArea__64Gc0 {\n  margin: 12px 0;\n  border: none;\n  resize: none;\n  font-family: 'Proxima Nova Soft';\n  max-width: 90%;\n  box-shadow: none;\n  height: 265px;\n}\n\n.scheduleNextSteps-module_textArea__64Gc0:focus {\n  outline: none !important;\n  box-shadow: none !important;\n}\n\n.scheduleNextSteps-module_buttonsContainer__j6C6V {\n  display: flex;\n  width: 100%;\n  justify-content: space-between;\n}\n\n.scheduleNextSteps-module_buttonsContainer__j6C6V > div > button {\n  margin-left: 8px;\n}\n\n.scheduleNextSteps-module_taskInfo__tlOlx {\n  display: flex;\n  align-items: center;\n  height: 44px;\n}\n\n.scheduleNextSteps-module_taskInfo__tlOlx > div {\n  margin-right: 8px;\n}\n\n.scheduleNextSteps-module_taskInfo__tlOlx > p {\n  margin-right: 8px;\n}\n\n.scheduleNextSteps-module_assigned_to__Le3R7 {\n  align-items: center;\n  height: 44px;\n  margin: 0 38px 0 8px;\n  gap: 4px;\n  display: flex;\n  flex-direction: row;\n}\n\n.scheduleNextSteps-module_taskDate__vlkx1 {\n  display: flex;\n}\n\n.scheduleNextSteps-module_dateButton__TsUXR {\n  cursor: pointer;\n}\n\n.scheduleNextSteps-module_relative_date_picker__AUY75 > div > div {\n  padding-left: 0;\n}\n\n.scheduleNextSteps-module_relative_date_picker__AUY75 span[class*='SmallSelect-module_text'] {\n  color: var(--bloobirds) !important;\n}\n\n.scheduleNextSteps-module_relative_date_picker__AUY75 div[class*='SmallSelect-module_adornment'],\n.scheduleNextSteps-module_relative_date_picker__AUY75 svg[class*='SmallSelect-module_chevron'] {\n  display: none;\n}\n\n.scheduleNextSteps-module_skip_button__imuRj {\n  margin-left: auto;\n  margin-right: 16px;\n}\n\n.scheduleNextSteps-module_back_button__-7WNc {\n  margin-left: 0px;\n  margin-right: auto;\n}\n";
+var styles$b = {"container":"scheduleNextSteps-module_container__rUUBb","floatingMenu-module_popup__v8iVF":"scheduleNextSteps-module_floatingMenu-module_popup__v8iVF__6JQgV","content_container":"scheduleNextSteps-module_content_container__OUTFY","bottom_bar":"scheduleNextSteps-module_bottom_bar__d2isd","text":"scheduleNextSteps-module_text__KsxRz","record_related":"scheduleNextSteps-module_record_related__9bkt0","editor":"scheduleNextSteps-module_editor__oMnAW","wrapper":"scheduleNextSteps-module_wrapper__4AXtw","dragging":"scheduleNextSteps-module_dragging__bhfRT","divider":"scheduleNextSteps-module_divider__x1k8q","bobject_selector":"scheduleNextSteps-module_bobject_selector__-oaod","toolbar":"scheduleNextSteps-module_toolbar__LHnY0","mainNote":"scheduleNextSteps-module_mainNote__ZZXNG","modal_title":"scheduleNextSteps-module_modal_title__oXVmE","priorityWrapper":"scheduleNextSteps-module_priorityWrapper__Kd-Xb","textArea":"scheduleNextSteps-module_textArea__64Gc0","buttonsContainer":"scheduleNextSteps-module_buttonsContainer__j6C6V","taskInfo":"scheduleNextSteps-module_taskInfo__tlOlx","assigned_to":"scheduleNextSteps-module_assigned_to__Le3R7","taskDate":"scheduleNextSteps-module_taskDate__vlkx1","dateButton":"scheduleNextSteps-module_dateButton__TsUXR","relative_date_picker":"scheduleNextSteps-module_relative_date_picker__AUY75","skip_button":"scheduleNextSteps-module_skip_button__imuRj","back_button":"scheduleNextSteps-module_back_button__-7WNc"};
+styleInject(css_248z$b);
+
+function _typeof$p(obj) { "@babel/helpers - typeof"; return _typeof$p = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$p(obj); }
+var _excluded$5 = ["related"];
+function ownKeys$h(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$h(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$h(Object(source), !0).forEach(function (key) { _defineProperty$o(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$h(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$o(obj, key, value) { key = _toPropertyKey$o(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$o(arg) { var key = _toPrimitive$o(arg, "string"); return _typeof$p(key) === "symbol" ? key : String(key); }
+function _toPrimitive$o(input, hint) { if (_typeof$p(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$p(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _objectWithoutProperties$5(source, excluded) { if (source == null) return {}; var target = _objectWithoutPropertiesLoose$5(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
+function _objectWithoutPropertiesLoose$5(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
+function _slicedToArray$h(arr, i) { return _arrayWithHoles$h(arr) || _iterableToArrayLimit$h(arr, i) || _unsupportedIterableToArray$h(arr, i) || _nonIterableRest$h(); }
+function _nonIterableRest$h() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$h(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$h(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$h(o, minLen); }
+function _arrayLikeToArray$h(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$h(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$h(arr) { if (Array.isArray(arr)) return arr; }
+var ScheduleNextSteps = function ScheduleNextSteps(_ref) {
+  var _bobject$id;
+  var handleNext = _ref.handleNext,
+    handleBack = _ref.handleBack,
+    handleSkip = _ref.handleSkip,
+    buttonsConfig = _ref.buttonsConfig,
+    wizardKey = _ref.wizardKey,
+    machineContext = _ref.machineContext;
+  var _useWizardContext = useWizardContext(),
+    getWizardProperties = _useWizardContext.getWizardProperties;
+  var _getWizardProperties = getWizardProperties(wizardKey),
+    referenceBobject = _getWizardProperties.referenceBobject,
+    handleClose = _getWizardProperties.handleClose;
+  var _useState = useState(false),
+    _useState2 = _slicedToArray$h(_useState, 2),
+    isSubmitting = _useState2[0],
+    setIsSubmitting = _useState2[1];
+  var userId = useActiveUserId();
+  var _useState3 = useState(userId),
+    _useState4 = _slicedToArray$h(_useState3, 2),
+    assignedToId = _useState4[0],
+    setAssignedToId = _useState4[1];
+  var _useContactFlowData = useContactFlowData(),
+    handleSubmit = _useContactFlowData.handleSubmit;
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  var accountId = referenceBobject === null || referenceBobject === void 0 ? void 0 : referenceBobject.id.accountId;
+  var _useForm = useForm(),
+    control = _useForm.control,
+    handleSubmitForm = _useForm.handleSubmit,
+    watch = _useForm.watch,
+    getValues = _useForm.getValues;
+  var bobjectName;
+  var bobject = referenceBobject;
+  switch (bobject === null || bobject === void 0 ? void 0 : (_bobject$id = bobject.id) === null || _bobject$id === void 0 ? void 0 : _bobject$id.typeName) {
+    case 'Company':
+      bobjectName = bobject.name || getTextFromLogicRole(bobject, COMPANY_FIELDS_LOGIC_ROLE.NAME);
+      break;
+    case 'Opportunity':
+      bobjectName = bobject.name || getTextFromLogicRole(bobject, OPPORTUNITY_FIELDS_LOGIC_ROLE.NAME);
+      break;
+    case 'Lead':
+      bobjectName = bobject.fullName || getTextFromLogicRole(bobject, LEAD_FIELDS_LOGIC_ROLE.FULL_NAME);
+      break;
+  }
+  var _useCustomTasks = useCustomTasks(),
+    customTasks = _useCustomTasks.customTasks;
+  var handleChangeTaskType = function handleChangeTaskType(value) {
+    actionTypeOnChange(value);
+    if (!['TASK', 'CALL', 'EMAIL'].includes(value)) {
+      var _customTasks$find;
+      var customTaskDescription = customTasks === null || customTasks === void 0 ? void 0 : (_customTasks$find = customTasks.find(function (task) {
+        return task.id === value;
+      })) === null || _customTasks$find === void 0 ? void 0 : _customTasks$find.description;
+      if (customTaskDescription) {
+        titleField.onChange(customTaskDescription);
+      }
+    }
+  };
+  var _useState5 = useState(bobjectName),
+    _useState6 = _slicedToArray$h(_useState5, 2),
+    bobjectSelectedName = _useState6[0],
+    setBobjectSelectedName = _useState6[1];
+  var _useUserHelpers = useUserHelpers(),
+    get = _useUserHelpers.get,
+    saveCustom = _useUserHelpers.saveCustom;
+  var savedDefaultValue = get(UserHelperKeys.SCHEDULE_NEXT_STEP_DATETIME_FILTER);
+  var NOW = new Date();
+  var showSkipButton = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.showSkipButton : true;
+  var hasPreviousStep = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasPreviousStep : true;
+  var openCadenceControlOnClose = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.openCadenceOnSkip : false;
+  var _useController = useController({
+      control: control,
+      name: TASK_FIELDS_LOGIC_ROLE.PRIORITY,
+      defaultValue: TASK_PRIORITY_VALUE.NO_PRIORITY
+    }),
+    _useController$field = _useController.field,
+    priority = _useController$field.value,
+    priorityOnChange = _useController$field.onChange;
+  var _useController2 = useController({
+      control: control,
+      name: TASK_FIELDS_LOGIC_ROLE.ACTION_TYPE,
+      defaultValue: 'TASK'
+    }),
+    _useController2$field = _useController2.field,
+    actionType = _useController2$field.value,
+    actionTypeOnChange = _useController2$field.onChange;
+
+  //@ts-ignore
+  var _useController3 = useController({
+      control: control,
+      name: TASK_FIELDS_LOGIC_ROLE.TITLE
+    }),
+    titleField = _useController3.field;
+  var _useController4 = useController({
+      control: control,
+      name: TASK_FIELDS_LOGIC_ROLE.SCHEDULED_DATETIME
+    }),
+    _useController4$field = _useController4.field,
+    taskDate = _useController4$field.value,
+    taskDateOnChange = _useController4$field.onChange;
+  var _useController5 = useController({
+      control: control,
+      name: 'related',
+      defaultValue: referenceBobject
+    }),
+    relatedOnChange = _useController5.field.onChange;
+  var dateTime = watch(TASK_FIELDS_LOGIC_ROLE.SCHEDULED_DATETIME);
+  var dateTimeValue = useMemo(function () {
+    if (dateTime !== null && dateTime !== void 0 && dateTime.type) {
+      var _ScheduleShortTimesVa, _ScheduleShortTimesVa2;
+      return (dateTime === null || dateTime === void 0 ? void 0 : dateTime.type) === ScheduleShortTimes.custom ? dateTime === null || dateTime === void 0 ? void 0 : dateTime.date : add(NOW, (_ScheduleShortTimesVa = ScheduleShortTimesValues[dateTime === null || dateTime === void 0 ? void 0 : dateTime.type]) === null || _ScheduleShortTimesVa === void 0 ? void 0 : _ScheduleShortTimesVa.unit, (_ScheduleShortTimesVa2 = ScheduleShortTimesValues[dateTime === null || dateTime === void 0 ? void 0 : dateTime.type]) === null || _ScheduleShortTimesVa2 === void 0 ? void 0 : _ScheduleShortTimesVa2.amount);
+    } else {
+      var _ScheduleShortTimesVa3, _ScheduleShortTimesVa4;
+      return savedDefaultValue ? add(NOW, (_ScheduleShortTimesVa3 = ScheduleShortTimesValues[savedDefaultValue]) === null || _ScheduleShortTimesVa3 === void 0 ? void 0 : _ScheduleShortTimesVa3.unit, (_ScheduleShortTimesVa4 = ScheduleShortTimesValues[savedDefaultValue]) === null || _ScheduleShortTimesVa4 === void 0 ? void 0 : _ScheduleShortTimesVa4.amount) : add(NOW, 'minutes', 10);
+    }
+  }, [NOW, savedDefaultValue, dateTime === null || dateTime === void 0 ? void 0 : dateTime.type]);
+  function onSubmit(data) {
+    var _TASK_FIELDS_LOGIC_RO, _TASK_FIELDS_LOGIC_RO2;
+    setIsSubmitting(true);
+    var related = data.related,
+      taskInfo = _objectWithoutProperties$5(data, _excluded$5);
+    var body = _defineProperty$o(_defineProperty$o(_defineProperty$o(_defineProperty$o(_defineProperty$o(_defineProperty$o({}, TASK_FIELDS_LOGIC_ROLE.TITLE, taskInfo[TASK_FIELDS_LOGIC_ROLE.TITLE]), TASK_FIELDS_LOGIC_ROLE.TASK_TYPE, TASK_TYPE.NEXT_STEP), TASK_FIELDS_LOGIC_ROLE.ASSIGNED_TO, assignedToId), TASK_FIELDS_LOGIC_ROLE.STATUS, TASK_STATUS_VALUE_LOGIC_ROLE.TODO), TASK_FIELDS_LOGIC_ROLE.SCHEDULED_DATETIME, dateTimeValue), TASK_FIELDS_LOGIC_ROLE.PRIORITY, taskInfo[TASK_FIELDS_LOGIC_ROLE.PRIORITY]);
+    var actionType = taskInfo[TASK_FIELDS_LOGIC_ROLE.ACTION_TYPE];
+    body[TASK_FIELDS_LOGIC_ROLE.TASK_TYPE] = TASK_TYPE.NEXT_STEP;
+    body[TASK_FIELDS_LOGIC_ROLE.IS_ACTION_CALL] = actionType === 'CALL' ? TASK_ACTION_VALUE.CALL_YES : null;
+    body[TASK_FIELDS_LOGIC_ROLE.IS_ACTION_EMAIL] = actionType === 'EMAIL' ? TASK_ACTION_VALUE.EMAIL_YES : null;
+    if (actionType !== 'TASK' && actionType !== 'CALL' && actionType !== 'EMAIL') {
+      body[TASK_FIELDS_LOGIC_ROLE.IS_ACTION_CUSTOM_TASK] = TASK_ACTION_VALUE.CUSTOM_TASK_YES;
+      body[TASK_FIELDS_LOGIC_ROLE.CUSTOM_TASK] = actionType;
+    }
+    body[_TASK_FIELDS_LOGIC_RO = TASK_FIELDS_LOGIC_ROLE.IS_ACTION_CUSTOM_TASK] || (body[_TASK_FIELDS_LOGIC_RO] = TASK_ACTION_VALUE.CUSTOM_TASK_NO);
+    body[_TASK_FIELDS_LOGIC_RO2 = TASK_FIELDS_LOGIC_ROLE.CUSTOM_TASK] || (body[_TASK_FIELDS_LOGIC_RO2] = null);
+    if (related) {
+      var _related$bobjectType, _related$id, _related$id$typeName, _related$rawBobject, _related$id2;
+      var relatedBobjectType = (related === null || related === void 0 ? void 0 : (_related$bobjectType = related.bobjectType) === null || _related$bobjectType === void 0 ? void 0 : _related$bobjectType.toUpperCase()) || (related === null || related === void 0 ? void 0 : (_related$id = related.id) === null || _related$id === void 0 ? void 0 : (_related$id$typeName = _related$id.typeName) === null || _related$id$typeName === void 0 ? void 0 : _related$id$typeName.toUpperCase());
+      body[TASK_FIELDS_LOGIC_ROLE[relatedBobjectType]] = (related === null || related === void 0 ? void 0 : (_related$rawBobject = related.rawBobject) === null || _related$rawBobject === void 0 ? void 0 : _related$rawBobject.id) || (related === null || related === void 0 ? void 0 : (_related$id2 = related.id) === null || _related$id2 === void 0 ? void 0 : _related$id2.value);
+    }
+    handleSubmit({
+      nextStepData: {
+        accountId: accountId,
+        body: body
+      }
+    });
+    setIsSubmitting(false);
+    var hasNextStep = (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasNextStep) != undefined ? buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.hasNextStep : false;
+    if (!hasNextStep) {
+      var _machineContext$markA;
+      machineContext === null || machineContext === void 0 ? void 0 : (_machineContext$markA = machineContext.markAsReported) === null || _machineContext$markA === void 0 ? void 0 : _machineContext$markA.call(machineContext);
+      handleClose();
+    } else {
+      handleNext();
+    }
+  }
+  var formValues = getValues();
+  var titleValue = formValues[TASK_FIELDS_LOGIC_ROLE.TITLE];
+  var _useState7 = useState(false),
+    _useState8 = _slicedToArray$h(_useState7, 2),
+    isDirty = _useState8[0],
+    setIsDirty = _useState8[1];
+  useEffect(function () {
+    setIsDirty(titleValue && titleValue !== '');
+  }, [titleValue]);
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsx(ModalContent, {
+      children: /*#__PURE__*/jsxs("div", {
+        className: styles$b.content_container,
+        children: [/*#__PURE__*/jsxs("div", {
+          className: styles$b.editor,
+          children: [/*#__PURE__*/jsxs("span", {
+            className: styles$b.modal_title,
+            children: [/*#__PURE__*/jsx(TaskTypeSelector, {
+              value: actionType,
+              onChange: handleChangeTaskType,
+              isWebapp: true
+            }), /*#__PURE__*/jsx(PrioritySelector, {
+              value: priority,
+              onChange: priorityOnChange,
+              overrideStyle: {
+                right: '40px'
+              }
+            })]
+          }), /*#__PURE__*/jsx("span", {
+            className: styles$b.divider
+          }), /*#__PURE__*/jsxs("span", {
+            className: styles$b.taskInfo,
+            children: [/*#__PURE__*/jsx(Icon, {
+              name: "clock",
+              color: "softPeanut",
+              size: 16
+            }), /*#__PURE__*/jsx(Text, {
+              size: "xs",
+              color: "softPeanut",
+              children: t('wizards.steps.scheduleNextSteps.dueDate')
+            }), /*#__PURE__*/jsx("div", {
+              className: styles$b.relative_date_picker,
+              children: /*#__PURE__*/jsx(ShortTermRelativeDatePicker, {
+                size: "small",
+                value: taskDate,
+                onChange: function onChange(value) {
+                  if ((value === null || value === void 0 ? void 0 : value.type) !== ScheduleShortTimes.custom) {
+                    saveCustom({
+                      key: UserHelperKeys.SCHEDULE_NEXT_STEP_DATETIME_FILTER,
+                      data: value === null || value === void 0 ? void 0 : value.type
+                    });
+                  }
+                  taskDateOnChange(value);
+                },
+                defaultValue: {
+                  date: dateTimeValue,
+                  type: savedDefaultValue ? savedDefaultValue : ScheduleShortTimes.tenMinutes
+                },
+                borderless: true,
+                width: "100px",
+                dropdownProps: {
+                  zIndex: 10000,
+                  arrow: true,
+                  position: 'bottom'
+                }
+              })
+            }), /*#__PURE__*/jsxs("span", {
+              className: styles$b.assigned_to,
+              children: [/*#__PURE__*/jsx(Icon, {
+                name: "personAdd",
+                color: "softPeanut",
+                size: 16
+              }), /*#__PURE__*/jsx(Text, {
+                size: "xs",
+                color: "softPeanut",
+                children: t('wizards.steps.scheduleNextSteps.assignedTo')
+              }), /*#__PURE__*/jsx(AssignedToSelector, {
+                assignedToId: assignedToId,
+                updateAssignedTo: setAssignedToId
+              })]
+            }), /*#__PURE__*/jsx(BobjectSelector$1, {
+              accountId: accountId,
+              selected: bobjectSelectedName,
+              id: 'static',
+              size: "small",
+              onBobjectChange: function onBobjectChange(bobject) {
+                var bobjectType = bobject === null || bobject === void 0 ? void 0 : bobject.bobjectType;
+                relatedOnChange(bobject);
+                if (bobjectType === BobjectTypes.Company) {
+                  setBobjectSelectedName(bobject === null || bobject === void 0 ? void 0 : bobject.companyName);
+                } else if (bobjectType === BobjectTypes.Lead) {
+                  setBobjectSelectedName(bobject === null || bobject === void 0 ? void 0 : bobject.fullName);
+                } else if (bobjectType === BobjectTypes.Opportunity) {
+                  setBobjectSelectedName(bobject === null || bobject === void 0 ? void 0 : bobject.name);
+                }
+              }
+            })]
+          }), /*#__PURE__*/jsx("span", {
+            className: styles$b.divider
+          }), /*#__PURE__*/jsx("textarea", _objectSpread$h({
+            className: styles$b.textArea,
+            placeholder: t('wizards.steps.scheduleNextSteps.descriptionPlaceholder'),
+            autoFocus: true
+          }, titleField))]
+        }), /*#__PURE__*/jsx("div", {
+          children: /*#__PURE__*/jsx("div", {
+            className: styles$b.bottom_bar,
+            children: /*#__PURE__*/jsx("span", {
+              className: styles$b.record_related,
+              children: /*#__PURE__*/jsx("div", {
+                className: styles$b.bobject_selector
+              })
+            })
+          })
+        })]
+      })
+    }), /*#__PURE__*/jsx(ModalFooter, {
+      children: /*#__PURE__*/jsxs("div", {
+        className: styles$b.buttonsContainer,
+        children: [hasPreviousStep && /*#__PURE__*/jsx(Button, {
+          variant: "clear",
+          onClick: handleBack,
+          className: styles$b.back_button,
+          children: (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.previousButtonTitle) || t('wizards.common.back')
+        }), /*#__PURE__*/jsxs("div", {
+          children: [showSkipButton && /*#__PURE__*/jsx(Button, {
+            variant: "secondary",
+            onClick: function onClick() {
+              return handleSkip(openCadenceControlOnClose);
+            },
+            className: styles$b.skip_button,
+            children: t('wizards.common.skipWizard')
+          }), /*#__PURE__*/jsx(Button, {
+            onClick: handleSubmitForm(onSubmit),
+            disabled: !isDirty || isSubmitting,
+            children: isSubmitting ? /*#__PURE__*/jsx(Spinner, {
+              name: "loadingCircle",
+              size: 12
+            }) : (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.nextButtonTitle) || t('wizards.steps.scheduleNextSteps.saveAndSchedule')
+          })]
+        })]
+      })
+    })]
+  });
+};
+
+function _typeof$o(obj) { "@babel/helpers - typeof"; return _typeof$o = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$o(obj); }
+function _defineProperty$n(obj, key, value) { key = _toPropertyKey$n(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$n(arg) { var key = _toPrimitive$n(arg, "string"); return _typeof$o(key) === "symbol" ? key : String(key); }
+function _toPrimitive$n(input, hint) { if (_typeof$o(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$o(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$g(arr, i) { return _arrayWithHoles$g(arr) || _iterableToArrayLimit$g(arr, i) || _unsupportedIterableToArray$g(arr, i) || _nonIterableRest$g(); }
+function _nonIterableRest$g() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$g(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$g(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$g(o, minLen); }
+function _arrayLikeToArray$g(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$g(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$g(arr) { if (Array.isArray(arr)) return arr; }
+var useNoteData = function useNoteData(_ref) {
+  var t = _ref.t,
+    activity = _ref.activity,
+    wizardKey = _ref.wizardKey;
+  var _useWizardContext = useWizardContext(),
+    getWizardProperties = _useWizardContext.getWizardProperties,
+    addMetaToWizardProperties = _useWizardContext.addMetaToWizardProperties;
+  var wizardProperties = getWizardProperties(wizardKey);
+  var plugins = useRichTextEditorPlugins({
+    images: false,
+    replaceParagraphs: true
+  });
+  var defaultNoteValue = wizardProperties.activityNote || getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.NOTE);
+  var serializedNoteValue = isHtml(defaultNoteValue) ? deserialize(defaultNoteValue, {
+    format: 'HTML',
+    plugins: plugins
+  }) : defaultNoteValue;
+  var _useForm = useForm({
+      defaultValues: {
+        note: serializedNoteValue
+      }
+    }),
+    register = _useForm.register,
+    watch = _useForm.watch,
+    getFieldState = _useForm.getFieldState;
+  var _register = register('note'),
+    onChange = _register.onChange;
+  var _useState = useState(false),
+    _useState2 = _slicedToArray$g(_useState, 2),
+    loading = _useState2[0],
+    setLoading = _useState2[1];
+  var hasSaved = useRef();
+  var note = watch('note');
+  var onSubmit = function onSubmit(_ref2) {
+    var dataToCreate = _ref2.dataToCreate,
+      setHasSaved = _ref2.setHasSaved;
+    setLoading(true);
+    var activityId = activity === null || activity === void 0 ? void 0 : activity.id;
+    api.patch("/bobjects/".concat(activityId === null || activityId === void 0 ? void 0 : activityId.value, "/raw"), {
+      contents: dataToCreate,
+      params: {}
+    }).then(function () {
+      addMetaToWizardProperties(wizardKey, {
+        activityNote: dataToCreate[ACTIVITY_FIELDS_LOGIC_ROLE.NOTE]
+      });
+      setHasSaved();
+      setLoading(false);
+    })["catch"](function () {
+      setHasSaved();
+      setLoading(false);
+      createToast({
+        message: t('toasts.errorUpdating'),
+        type: 'error'
+      });
+    });
+  };
+  var saveNote = useDebouncedCallback(function () {
+    var _note$, _note$$children;
+    if (note && note !== null && note !== void 0 && (_note$ = note[0]) !== null && _note$ !== void 0 && (_note$$children = _note$.children) !== null && _note$$children !== void 0 && _note$$children[0].text && (!serializedNoteValue || JSON.stringify(serializedNoteValue) !== JSON.stringify(note)) && !getFieldState('note').invalid) {
+      var dataToCreate = note ? _defineProperty$n({}, ACTIVITY_FIELDS_LOGIC_ROLE.NOTE, serialize(note, {
+        format: 'AST',
+        plugins: plugins
+      })) : null;
+      onSubmit({
+        dataToCreate: dataToCreate,
+        setHasSaved: function setHasSaved() {
+          hasSaved.current = true;
+        }
+      });
+    }
+  }, 500, [onSubmit]);
+  return {
+    note: note,
+    setNote: function setNote(value) {
+      return onChange({
+        target: {
+          value: value,
+          name: 'note'
+        }
+      });
+    },
+    saveNote: saveNote,
+    loading: loading,
+    hasSaved: hasSaved.current
+  };
+};
+
+var useStatusData = function useStatusData() {
+  var hasNoStatusPlan = useIsNoStatusPlanAccount();
+  function handleUpdateStatus(bobjectIdField, data) {
+    if (!data || Object.keys(data).length === 0) return Promise.resolve('noUpdates');
+    var body = hasNoStatusPlan ? {
+      fieldsToUpdate: data,
+      crm: 'SALESFORCE',
+      accountId: bobjectIdField === null || bobjectIdField === void 0 ? void 0 : bobjectIdField.accountId
+    } : data;
+    var url = hasNoStatusPlan ? '/utils/crmStatus/updateCrmStatus' : '/bobjects/' + (bobjectIdField === null || bobjectIdField === void 0 ? void 0 : bobjectIdField.value) + '/raw';
+    return api[hasNoStatusPlan ? 'post' : 'patch'](url, body);
+  }
+  return {
+    handleUpdateStatus: handleUpdateStatus
+  };
+};
+
+function _typeof$n(obj) { "@babel/helpers - typeof"; return _typeof$n = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$n(obj); }
+function ownKeys$g(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$g(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$g(Object(source), !0).forEach(function (key) { _defineProperty$m(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$g(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$m(obj, key, value) { key = _toPropertyKey$m(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$m(arg) { var key = _toPrimitive$m(arg, "string"); return _typeof$n(key) === "symbol" ? key : String(key); }
+function _toPrimitive$m(input, hint) { if (_typeof$n(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$n(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var getIsAnyEmailOrWhatsappOrToday = function getIsAnyEmailOrWhatsappOrToday(tasks, customTasks) {
+  if (!tasks) return {
+    hasWhatsappTask: false,
+    hasEmailTask: false,
+    taskForToday: false
+  };
+  var timeZone = getUserTimeZone();
+  var whatsappTasksIds = customTasks === null || customTasks === void 0 ? void 0 : customTasks.reduce(function (acc, task) {
+    if (['WHATSAPP', 'WHATSAPP_BUSINESS'].includes(task.logicRole)) {
+      acc.push(task === null || task === void 0 ? void 0 : task.id);
+    }
+    return acc;
+  }, []);
+  var todayTasks = tasks.filter(function (task) {
+    var taskDate = getValueFromLogicRole(task, TASK_FIELDS_LOGIC_ROLE.SCHEDULED_DATETIME);
+    //TODO this should be done with .isSame('day') but it seems bugged
+    return spacetime.today(timeZone).startOf('day').format('nice') === spacetime(taskDate, timeZone).add(2, 'hour').startOf('day').format('nice');
+  });
+  return _objectSpread$g(_objectSpread$g({}, tasks === null || tasks === void 0 ? void 0 : tasks.reduce(function (acc, curr) {
+    var _getFieldByLogicRole;
+    if (whatsappTasksIds.includes(getValueFromLogicRole(curr, TASK_FIELDS_LOGIC_ROLE.CUSTOM_TASK))) {
+      return _objectSpread$g(_objectSpread$g({}, acc), {}, {
+        hasWhatsappTask: true
+      });
+    } else if (((_getFieldByLogicRole = getFieldByLogicRole(curr, TASK_FIELDS_LOGIC_ROLE.IS_ACTION_EMAIL)) === null || _getFieldByLogicRole === void 0 ? void 0 : _getFieldByLogicRole.valueLogicRole) === TASK_ACTION_VALUE.EMAIL_YES) {
+      return _objectSpread$g(_objectSpread$g({}, acc), {}, {
+        hasEmailTask: true
+      });
+    }
+    return acc;
+  }, {
+    hasWhatsappTask: false,
+    hasEmailTask: false
+  })), {}, {
+    taskForToday: todayTasks.length === 1 ? todayTasks[0] : false
+  });
+};
+var referenceBobjectTasksQuery = function referenceBobjectTasksQuery(id) {
+  return {
+    query: _defineProperty$m(_defineProperty$m({}, TASK_FIELDS_LOGIC_ROLE.STATUS, [TASK_STATUS_VALUE_LOGIC_ROLE.OVERDUE, TASK_STATUS_VALUE_LOGIC_ROLE.TODO]), TASK_FIELDS_LOGIC_ROLE[id === null || id === void 0 ? void 0 : id.typeName.toUpperCase()], [id.value]),
+    page: 0,
+    pageSize: 25,
+    sort: [{
+      field: TASK_FIELDS_LOGIC_ROLE.SCHEDULED_DATETIME,
+      direction: 'ASC'
+    }, {
+      field: TASK_FIELDS_LOGIC_ROLE.PRIORITY,
+      direction: 'ASC'
+    }],
+    columns: TASK_COLUMNS,
+    formFields: true,
+    injectReferences: true
+  };
+};
+var TASK_COLUMNS = [TASK_FIELDS_LOGIC_ROLE.TITLE, TASK_FIELDS_LOGIC_ROLE.STATUS, TASK_FIELDS_LOGIC_ROLE.COMPANY, TASK_FIELDS_LOGIC_ROLE.LEAD, TASK_FIELDS_LOGIC_ROLE.OPPORTUNITY, TASK_FIELDS_LOGIC_ROLE.ASSIGNED_TO, TASK_FIELDS_LOGIC_ROLE.SCHEDULED_DATE, TASK_FIELDS_LOGIC_ROLE.SCHEDULED_DATETIME, TASK_FIELDS_LOGIC_ROLE.TASK_TYPE, TASK_FIELDS_LOGIC_ROLE.IS_AUTOMATED, TASK_FIELDS_LOGIC_ROLE.IS_AUTOMATED_EMAIL, TASK_FIELDS_LOGIC_ROLE.DESCRIPTION, TASK_ACTION.EMAIL, TASK_FIELDS_LOGIC_ROLE.CUSTOM_TASK];
+var getAditionalInfo = function getAditionalInfo(fieldsLogicRoles, selectedStatus, selectedReason, selectedUser) {
+  var reasonedStatusKey = "".concat(selectedStatus.logicRole.replace(/__STATUS|_STATUS_/gi, ''), "_REASONS");
+  return _objectSpread$g(_objectSpread$g({}, selectedReason ? _defineProperty$m({}, reasonedStatusKey, selectedReason.value) : {}), selectedUser ? _defineProperty$m({}, fieldsLogicRoles.ASSIGNED_TO, selectedUser === null || selectedUser === void 0 ? void 0 : selectedUser.id) : {});
+};
+var getCRMIdValue = function getCRMIdValue(bobject, crmId, dataModel) {
+  var _dataModel$findFieldB, _bobject$rawBobject;
+  if (bobject.fields) {
+    return getValueFromLogicRole(bobject, crmId);
+  }
+  var crmFieldId = (_dataModel$findFieldB = dataModel.findFieldByLogicRole(crmId)) === null || _dataModel$findFieldB === void 0 ? void 0 : _dataModel$findFieldB.id;
+  return (bobject === null || bobject === void 0 ? void 0 : (_bobject$rawBobject = bobject.rawBobject) === null || _bobject$rawBobject === void 0 ? void 0 : _bobject$rawBobject[crmFieldId]) || bobject.salesforceId;
+};
+var buildDataToSend = function buildDataToSend(bobject, data) {
+  var dataToSend = {};
+  var insertData = function insertData(objectToSend) {
+    if (data.selectedStatus && objectToSend) {
+      var _data$buttonsConfig, _data$machineContext, _data$extraFields;
+      var statusField = getCurrentSalesforceStatusField(objectToSend);
+      var _getSalesforceIdField = getSalesforceIdField$1(objectToSend, data.wizardKey === 'CONTACT_FLOW_OTO' && ((_data$buttonsConfig = data.buttonsConfig) === null || _data$buttonsConfig === void 0 ? void 0 : _data$buttonsConfig.checkExistingOpportunity), (_data$machineContext = data.machineContext) === null || _data$machineContext === void 0 ? void 0 : _data$machineContext.selectedOpportunityObject),
+        crmId = _getSalesforceIdField.crmId,
+        crmObject = _getSalesforceIdField.crmObject;
+      var crmStatusValue = data.selectedStatus;
+      var extraFields = data === null || data === void 0 ? void 0 : (_data$extraFields = data.extraFields) === null || _data$extraFields === void 0 ? void 0 : _data$extraFields[crmStatusValue === null || crmStatusValue === void 0 ? void 0 : crmStatusValue.name];
+      var crmIdValue = getCRMIdValue(bobject, crmId, data.dataModel);
+      if (crmStatusValue !== (statusField === null || statusField === void 0 ? void 0 : statusField.value) || extraFields) {
+        var _objectToSend$id;
+        dataToSend[crmObject] = {
+          bobjectId: objectToSend === null || objectToSend === void 0 ? void 0 : (_objectToSend$id = objectToSend.id) === null || _objectToSend$id === void 0 ? void 0 : _objectToSend$id.value,
+          crmStatusValue: crmStatusValue === null || crmStatusValue === void 0 ? void 0 : crmStatusValue.name,
+          crmObject: crmObject,
+          crmId: crmIdValue,
+          extraFields: extraFields
+        };
+      }
+    }
+  };
+  insertData(bobject);
+  return dataToSend;
+};
+function buildRequestBody(_ref3) {
+  var _bobject$id;
+  var bobject = _ref3.bobject,
+    selectedStatus = _ref3.selectedStatus,
+    selectedReason = _ref3.selectedReason,
+    selectedUser = _ref3.selectedUser,
+    isSales = _ref3.isSales,
+    hasNoStatusPlanEnabled = _ref3.hasNoStatusPlanEnabled,
+    dataForSalesforce = _ref3.dataForSalesforce,
+    extraFields = _ref3.extraFields;
+  if (!selectedStatus) return {};
+  if (hasNoStatusPlanEnabled) {
+    return buildDataToSend(bobject, _objectSpread$g(_objectSpread$g({}, dataForSalesforce), {}, {
+      selectedStatus: selectedStatus,
+      extraFields: extraFields
+    }));
+  }
+  var bobjectType = bobject === null || bobject === void 0 ? void 0 : (_bobject$id = bobject.id) === null || _bobject$id === void 0 ? void 0 : _bobject$id.typeName;
+  var fieldsLogicRoles = FIELDS_LOGIC_ROLE[bobjectType];
+  var statusKey = "".concat(isSales ? 'SALES_' : '', "STATUS");
+  var additionalInfo = {};
+  if (bobjectType !== 'Opportunity') {
+    additionalInfo = getAditionalInfo(fieldsLogicRoles, selectedStatus, selectedReason, selectedUser);
+  }
+  return _objectSpread$g(_defineProperty$m({}, fieldsLogicRoles[statusKey], selectedStatus === null || selectedStatus === void 0 ? void 0 : selectedStatus.id), additionalInfo);
+}
+
+function _typeof$m(obj) { "@babel/helpers - typeof"; return _typeof$m = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$m(obj); }
+var _excluded$4 = ["children", "machineContext"],
+  _excluded2$1 = ["selectedStatus", "setSelectedStatus", "selectedReason", "setSelectedReason"];
+function ownKeys$f(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$f(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$f(Object(source), !0).forEach(function (key) { _defineProperty$l(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$f(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$l(obj, key, value) { key = _toPropertyKey$l(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$l(arg) { var key = _toPrimitive$l(arg, "string"); return _typeof$m(key) === "symbol" ? key : String(key); }
+function _toPrimitive$l(input, hint) { if (_typeof$m(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$m(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$f(arr, i) { return _arrayWithHoles$f(arr) || _iterableToArrayLimit$f(arr, i) || _unsupportedIterableToArray$f(arr, i) || _nonIterableRest$f(); }
+function _nonIterableRest$f() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$f(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$f(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$f(o, minLen); }
+function _arrayLikeToArray$f(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$f(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$f(arr) { if (Array.isArray(arr)) return arr; }
+function _objectWithoutProperties$4(source, excluded) { if (source == null) return {}; var target = _objectWithoutPropertiesLoose$4(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
+function _objectWithoutPropertiesLoose$4(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
+var fetchTasks = function fetchTasks(referenceBobject, query) {
+  return api.post('/bobjects/' + (referenceBobject === null || referenceBobject === void 0 ? void 0 : referenceBobject.id.accountId) + '/Task/search', query(referenceBobject.id)).then(function (response) {
+    return response.data;
+  });
+};
+var useReferenceBobjectTasks = function useReferenceBobjectTasks(referenceBobject) {
+  var _useCustomTasks = useCustomTasks(),
+    customTasks = _useCustomTasks.customTasks;
+  var _useSWR = useSWR('/statusActionModal' + (referenceBobject === null || referenceBobject === void 0 ? void 0 : referenceBobject.id.value), function () {
+      return fetchTasks(referenceBobject, referenceBobjectTasksQuery);
+    }),
+    data = _useSWR.data;
+  return getIsAnyEmailOrWhatsappOrToday(data === null || data === void 0 ? void 0 : data.contents, customTasks);
+};
+//TODO rethink this
+function getMainBobject(machineContext, watchedBobject) {
+  var _selectedOpportunityA;
+  if (!machineContext) return null;
+  var selectedOpportunityArray = machineContext.selectedOpportunityArray,
+    selectedOpportunityObject = machineContext.selectedOpportunityObject,
+    referenceBobject = machineContext.referenceBobject;
+  if (!selectedOpportunityArray) return selectedOpportunityObject || referenceBobject;
+  var isSingleArray = selectedOpportunityArray.length === 1;
+  if (!watchedBobject) return referenceBobject;
+  if (isSingleArray || (selectedOpportunityArray === null || selectedOpportunityArray === void 0 ? void 0 : selectedOpportunityArray.length) > 1 && !watchedBobject) return (_selectedOpportunityA = selectedOpportunityArray[0]) !== null && _selectedOpportunityA !== void 0 ? _selectedOpportunityA : selectedOpportunityObject;
+  if ((selectedOpportunityArray === null || selectedOpportunityArray === void 0 ? void 0 : selectedOpportunityArray.length) > 1 && watchedBobject) return selectedOpportunityArray.find(function (availableOpps) {
+    var _availableOpps$id;
+    return (availableOpps === null || availableOpps === void 0 ? void 0 : (_availableOpps$id = availableOpps.id) === null || _availableOpps$id === void 0 ? void 0 : _availableOpps$id.value) === watchedBobject;
+  });
+}
+function getBobjectInfoFields(bobject) {
+  var isExtensionBobject = !(bobject !== null && bobject !== void 0 && bobject.rawBobject);
+  var bobjectType = bobject === null || bobject === void 0 ? void 0 : bobject.id.typeName;
+  var isAssigned = isExtensionBobject ? !!bobject.assignedTo : !!getValueFromLogicRole(bobject, FIELDS_LOGIC_ROLE[bobjectType].ASSIGNED_TO);
+  var isInactive = isExtensionBobject ? bobject.cadence && bobject.isInactive : getValueFromLogicRole(bobject, FIELDS_LOGIC_ROLE[bobjectType].IS_INACTIVE);
+  var hasStartedCadence = isExtensionBobject ? !!bobject.cadence : !!getValueFromLogicRole(bobject, FIELDS_LOGIC_ROLE[bobjectType].CADENCE);
+  return {
+    isAssigned: isAssigned,
+    isInactive: isInactive,
+    hasStartedCadence: hasStartedCadence
+  };
+}
+var StatusNoteActionContext = /*#__PURE__*/createContext(null);
+//TODO check the type of bobject were getting
+var StatusNoteActionProvider = function StatusNoteActionProvider(_ref) {
+  var _machineContext$selec, _machineContext$selec2;
+  var children = _ref.children,
+    machineContext = _ref.machineContext,
+    props = _objectWithoutProperties$4(_ref, _excluded$4);
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'contactFlowModal.statusNoteActions'
+    }),
+    t = _useTranslation.t;
+  var _useWizardContext = useWizardContext(),
+    getWizardProperties = _useWizardContext.getWizardProperties;
+  var _useState = useState(),
+    _useState2 = _slicedToArray$f(_useState, 2),
+    errors = _useState2[0],
+    setErrors = _useState2[1];
+  var _useState3 = useState(false),
+    _useState4 = _slicedToArray$f(_useState3, 2),
+    loading = _useState4[0],
+    setLoading = _useState4[1];
+  var hasNoStatusPlanEnabled = useIsNoStatusPlanAccount();
+  var _getWizardProperties = getWizardProperties(props.wizardKey),
+    activity = _getWizardProperties.bobject,
+    activityLead = _getWizardProperties.activityLead,
+    activityCompany = _getWizardProperties.activityCompany;
+  var formMethods = useForm({
+    defaultValues: {
+      selectedBobjectId: (_machineContext$selec = machineContext.selectedOpportunityObject) === null || _machineContext$selec === void 0 ? void 0 : (_machineContext$selec2 = _machineContext$selec.id) === null || _machineContext$selec2 === void 0 ? void 0 : _machineContext$selec2.value
+    }
+  });
+  var bobject = getMainBobject(machineContext, formMethods.watch('selectedBobjectId'));
+  var referenceBobjectTasks = useReferenceBobjectTasks(bobject);
+  var bobjectType = bobject === null || bobject === void 0 ? void 0 : bobject.id.typeName;
+  var _getBobjectInfoFields = getBobjectInfoFields(bobject),
+    isAssigned = _getBobjectInfoFields.isAssigned,
+    isInactive = _getBobjectInfoFields.isInactive,
+    hasStartedCadence = _getBobjectInfoFields.hasStartedCadence;
+  var _useState5 = useState(),
+    _useState6 = _slicedToArray$f(_useState5, 2),
+    selectedUser = _useState6[0],
+    setSelectedUser = _useState6[1];
+  var statusHasChanged = useRef(false);
+  var statusHasChangedState = [statusHasChanged.current, function (value) {
+    statusHasChanged.current = value;
+  }];
+  var _useStatus = useStatus(bobject),
+    selectedStatus = _useStatus.selectedStatus,
+    setSelectedStatus = _useStatus.setSelectedStatus,
+    selectedReason = _useStatus.selectedReason,
+    setSelectedReason = _useStatus.setSelectedReason,
+    statusOptions = _objectWithoutProperties$4(_useStatus, _excluded2$1);
+  var noteHandling = useNoteData({
+    t: t,
+    activity: activity,
+    wizardKey: props.wizardKey
+  });
+  var _useStatusData = useStatusData(),
+    _handleUpdateStatus = _useStatusData.handleUpdateStatus;
+  var _useSWRConfig = useSWRConfig(),
+    cache = _useSWRConfig.cache;
+  var dataModel = useDataModel();
+  useEffect(function () {
+    return function () {
+      return cache["delete"]('/statusActionModal' + (bobject === null || bobject === void 0 ? void 0 : bobject.id.value));
+    };
+  }, []);
+  return /*#__PURE__*/jsx(StatusNoteActionContext.Provider, {
+    value: _objectSpread$f(_objectSpread$f(_objectSpread$f(_objectSpread$f(_objectSpread$f(_objectSpread$f({
+      activity: activity,
+      bobject: bobject,
+      bobjectType: bobjectType
+    }, activityLead ? {
+      activityLead: activityLead
+    } : {}), activityCompany ? {
+      activityCompany: activityCompany
+    } : {}), {}, {
+      handleErrors: [errors, setErrors],
+      handleSelectedReason: [selectedReason, function (value) {
+        setSelectedReason(value);
+        setErrors(undefined);
+      }],
+      handleSelectedStatus: [selectedStatus, function (value) {
+        setSelectedStatus(value);
+        setErrors(undefined);
+      }],
+      handleSelectedUser: [selectedUser, function (value) {
+        setSelectedUser(value);
+        setErrors(undefined);
+      }],
+      handleUpdateStatus: function handleUpdateStatus(statusInfo) {
+        setLoading(true);
+        return _handleUpdateStatus(bobject === null || bobject === void 0 ? void 0 : bobject.id, buildRequestBody({
+          bobject: bobject,
+          selectedStatus: selectedStatus,
+          selectedReason: selectedReason,
+          selectedUser: selectedUser,
+          extraFields: statusInfo === null || statusInfo === void 0 ? void 0 : statusInfo[getSobjectTypeFromBobject(bobject)],
+          isSales: statusOptions.isSales,
+          hasNoStatusPlanEnabled: hasNoStatusPlanEnabled,
+          dataForSalesforce: _objectSpread$f({
+            dataModel: dataModel,
+            machineContext: machineContext
+          }, props)
+        }));
+      },
+      hasNoStatusPlanEnabled: hasNoStatusPlanEnabled,
+      hasStartedCadence: hasStartedCadence,
+      isAssigned: isAssigned,
+      isInactive: isInactive,
+      machineContext: machineContext,
+      t: t,
+      formMethods: formMethods
+    }, noteHandling), {}, {
+      loading: loading || noteHandling.loading,
+      setLoading: setLoading
+    }, referenceBobjectTasks), statusOptions), {}, {
+      statusHasChangedState: statusHasChangedState
+    }, props),
+    children: children
+  });
+};
+var useStatusNoteActionContext = function useStatusNoteActionContext() {
+  var context = useContext(StatusNoteActionContext);
+  if (context === undefined) {
+    throw new Error('useInactiveHandlingModal must be used within the modal provider');
+  }
+  return context;
+};
+
+var ColumnHeader = function ColumnHeader(_ref) {
+  var icon = _ref.icon,
+    text = _ref.text,
+    loading = _ref.loading,
+    children = _ref.children;
+  return /*#__PURE__*/jsx("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '8px',
+      marginBottom: '8px'
+    },
+    children: /*#__PURE__*/jsxs("div", {
+      style: {
+        display: 'flex',
+        justifyContent: 'space-between'
+      },
+      children: [/*#__PURE__*/jsxs("div", {
+        style: {
+          display: 'flex'
+        },
+        children: [/*#__PURE__*/jsx(Icon, {
+          name: icon,
+          color: "softPeanut"
+        }), /*#__PURE__*/jsx(Text, {
+          size: "m",
+          color: "peanut",
+          children: text
+        })]
+      }), loading ? /*#__PURE__*/jsx(Spinner, {
+        name: "loadingCircle",
+        size: 16,
+        color: "softPeanut"
+      }) : children]
+    })
+  });
+};
+
+var css_248z$a = ".noteColumn-module_noteColumn__82vl0{\n  display: flex;\n  flex-direction: column;\n  justify-content: space-between;\n  height: 100%;\n}\n\n.noteColumn-module_noteColumn__82vl0 > div:nth-child(2) {\n  margin-top: 12px;\n  height: 89%;\n}\n\n.noteColumn-module_noteColumn__82vl0 > div:nth-child(3) {\n  border-top: 1px solid var(--verySoftPeanut);\n  border-bottom: 1px solid var(--verySoftPeanut);\n}\n\n.noteColumn-module_toolbar__jBERE > div  {\n  padding: 4px 0;\n}\n\n.noteColumn-module_toolbar__jBERE > div > section {\n  padding: 4px 0;\n}\n";
+var styles$a = {"noteColumn":"noteColumn-module_noteColumn__82vl0","toolbar":"noteColumn-module_toolbar__jBERE"};
+styleInject(css_248z$a);
+
+var NoteColumn = function NoteColumn() {
+  var _useStatusNoteActionC = useStatusNoteActionContext(),
+    note = _useStatusNoteActionC.note,
+    setNote = _useStatusNoteActionC.setNote,
+    loading = _useStatusNoteActionC.loading,
+    saveNote = _useStatusNoteActionC.saveNote,
+    hasSaved = _useStatusNoteActionC.hasSaved,
+    activity = _useStatusNoteActionC.activity,
+    t = _useStatusNoteActionC.t;
+  var plugins = useRichTextEditorPlugins({
+    images: false,
+    replaceParagraphs: true
+  });
+  var isCallActivity = getValueFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.TYPE) === ACTIVITY_TYPES_VALUES_LOGIC_ROLE.CALL;
+  var activityTypeString = isCallActivity ? t('noteColumn.call') : t('noteColumn.meeting');
+  var deserializedNote = isHtml(note) ? deserialize(note, {
+    format: 'HTML',
+    plugins: plugins
+  }) : note;
+  useEffect(function () {
+    saveNote();
+  }, [JSON.stringify(note)]);
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$a.noteColumn,
+    children: [/*#__PURE__*/jsx(ColumnHeader, {
+      icon: "noteAction",
+      text: t('noteColumn.header', {
+        activityType: activityTypeString
+      }),
+      loading: loading,
+      children: hasSaved && /*#__PURE__*/jsxs("div", {
+        style: {
+          display: 'flex'
+        },
+        children: [/*#__PURE__*/jsx(Icon, {
+          name: "check",
+          color: "softPeanut",
+          size: 16
+        }), /*#__PURE__*/jsx(Text, {
+          size: "s",
+          color: "softPeanut",
+          children: t('header.saved')
+        })]
+      })
+    }), /*#__PURE__*/jsx(RichTextEditor, {
+      id: 'note-detail-body',
+      defaultValue: deserializedNote || '',
+      plugins: plugins,
+      placeholder: t('noteColumn.placeholder'),
+      onChange: setNote,
+      style: {
+        padding: '0',
+        height: '100%'
+      },
+      children: function children(editor) {
+        return /*#__PURE__*/jsxs(Fragment, {
+          children: [/*#__PURE__*/jsx("div", {
+            className: styles$a.body_wrapper,
+            children: editor
+          }), /*#__PURE__*/jsx("div", {
+            className: styles$a.toolbar,
+            children: /*#__PURE__*/jsxs(EditorToolbar, {
+              backgroundColor: "var(--peanut) !important",
+              children: [/*#__PURE__*/jsx(EditorToolbarTextMarksSection, {
+                color: "peanut"
+              }), /*#__PURE__*/jsx(EditorToolbarListsSection, {
+                color: "peanut"
+              }), /*#__PURE__*/jsx(EditorToolbarFontStylesSection, {
+                color: "peanut"
+              })]
+            })
+          })]
+        });
+      }
+    })]
+  });
+};
+
+var TASK_STATE;
+(function (TASK_STATE) {
+  TASK_STATE[TASK_STATE["IDLE"] = 0] = "IDLE";
+  TASK_STATE[TASK_STATE["COMPLETING"] = 1] = "COMPLETING";
+  TASK_STATE[TASK_STATE["COMPLETED"] = 2] = "COMPLETED";
+})(TASK_STATE || (TASK_STATE = {}));
+
+var css_248z$9 = ".actionCard-module_actionCard__OqC4G{\n  display: flex;\n  min-height: 60px;\n  border-radius: 4px;\n  padding: 8px 12px; position: relative;\n  cursor: pointer;\n}\n\n.actionCard-module_actionCard__OqC4G:hover{\n  scale: 1.05;\n  transition: all ease-in-out 0.2s;\n}\n";
+var styles$9 = {"actionCard":"actionCard-module_actionCard__OqC4G"};
+styleInject(css_248z$9);
+
+function _slicedToArray$e(arr, i) { return _arrayWithHoles$e(arr) || _iterableToArrayLimit$e(arr, i) || _unsupportedIterableToArray$e(arr, i) || _nonIterableRest$e(); }
+function _nonIterableRest$e() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$e(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$e(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$e(o, minLen); }
+function _arrayLikeToArray$e(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$e(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$e(arr) { if (Array.isArray(arr)) return arr; }
+var TaskIconDisplay = function TaskIconDisplay(_ref) {
+  var _getFieldByLogicRole;
+  var bobject = _ref.bobject,
+    _ref$size = _ref.size,
+    size = _ref$size === void 0 ? 18 : _ref$size;
+  var isScheduled = isScheduledTask(bobject);
+  var isCadence = isCadenceTask(bobject);
+  var isCall = isCallTask(bobject);
+  var isEmail = isEmailTask(bobject);
+  var isAutomatedEmail = isAutomatedEmailTask(bobject);
+  var isLinkedinMessage = isLinkedinMessageTask(bobject);
+  var isMeeting = isMeetingTypeTask(bobject);
+  var isScheduledEmailTask = ((_getFieldByLogicRole = getFieldByLogicRole(bobject, TASK_FIELDS_LOGIC_ROLE.TASK_TYPE)) === null || _getFieldByLogicRole === void 0 ? void 0 : _getFieldByLogicRole.valueLogicRole) === TASK_TYPE.SCHEDULED_EMAIL;
+  var _useCustomTasks = useCustomTasks(),
+    customTasks = _useCustomTasks.customTasks;
+  var customTaskId = getFieldByLogicRole(bobject, TASK_FIELDS_LOGIC_ROLE.CUSTOM_TASK);
+  var customTask = customTasks === null || customTasks === void 0 ? void 0 : customTasks.find(function (ct) {
+    return (ct === null || ct === void 0 ? void 0 : ct.id) === (customTaskId === null || customTaskId === void 0 ? void 0 : customTaskId.value);
+  });
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [isScheduled && !customTask && /*#__PURE__*/jsxs(Fragment, {
+      children: [!isCall && !isEmail && !isLinkedinMessage && /*#__PURE__*/jsx(Icon, {
+        size: size,
+        name: "clock",
+        color: "melon"
+      }), isCall && /*#__PURE__*/jsx(Icon, {
+        size: size,
+        name: "phone",
+        color: "melon"
+      }), isEmail && /*#__PURE__*/jsx(Icon, {
+        size: size,
+        name: "mail",
+        color: "tangerine"
+      }), isLinkedinMessage && /*#__PURE__*/jsx(Icon, {
+        size: size,
+        name: "linkedin",
+        color: "darkBloobirds"
+      })]
+    }), isMeeting && /*#__PURE__*/jsx(Fragment, {
+      children: /*#__PURE__*/jsx(Icon, {
+        size: size,
+        name: "calendar",
+        color: "tomato"
+      })
+    }), isScheduledEmailTask && /*#__PURE__*/jsx(Fragment, {
+      children: /*#__PURE__*/jsx(Icon, {
+        size: size,
+        name: "scheduleMail",
+        color: "tangerine"
+      })
+    }), isAutomatedEmail && /*#__PURE__*/jsx(Fragment, {
+      children: /*#__PURE__*/jsx(Icon, {
+        size: size,
+        name: "autoMail",
+        color: "tangerine"
+      })
+    }), isCadence && !isAutomatedEmail && !customTask && /*#__PURE__*/jsxs(Fragment, {
+      children: [isCall && /*#__PURE__*/jsx(Icon, {
+        size: size,
+        name: "phone",
+        color: "melon"
+      }), isEmail && /*#__PURE__*/jsx(Icon, {
+        size: size,
+        name: "mail",
+        color: "tangerine"
+      }), isLinkedinMessage && /*#__PURE__*/jsx(Icon, {
+        size: size,
+        name: "linkedin",
+        color: "darkBloobirds"
+      })]
+    }), customTask && /*#__PURE__*/jsx(Fragment, {
+      children: /*#__PURE__*/jsx(Icon, {
+        name: customTask.icon,
+        color: customTask.iconColor,
+        size: size
+      })
+    })]
+  });
+};
+var backgroundDictionary = {
+  bloobirds: '#F6FAFD',
+  tangerine: '#FCF7F4',
+  whatsapp: '#F4FDF8'
+};
+var applyHoverStyles = function applyHoverStyles(event, color) {
+  var element = event.currentTarget;
+  if (element) {
+    element.style.backgroundColor = backgroundDictionary[color] || "var(--verySoft".concat(color, ")");
+  }
+};
+var removeHoverStyles = function removeHoverStyles(event) {
+  var element = event.currentTarget;
+  if (element) {
+    element.style.backgroundColor = ''; // Revert to default
+  }
+};
+
+function ActionIcon(_ref2) {
+  var icon = _ref2.icon,
+    color = _ref2.color,
+    status = _ref2.status;
+  var isCompleted = status === TASK_STATE.COMPLETED;
+  return /*#__PURE__*/jsx("div", {
+    style: {
+      width: '44px',
+      height: '44px',
+      flexShrink: 0,
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: '4px',
+      backgroundColor: isCompleted ? 'var(--melon)' : "var(--".concat(color, ")")
+    },
+    children: status === TASK_STATE.COMPLETING ? /*#__PURE__*/jsx(Spinner, {
+      name: "loadingCircle",
+      size: 32,
+      color: "white"
+    }) : /*#__PURE__*/jsx(Icon, {
+      name: isCompleted ? 'checkDouble' : icon,
+      size: 32,
+      color: "white"
+    })
+  });
+}
+function ActionContent(_ref3) {
+  var task = _ref3.task;
+  var _useStatusNoteActionC = useStatusNoteActionContext(),
+    t = _useStatusNoteActionC.t;
+  return /*#__PURE__*/jsxs("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '4px',
+      padding: '0 8px'
+    },
+    children: [/*#__PURE__*/jsxs("div", {
+      style: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '4px'
+      },
+      children: [/*#__PURE__*/jsx(Text, {
+        size: "s",
+        weight: "bold",
+        children: task !== null && task !== void 0 && task.title ? t('quickActionColumn.actionCard.' + task.title) : t('quickActionColumn.actionCard.completeCurrentTask')
+      }), !task.description && /*#__PURE__*/jsxs("div", {
+        style: {
+          display: 'flex',
+          gap: '2px',
+          alignItems: 'center'
+        },
+        children: [/*#__PURE__*/jsx(TaskIconDisplay, {
+          bobject: task
+        }), /*#__PURE__*/jsx(Text, {
+          size: "s",
+          children: getValueFromLogicRole(task, TASK_FIELDS_LOGIC_ROLE.TITLE)
+        })]
+      })]
+    }), /*#__PURE__*/jsx(Text, {
+      size: "xs",
+      color: "softPeanut",
+      children: task.description ? t('quickActionColumn.actionCard.' + task.description) : getValueFromLogicRole(task, TASK_FIELDS_LOGIC_ROLE.DESCRIPTION)
+    })]
+  });
+}
+var ImportantFlag = function ImportantFlag(_ref4) {
+  var color = _ref4.color;
+  return /*#__PURE__*/jsx("div", {
+    style: {
+      position: 'absolute',
+      top: '-6px',
+      right: '2px'
+    },
+    children: /*#__PURE__*/jsx(Icon, {
+      name: "bookmark_big",
+      size: 24,
+      color: color
+    })
+  });
+};
+function getIcon(icon, isHovered, task) {
+  if (isHovered && icon === 'taskAction') {
+    return task.title ? 'add' : 'check';
+  }
+  return icon;
+}
+function ActionCard(_ref5) {
+  var icon = _ref5.icon,
+    color = _ref5.color,
+    task = _ref5.task,
+    active = _ref5.active,
+    onClick = _ref5.onClick,
+    taskState = _ref5.taskState;
+  var _useHover = useHover(),
+    _useHover2 = _slicedToArray$e(_useHover, 2),
+    ref = _useHover2[0],
+    isHovered = _useHover2[1];
+  var isCompleted = icon === 'taskAction' && taskState === TASK_STATE.COMPLETED;
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$9.actionCard,
+    style: {
+      border: isCompleted ? "1px solid #D9F0C0" : "1px solid var(--".concat(color, ")"),
+      borderLeft: isCompleted ? "4px solid #D9F0C0" : "4px solid var(--".concat(color, ")")
+    },
+    ref: ref,
+    onMouseEnter: function onMouseEnter(e) {
+      return applyHoverStyles(e, color);
+    },
+    onMouseLeave: removeHoverStyles,
+    onClick: onClick,
+    children: [/*#__PURE__*/jsx(ActionIcon, {
+      icon: getIcon(icon, isHovered, task),
+      color: color,
+      status: taskState
+    }), /*#__PURE__*/jsx(ActionContent, {
+      task: task
+    }), active && !isCompleted && /*#__PURE__*/jsx(ImportantFlag, {
+      color: color
+    })]
+  });
+}
+
+var css_248z$8 = ".quickActionColumn-module_quickActionContainer__GnqGQ{\n  display: flex;\n  flex-direction: column;\n  gap: 10px;\n}\n";
+var styles$8 = {"quickActionContainer":"quickActionColumn-module_quickActionContainer__GnqGQ"};
+styleInject(css_248z$8);
+
+function _typeof$l(obj) { "@babel/helpers - typeof"; return _typeof$l = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$l(obj); }
+function _slicedToArray$d(arr, i) { return _arrayWithHoles$d(arr) || _iterableToArrayLimit$d(arr, i) || _unsupportedIterableToArray$d(arr, i) || _nonIterableRest$d(); }
+function _nonIterableRest$d() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$d(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$d(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$d(o, minLen); }
+function _arrayLikeToArray$d(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$d(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$d(arr) { if (Array.isArray(arr)) return arr; }
+function ownKeys$e(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$e(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$e(Object(source), !0).forEach(function (key) { _defineProperty$k(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$e(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$k(obj, key, value) { key = _toPropertyKey$k(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$k(arg) { var key = _toPrimitive$k(arg, "string"); return _typeof$l(key) === "symbol" ? key : String(key); }
+function _toPrimitive$k(input, hint) { if (_typeof$l(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$l(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function forgeTask(icon, active) {
+  //TODO translate
+  switch (icon) {
+    case 'mail':
+      return {
+        icon: icon,
+        title: 'email.title',
+        description: active ? 'email.hasTask' : 'email.noTask'
+      };
+    case 'whatsapp':
+      return {
+        icon: icon,
+        title: 'whatsapp.title',
+        description: active ? 'whatsapp.hasTask' : 'whatsapp.noTask'
+      };
+    case 'taskAction':
+      return {
+        icon: icon,
+        title: active ? 'task.activeTitle' : 'task.completedTitle',
+        description: active ? 'task.hasTask' : 'task.noTask'
+      };
+  }
+}
+function Actions$1() {
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$8.quickActionContainer,
+    children: [/*#__PURE__*/jsx(QuickEmailCard, {}), /*#__PURE__*/jsx(QuickWhatsappCard, {}), /*#__PURE__*/jsx(QuickTaskForTodayCard, {})]
+  });
+}
+var QuickActionColumn = function QuickActionColumn() {
+  var _useStatusNoteActionC = useStatusNoteActionContext(),
+    t = _useStatusNoteActionC.t;
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsx(ColumnHeader, {
+      icon: "zap",
+      text: t('quickActionColumn.header')
+    }), /*#__PURE__*/jsx(Actions$1, {})]
+  });
+};
+function QuickEmailCard() {
+  var _useStatusNoteActionC2 = useStatusNoteActionContext(),
+    hasEmailTask = _useStatusNoteActionC2.hasEmailTask;
+  var setEmailVariablesValue = useBaseSetEmailVariablesValues();
+  var _useMinimizableModals = useMinimizableModals(),
+    openMinimizableModal = _useMinimizableModals.openMinimizableModal;
+  var _useStatusNoteActionC3 = useStatusNoteActionContext(),
+    bobject = _useStatusNoteActionC3.bobject,
+    t = _useStatusNoteActionC3.t,
+    activityCompany = _useStatusNoteActionC3.activityCompany,
+    activityLead = _useStatusNoteActionC3.activityLead;
+  var defaultToLeadEmail = getValueFromLogicRole(activityLead, LEAD_FIELDS_LOGIC_ROLE.EMAIL);
+  var defaultToCompanyEmail = getValueFromLogicRole(activityCompany, COMPANY_FIELDS_LOGIC_ROLE.EMAIL) || getValueFromLogicRole(activityCompany, 'COMPANY__GENERIC_EMAIL');
+  var defaultToEmail = defaultToLeadEmail || defaultToCompanyEmail;
+  function handleOnClick() {
+    var _activityLead$raw, _bobject$id;
+    setEmailVariablesValue({
+      company: activityCompany,
+      lead: activityLead ? activityLead === null || activityLead === void 0 ? void 0 : (_activityLead$raw = activityLead.raw) === null || _activityLead$raw === void 0 ? void 0 : _activityLead$raw.contents : null,
+      opportunity: (bobject === null || bobject === void 0 ? void 0 : (_bobject$id = bobject.id) === null || _bobject$id === void 0 ? void 0 : _bobject$id.typeName) === BobjectTypes.Opportunity ? bobject === null || bobject === void 0 ? void 0 : bobject.rawBobject : null
+    });
+    mixpanel.track(MIXPANEL_EVENTS.STATUS_NOTE_ACTIONS_OPEN_EMAIL);
+    openMinimizableModal({
+      type: 'email',
+      title: t('newEmail'),
+      data: _objectSpread$e(_objectSpread$e({
+        template: {
+          content: '',
+          subject: ''
+        },
+        mode: EMAIL_MODE.SEND,
+        activity: null,
+        company: activityCompany !== null && activityCompany !== void 0 ? activityCompany : null,
+        leads: []
+      }, activityLead && {
+        lead: activityLead
+      }), defaultToEmail && {
+        defaultToEmail: [defaultToEmail]
+      }),
+      onSave: function onSave() {
+        window.dispatchEvent(new CustomEvent(MessagesEvents.ActiveBobjectUpdated, {
+          detail: {
+            type: BobjectTypes.Activity
+          }
+        }));
+      }
+    });
+  }
+  return /*#__PURE__*/jsx(ActionCard, {
+    icon: "mail",
+    color: "tangerine",
+    task: forgeTask('mail', hasEmailTask),
+    active: hasEmailTask,
+    onClick: handleOnClick
+  });
+}
+function getReferenceBobjectPhone(bobject) {
+  var _bobject$id2, _bobject$phoneNumbers, _FIELDS_LOGIC_ROLE$bo;
+  if (!bobject) return '';
+  var bobjectType = (_bobject$id2 = bobject.id) === null || _bobject$id2 === void 0 ? void 0 : _bobject$id2.typeName;
+  return ((_bobject$phoneNumbers = bobject.phoneNumbers) === null || _bobject$phoneNumbers === void 0 ? void 0 : _bobject$phoneNumbers[0]) || getValueFromLogicRole(bobject, (_FIELDS_LOGIC_ROLE$bo = FIELDS_LOGIC_ROLE[bobjectType]) === null || _FIELDS_LOGIC_ROLE$bo === void 0 ? void 0 : _FIELDS_LOGIC_ROLE$bo.PHONE);
+}
+function QuickWhatsappCard() {
+  var _useStatusNoteActionC4 = useStatusNoteActionContext(),
+    hasWhatsappTask = _useStatusNoteActionC4.hasWhatsappTask,
+    bobject = _useStatusNoteActionC4.bobject,
+    machineContext = _useStatusNoteActionC4.machineContext,
+    activityLead = _useStatusNoteActionC4.activityLead;
+  var phone = getReferenceBobjectPhone(bobject) || getReferenceBobjectPhone(machineContext === null || machineContext === void 0 ? void 0 : machineContext.referenceBobject) || getValueFromLogicRole(activityLead, LEAD_FIELDS_LOGIC_ROLE.PHONE);
+  return /*#__PURE__*/jsx(ActionCard, {
+    icon: "whatsapp",
+    color: "whatsapp",
+    task: forgeTask('whatsapp', hasWhatsappTask),
+    active: hasWhatsappTask,
+    onClick: function onClick() {
+      openWhatsAppWeb(true, phone);
+      mixpanel.track(MIXPANEL_EVENTS.STATUS_NOTE_ACTIONS_OPEN_WHATSAPP);
+    }
+  });
+}
+function completeTask(task, setIsLoading) {
+  var _task$id;
+  var taskId = task === null || task === void 0 ? void 0 : (_task$id = task.id) === null || _task$id === void 0 ? void 0 : _task$id.value;
+  setIsLoading(TASK_STATE.COMPLETING);
+  api.patch("/bobjects/".concat(taskId, "/raw"), {
+    contents: _defineProperty$k({}, TASK_FIELDS_LOGIC_ROLE.STATUS, checkIsOverdue(task) ? TASK_STATUS_VALUE_LOGIC_ROLE.COMPLETED_OVERDUE : TASK_STATUS_VALUE_LOGIC_ROLE.COMPLETED),
+    params: {
+      skipEmptyUpdates: true
+    }
+  }).then(function () {
+    mixpanel.track(MIXPANEL_EVENTS.STATUS_NOTE_ACTIONS_COMPLETE_TASK);
+    window.dispatchEvent(new CustomEvent(MessagesEvents.TaskCompleted, {
+      detail: {
+        id: taskId
+      }
+    }));
+    window.dispatchEvent(new CustomEvent(MessagesEvents.ActiveBobjectUpdated, {
+      detail: {
+        type: BobjectTypes.Task
+      }
+    }));
+    createToast({
+      message: 'Task completed',
+      type: 'success'
+    });
+    setIsLoading(TASK_STATE.COMPLETED);
+  });
+}
+function QuickTaskForTodayCard() {
+  var _useStatusNoteActionC5 = useStatusNoteActionContext(),
+    taskForToday = _useStatusNoteActionC5.taskForToday,
+    bobject = _useStatusNoteActionC5.bobject;
+  var _useState = useState(TASK_STATE.IDLE),
+    _useState2 = _slicedToArray$d(_useState, 2),
+    taskState = _useState2[0],
+    setTaskState = _useState2[1];
+  var _useMinimizableModals2 = useMinimizableModals(),
+    openMinimizableModal = _useMinimizableModals2.openMinimizableModal;
+  var isCompleted = taskState === TASK_STATE.COMPLETED;
+  if (taskForToday) {
+    return /*#__PURE__*/jsx(ActionCard, {
+      icon: "taskAction",
+      color: "bloobirds",
+      task: taskState === TASK_STATE.COMPLETED ? _objectSpread$e(_objectSpread$e({}, taskForToday), {}, {
+        title: 'task.completedTitle'
+      }) : taskForToday,
+      active: true,
+      onClick: function onClick() {
+        if (taskState === TASK_STATE.IDLE) {
+          completeTask(taskForToday, setTaskState);
+        }
+      },
+      taskState: taskState
+    });
+  } else {
+    return /*#__PURE__*/jsx(ActionCard, {
+      icon: "taskAction",
+      color: "bloobirds",
+      active: true,
+      task: forgeTask('taskAction', !isCompleted),
+      onClick: function onClick() {
+        if (!isCompleted) {
+          var _bobject$id3, _bobject$id3$typeName;
+          mixpanel.track(MIXPANEL_EVENTS.STATUS_NOTE_ACTIONS_CREATE_TASK);
+          openMinimizableModal({
+            type: 'taskStatic',
+            data: _defineProperty$k(_defineProperty$k({}, bobject === null || bobject === void 0 ? void 0 : (_bobject$id3 = bobject.id) === null || _bobject$id3 === void 0 ? void 0 : (_bobject$id3$typeName = _bobject$id3.typeName) === null || _bobject$id3$typeName === void 0 ? void 0 : _bobject$id3$typeName.toLowerCase(), bobject), "companyContext", undefined),
+            onSave: function onSave() {
+              setTaskState(TASK_STATE.COMPLETED);
+            }
+          });
+        }
+      },
+      taskState: taskState
+    });
+  }
+}
+
+var css_248z$7 = ".statusColumn-module__radios_list_status__zCWk5 {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n\n.statusColumn-module__radios_list_status__zCWk5 > div[role='radiogroup'] {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n}\n\n.statusColumn-module__change_lead_status__button__KHlvk {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  gap: 4px;\n  padding: 0.5rem 1rem;\n  cursor: pointer;\n  font-size: 13px;\n}\n.statusColumn-module__change_lead_status__wrapper__G9Ebg {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n}\n.statusColumn-module_reason_section__wrapper__xaE01,\n.statusColumn-module_select_content__wrapper__5TI8I {\n  padding-top: 0.5rem;\n}\n";
+var styles$7 = {"_radios_list_status":"statusColumn-module__radios_list_status__zCWk5","_change_lead_status__button":"statusColumn-module__change_lead_status__button__KHlvk","_change_lead_status__wrapper":"statusColumn-module__change_lead_status__wrapper__G9Ebg","reason_section__wrapper":"statusColumn-module_reason_section__wrapper__xaE01","select_content__wrapper":"statusColumn-module_select_content__wrapper__5TI8I"};
+styleInject(css_248z$7);
+
+function isStatusNewOrBacklog(status) {
+  return ['New', 'Backlog'].includes(status.name);
+}
+function isStatusWithReason(selectedStatus, salesforceStatusFields) {
+  if (!selectedStatus) return false;
+  if (salesforceStatusFields) {
+    var _salesforceStatusFiel, _salesforceStatusFiel2, _salesforceStatusFiel3;
+    return salesforceStatusFields && ((_salesforceStatusFiel = salesforceStatusFields.find(function (field) {
+      return field.objectType === selectedStatus.salesforceObjectType;
+    })) === null || _salesforceStatusFiel === void 0 ? void 0 : (_salesforceStatusFiel2 = _salesforceStatusFiel.statusRestrictions) === null || _salesforceStatusFiel2 === void 0 ? void 0 : (_salesforceStatusFiel3 = _salesforceStatusFiel2.find(function (_ref) {
+      var salesforceStatus = _ref.salesforceStatus;
+      return selectedStatus.name === salesforceStatus;
+    })) === null || _salesforceStatusFiel3 === void 0 ? void 0 : _salesforceStatusFiel3.fields);
+  }
+  return ['Nurturing', 'Discarded', 'On Hold'].includes(selectedStatus.name);
+}
+function shouldBeAssigned(isAssigned, selectedStatus, hasNoStatusPlan) {
+  if (!selectedStatus || hasNoStatusPlan) return false;
+  return !isAssigned && !isStatusNewOrBacklog(selectedStatus);
+}
+
+function _typeof$k(obj) { "@babel/helpers - typeof"; return _typeof$k = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$k(obj); }
+function _slicedToArray$c(arr, i) { return _arrayWithHoles$c(arr) || _iterableToArrayLimit$c(arr, i) || _unsupportedIterableToArray$c(arr, i) || _nonIterableRest$c(); }
+function _nonIterableRest$c() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$c(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$c(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$c(o, minLen); }
+function _arrayLikeToArray$c(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$c(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$c(arr) { if (Array.isArray(arr)) return arr; }
+function ownKeys$d(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$d(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$d(Object(source), !0).forEach(function (key) { _defineProperty$j(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$d(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$j(obj, key, value) { key = _toPropertyKey$j(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$j(arg) { var key = _toPrimitive$j(arg, "string"); return _typeof$k(key) === "symbol" ? key : String(key); }
+function _toPrimitive$j(input, hint) { if (_typeof$k(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$k(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var dictionary = {
+  Opportunity: {
+    resourceField: 'opportunityStatus',
+    annexTitle: 'Opportunity status dependencies'
+  },
+  Lead: {
+    resourceField: 'leadStatus',
+    annexTitle: 'Lead status dependencies'
+  },
+  Contact: {
+    resourceField: 'leadStatus',
+    annexTitle: 'Contact status dependencies'
+  },
+  Account: {
+    resourceField: 'companyStatus',
+    annexTitle: 'Company status dependencies'
+  }
+};
+function parseStatusRestrictions(salesforceStatusFieldsRequirements, datamodelFields) {
+  return salesforceStatusFieldsRequirements === null || salesforceStatusFieldsRequirements === void 0 ? void 0 : salesforceStatusFieldsRequirements.reduce(function (acc, restriction) {
+    var _restriction$fields$m;
+    acc[restriction.salesforceStatus] = (_restriction$fields$m = restriction.fields.map(function (_ref) {
+      var field = _ref.field,
+        required = _ref.required;
+      var matchingField = datamodelFields === null || datamodelFields === void 0 ? void 0 : datamodelFields.find(function (_ref2) {
+        var name = _ref2.name;
+        return name === field;
+      });
+      if (!matchingField) return null;
+      return _objectSpread$d(_objectSpread$d({}, matchingField), {}, {
+        required: required
+      });
+    })) === null || _restriction$fields$m === void 0 ? void 0 : _restriction$fields$m.filter(Boolean);
+    return acc;
+  }, {});
+}
+function parseRequirements(salesforceStatusFieldsRequirements, salesforceDataModelFields) {
+  return salesforceStatusFieldsRequirements === null || salesforceStatusFieldsRequirements === void 0 ? void 0 : salesforceStatusFieldsRequirements.reduce(function (acc, sobject) {
+    var typeInfos = salesforceDataModelFields === null || salesforceDataModelFields === void 0 ? void 0 : salesforceDataModelFields[sobject.objectType.toLowerCase()];
+    acc[dictionary[sobject.objectType].resourceField] = parseStatusRestrictions(sobject.statusRestrictions, typeInfos === null || typeInfos === void 0 ? void 0 : typeInfos.fields);
+    return acc;
+  }, {});
+}
+var getIconName = function getIconName(bobject) {
+  var _bobject$id;
+  switch (bobject === null || bobject === void 0 ? void 0 : (_bobject$id = bobject.id) === null || _bobject$id === void 0 ? void 0 : _bobject$id.typeName) {
+    case BobjectTypes.Company:
+      return 'company';
+    case BobjectTypes.Lead:
+      return isContactSalesforce(bobject) ? 'sfdcContacts' : 'personBody';
+    case BobjectTypes.Opportunity:
+      return 'sfdcOpp';
+  }
+};
+var AdditionalInfoSelect = function AdditionalInfoSelect() {
+  var _bobject$id2, _FIELDS_LOGIC_ROLE$bo, _parsedRequirements$p, _parsedRequirements$p3, _dictionary$sobject, _parsedRequirements$p4, _availableReasons$val, _availableReasons$val2, _availableUsers$value;
+  var _useStatusNoteActionC = useStatusNoteActionContext(),
+    bobject = _useStatusNoteActionC.bobject,
+    _useStatusNoteActionC2 = _slicedToArray$c(_useStatusNoteActionC.handleSelectedStatus, 1),
+    selectedStatus = _useStatusNoteActionC2[0],
+    availableReasons = _useStatusNoteActionC.availableReasons,
+    availableUsers = _useStatusNoteActionC.availableUsers,
+    _useStatusNoteActionC3 = _slicedToArray$c(_useStatusNoteActionC.handleErrors, 1),
+    errors = _useStatusNoteActionC3[0],
+    _useStatusNoteActionC4 = _slicedToArray$c(_useStatusNoteActionC.handleSelectedReason, 2),
+    selectedReason = _useStatusNoteActionC4[0],
+    setSelectedReason = _useStatusNoteActionC4[1],
+    _useStatusNoteActionC5 = _slicedToArray$c(_useStatusNoteActionC.handleSelectedUser, 2),
+    selectedUser = _useStatusNoteActionC5[0],
+    setSelectedUser = _useStatusNoteActionC5[1],
+    hasNoStatusPlanEnabled = _useStatusNoteActionC.hasNoStatusPlanEnabled,
+    buttonsConfig = _useStatusNoteActionC.buttonsConfig;
+  var _useFormContext = useFormContext(),
+    setValue = _useFormContext.setValue;
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  var _useState = useState(undefined),
+    _useState2 = _slicedToArray$c(_useState, 2),
+    salesforceError = _useState2[0],
+    setSalesforceError = _useState2[1];
+  var bobjectType = bobject === null || bobject === void 0 ? void 0 : (_bobject$id2 = bobject.id) === null || _bobject$id2 === void 0 ? void 0 : _bobject$id2.typeName;
+  var isAssigned = !!(bobject !== null && bobject !== void 0 && bobject.assignedTo) || !!getValueFromLogicRole(bobject, (_FIELDS_LOGIC_ROLE$bo = FIELDS_LOGIC_ROLE[bobjectType]) === null || _FIELDS_LOGIC_ROLE$bo === void 0 ? void 0 : _FIELDS_LOGIC_ROLE$bo.ASSIGNED_TO);
+  var needsAssignedTo = shouldBeAssigned(isAssigned, selectedStatus, hasNoStatusPlanEnabled);
+  var reasonedStatus = isStatusWithReason(selectedStatus, hasNoStatusPlanEnabled && (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.salesforceStatusFields));
+  var salesforceDataModel = useSalesforceDataModel();
+  var parsedRequirements = parseRequirements(buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.salesforceStatusFields, salesforceDataModel === null || salesforceDataModel === void 0 ? void 0 : salesforceDataModel.types);
+  var aditionalInfoNeeded = needsAssignedTo || reasonedStatus;
+  var parsedReqKey = "".concat(bobjectType.toLowerCase(), "Status");
+  var canShowNoStatusReqFields = hasNoStatusPlanEnabled && !!(parsedRequirements !== null && parsedRequirements !== void 0 && (_parsedRequirements$p = parsedRequirements[parsedReqKey]) !== null && _parsedRequirements$p !== void 0 && _parsedRequirements$p[selectedStatus === null || selectedStatus === void 0 ? void 0 : selectedStatus.name]);
+  var sobject = getSobjectTypeFromBobject(bobject);
+  useEffect(function () {
+    var _buttonsConfig$salesf;
+    var salesforceId = bobject === null || bobject === void 0 ? void 0 : bobject.salesforceId;
+    var valuesToMap = new Map();
+    if ((buttonsConfig === null || buttonsConfig === void 0 ? void 0 : (_buttonsConfig$salesf = buttonsConfig.salesforceStatusFields) === null || _buttonsConfig$salesf === void 0 ? void 0 : _buttonsConfig$salesf.length) > 0) {
+      var _salesforceField$stat;
+      //Todo use this for getting all the fields
+      //buttonsConfig.salesforceStatusFields.forEach(salesforceField => {
+      var salesforceField = buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.salesforceStatusFields.find(function (fields) {
+        return fields.objectType === sobject;
+      });
+      var sobjectName = salesforceField === null || salesforceField === void 0 ? void 0 : salesforceField.objectType;
+      var sobjectFields = salesforceField === null || salesforceField === void 0 ? void 0 : (_salesforceField$stat = salesforceField.statusRestrictions) === null || _salesforceField$stat === void 0 ? void 0 : _salesforceField$stat.flatMap(function (status) {
+        var _status$fields;
+        return status === null || status === void 0 ? void 0 : (_status$fields = status.fields) === null || _status$fields === void 0 ? void 0 : _status$fields.map(function (_ref3) {
+          var field = _ref3.field;
+          return field;
+        });
+      });
+      api.post('/utils/service/salesforce/query', {
+        query: "SELECT ".concat(sobjectFields === null || sobjectFields === void 0 ? void 0 : sobjectFields.join(','), " FROM ").concat(sobjectName, " WHERE Id='").concat(salesforceId, "'")
+      }).then(function (data) {
+        var _data$data, _salesforceField$stat2;
+        var sobjectValues = data === null || data === void 0 ? void 0 : (_data$data = data.data) === null || _data$data === void 0 ? void 0 : _data$data.reduce(function (acc, field) {
+          if (field) {
+            var _Object$entries;
+            var fieldValues = (_Object$entries = Object.entries(field)) === null || _Object$entries === void 0 ? void 0 : _Object$entries.filter(function (_ref4) {
+              var _ref5 = _slicedToArray$c(_ref4, 2);
+                _ref5[0];
+                var value = _ref5[1];
+              return typeof value === 'string';
+            });
+            return fieldValues === null || fieldValues === void 0 ? void 0 : fieldValues.reduce(function (acc, _ref6) {
+              var _ref7 = _slicedToArray$c(_ref6, 2),
+                key = _ref7[0],
+                value = _ref7[1];
+              return _objectSpread$d(_objectSpread$d({}, acc), {}, _defineProperty$j({}, key, value));
+            }, {});
+          } else {
+            return acc;
+          }
+        }, {});
+        var statusFields = salesforceField === null || salesforceField === void 0 ? void 0 : (_salesforceField$stat2 = salesforceField.statusRestrictions) === null || _salesforceField$stat2 === void 0 ? void 0 : _salesforceField$stat2.reduce(function (acc, status) {
+          var _status$fields2;
+          return _objectSpread$d(_objectSpread$d({}, acc), {}, _defineProperty$j({}, status.salesforceStatus, status === null || status === void 0 ? void 0 : (_status$fields2 = status.fields) === null || _status$fields2 === void 0 ? void 0 : _status$fields2.reduce(function (acc, fieldValue) {
+            return _objectSpread$d(_objectSpread$d({}, acc), {}, _defineProperty$j({}, fieldValue.field, sobjectValues === null || sobjectValues === void 0 ? void 0 : sobjectValues[fieldValue.field]));
+          }, {})));
+        }, {});
+        valuesToMap.set(sobjectName, statusFields);
+        setValue('salesforceLiveFieldsValues', valuesToMap);
+      })["catch"](function (errors) {
+        var _errors$response, _errors$response$data;
+        var errorString = errors === null || errors === void 0 ? void 0 : (_errors$response = errors.response) === null || _errors$response === void 0 ? void 0 : (_errors$response$data = _errors$response.data) === null || _errors$response$data === void 0 ? void 0 : _errors$response$data.message;
+        var startIndex = errorString === null || errorString === void 0 ? void 0 : errorString.indexOf("No such column '");
+        var endIndex = errorString === null || errorString === void 0 ? void 0 : errorString.indexOf("'", startIndex + 16);
+
+        // Extract the error message
+        var errorMessage = errorString === null || errorString === void 0 ? void 0 : errorString.substring(startIndex, endIndex + 1);
+        if (errorMessage) setSalesforceError(errorMessage);
+      });
+    }
+  }, []);
+  useEffect(function () {
+    var _parsedRequirements$p2;
+    if (parsedRequirements !== null && parsedRequirements !== void 0 && (_parsedRequirements$p2 = parsedRequirements[parsedReqKey]) !== null && _parsedRequirements$p2 !== void 0 && _parsedRequirements$p2[selectedStatus === null || selectedStatus === void 0 ? void 0 : selectedStatus.name]) {
+      setSalesforceError(undefined);
+    }
+  }, [parsedRequirements === null || parsedRequirements === void 0 ? void 0 : (_parsedRequirements$p3 = parsedRequirements[parsedReqKey]) === null || _parsedRequirements$p3 === void 0 ? void 0 : _parsedRequirements$p3[selectedStatus === null || selectedStatus === void 0 ? void 0 : selectedStatus.name]]);
+  if (!aditionalInfoNeeded) return null;
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [reasonedStatus ? canShowNoStatusReqFields ? /*#__PURE__*/jsx("div", {
+      style: {
+        marginTop: '8px'
+      },
+      children: /*#__PURE__*/jsx(SobjectMandatoryFields, {
+        iconName: getIconName(bobject),
+        title: (_dictionary$sobject = dictionary[sobject]) === null || _dictionary$sobject === void 0 ? void 0 : _dictionary$sobject.annexTitle,
+        statuses: (_parsedRequirements$p4 = parsedRequirements[parsedReqKey]) === null || _parsedRequirements$p4 === void 0 ? void 0 : _parsedRequirements$p4[selectedStatus === null || selectedStatus === void 0 ? void 0 : selectedStatus.name],
+        sobject: sobject,
+        selectedStatus: selectedStatus === null || selectedStatus === void 0 ? void 0 : selectedStatus.name,
+        width: "92%",
+        error: salesforceError
+      })
+    }) : (availableReasons === null || availableReasons === void 0 ? void 0 : (_availableReasons$val = availableReasons.values) === null || _availableReasons$val === void 0 ? void 0 : _availableReasons$val.length) > 0 && /*#__PURE__*/jsxs("div", {
+      className: styles$7.reason_section__wrapper,
+      children: [/*#__PURE__*/jsx("div", {
+        className: clsx(styles$7._title__wrapper, styles$7._title__wrapper__centered),
+        children: /*#__PURE__*/jsx(Text, {
+          size: "m",
+          weight: "medium",
+          color: "peanut",
+          children: t('changeStatusModal.reasonedStatus.title')
+        })
+      }), /*#__PURE__*/jsx("div", {
+        className: styles$7.select_content__wrapper,
+        children: /*#__PURE__*/jsx(Select, {
+          value: selectedReason,
+          placeholder: t('changeStatusModal.reasonedStatus.placeholder', {
+            bobjectType: bobjectType,
+            selectedStatus: selectedStatus === null || selectedStatus === void 0 ? void 0 : selectedStatus.name,
+            required: availableReasons.isRequired ? '*' : ''
+          }),
+          width: "100%",
+          size: "small",
+          onChange: setSelectedReason,
+          error: errors === null || errors === void 0 ? void 0 : errors.statusReason,
+          children: availableReasons === null || availableReasons === void 0 ? void 0 : (_availableReasons$val2 = availableReasons.values) === null || _availableReasons$val2 === void 0 ? void 0 : _availableReasons$val2.map(function (reason) {
+            return /*#__PURE__*/jsx(Item, {
+              value: reason,
+              children: reason.label
+            }, reason.value);
+          })
+        })
+      })]
+    }) : null, needsAssignedTo && /*#__PURE__*/jsxs("div", {
+      className: styles$7._section__wrapper,
+      children: [/*#__PURE__*/jsx("div", {
+        className: clsx(styles$7._title__wrapper, styles$7._title__wrapper__centered),
+        children: /*#__PURE__*/jsx(Text, {
+          size: "m",
+          weight: "medium",
+          color: "peanut",
+          children: t("changeStatusModal.assignedTo.".concat(bobjectType))
+        })
+      }), /*#__PURE__*/jsx("div", {
+        className: styles$7._content__wrapper,
+        children: /*#__PURE__*/jsx("div", {
+          className: styles$7._reason__wrapper,
+          children: availableUsers && /*#__PURE__*/jsx(Select, {
+            value: selectedUser === null || selectedUser === void 0 ? void 0 : selectedUser.id,
+            placeholder: t('changeStatusModal.assignedTo.placeholder', {
+              required: availableUsers.isRequired ? '*' : ''
+            }),
+            width: "100%",
+            error: errors === null || errors === void 0 ? void 0 : errors.assignedUser,
+            size: "small",
+            children: (_availableUsers$value = availableUsers.values) === null || _availableUsers$value === void 0 ? void 0 : _availableUsers$value.map(function (user) {
+              return /*#__PURE__*/jsx(Item, {
+                value: user === null || user === void 0 ? void 0 : user.id,
+                onClick: function onClick() {
+                  return setSelectedUser(user);
+                },
+                children: user === null || user === void 0 ? void 0 : user.name
+              }, "user-assigned-item-".concat(user === null || user === void 0 ? void 0 : user.id));
+            })
+          })
+        })
+      })]
+    })]
+  });
+};
+
+function _typeof$j(obj) { "@babel/helpers - typeof"; return _typeof$j = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$j(obj); }
+var _excluded$3 = ["ref"];
+function _slicedToArray$b(arr, i) { return _arrayWithHoles$b(arr) || _iterableToArrayLimit$b(arr, i) || _unsupportedIterableToArray$b(arr, i) || _nonIterableRest$b(); }
+function _nonIterableRest$b() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$b(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$b(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$b(o, minLen); }
+function _arrayLikeToArray$b(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$b(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$b(arr) { if (Array.isArray(arr)) return arr; }
+function ownKeys$c(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$c(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$c(Object(source), !0).forEach(function (key) { _defineProperty$i(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$c(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$i(obj, key, value) { key = _toPropertyKey$i(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$i(arg) { var key = _toPrimitive$i(arg, "string"); return _typeof$j(key) === "symbol" ? key : String(key); }
+function _toPrimitive$i(input, hint) { if (_typeof$j(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$j(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _objectWithoutProperties$3(source, excluded) { if (source == null) return {}; var target = _objectWithoutPropertiesLoose$3(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
+function _objectWithoutPropertiesLoose$3(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
+var BobjectSelector = function BobjectSelector(_ref) {
+  var bobjects = _ref.bobjects;
+  var _useStatusNoteActionC = useStatusNoteActionContext(),
+    bobjectType = _useStatusNoteActionC.bobjectType;
+  var _useFormContext = useFormContext(),
+    control = _useFormContext.control;
+  var _useController = useController({
+      name: 'selectedBobjectId',
+      control: control
+    }),
+    _useController$field = _useController.field,
+    ref = _useController$field.ref,
+    selectField = _objectWithoutProperties$3(_useController$field, _excluded$3);
+  function getName(id) {
+    var selectedBobject = bobjects.find(function (bobject) {
+      return (bobject === null || bobject === void 0 ? void 0 : bobject.id.value) === id;
+    });
+    return getTextFromLogicRole(selectedBobject, FIELDS_LOGIC_ROLE[bobjectType].NAME);
+  }
+  return /*#__PURE__*/jsx(Select, _objectSpread$c(_objectSpread$c({
+    width: "100%",
+    size: "small",
+    ref: ref
+  }, selectField), {}, {
+    renderDisplayValue: function renderDisplayValue(v) {
+      if (v) {
+        return getName(v);
+      }
+    },
+    children: bobjects.map(function (bobject) {
+      return /*#__PURE__*/jsx(Item, {
+        value: bobject === null || bobject === void 0 ? void 0 : bobject.id.value,
+        children: getName(bobject === null || bobject === void 0 ? void 0 : bobject.id.value)
+      }, bobject === null || bobject === void 0 ? void 0 : bobject.id.value);
+    })
+  }));
+};
+var StatusColumn = function StatusColumn() {
+  var _useStatusNoteActionC2 = useStatusNoteActionContext();
+    _useStatusNoteActionC2.bobject;
+    var t = _useStatusNoteActionC2.t,
+    machineContext = _useStatusNoteActionC2.machineContext;
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'common'
+    });
+    _useTranslation.t;
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsx(ColumnHeader, {
+      icon: "activity",
+      text: t('statusColumn.header')
+    }), (machineContext === null || machineContext === void 0 ? void 0 : machineContext.selectedOpportunityArray) && /*#__PURE__*/jsx(BobjectSelector, {
+      bobjects: machineContext.selectedOpportunityArray
+    }), /*#__PURE__*/jsx(ReducedStatusManager, {})]
+  });
+};
+function StatusSelector() {
+  var _useStatusNoteActionC3 = useStatusNoteActionContext(),
+    availableStatuses = _useStatusNoteActionC3.availableStatuses,
+    _useStatusNoteActionC4 = _slicedToArray$b(_useStatusNoteActionC3.handleSelectedStatus, 2),
+    selectedStatus = _useStatusNoteActionC4[0],
+    setSelectedStatus = _useStatusNoteActionC4[1],
+    _useStatusNoteActionC5 = _slicedToArray$b(_useStatusNoteActionC3.handleSelectedReason, 2),
+    setSelectedReason = _useStatusNoteActionC5[1],
+    statusHasChangedState = _useStatusNoteActionC3.statusHasChangedState;
+  var _ref2 = statusHasChangedState || [],
+    _ref3 = _slicedToArray$b(_ref2, 2),
+    setStatusHasChanged = _ref3[1];
+  var _useActiveUserSetting = useActiveUserSettings$1(),
+    settings = _useActiveUserSetting.settings;
+  return /*#__PURE__*/jsx("div", {
+    className: styles$7._radios_list_status,
+    children: /*#__PURE__*/jsx(RadioGroup, {
+      value: selectedStatus,
+      onChange: function onChange(value) {
+        setSelectedReason(null);
+        setSelectedStatus(availableStatuses.find(function (_ref4) {
+          var id = _ref4.id;
+          return id === value;
+        }));
+        setStatusHasChanged === null || setStatusHasChanged === void 0 ? void 0 : setStatusHasChanged(true);
+      },
+      children: availableStatuses === null || availableStatuses === void 0 ? void 0 : availableStatuses.map(function (status) {
+        var _settings$account;
+        var isSelected = selectedStatus ? selectedStatus.id === status.id : false;
+        var isDisabled = (settings === null || settings === void 0 ? void 0 : (_settings$account = settings.account) === null || _settings$account === void 0 ? void 0 : _settings$account.mainCrm) == CRM.DYNAMICS && [OPPORTUNITY_STATUS_LOGIC_ROLE$1.CLOSED_LOST, OPPORTUNITY_STATUS_LOGIC_ROLE$1.CLOSED_WON].includes(status === null || status === void 0 ? void 0 : status.logicRole);
+        var style = {
+          backgroundColor: status.backgroundColor,
+          borderColor: status.outlineColor,
+          color: status.textColor
+        };
+        var overrideStyle = isSelected ? {
+          selectedStyle: style
+        } : {};
+        return /*#__PURE__*/jsx(Label, _objectSpread$c(_objectSpread$c({
+          value: status === null || status === void 0 ? void 0 : status.id,
+          dataTest: status.logicRole,
+          align: "center",
+          inline: false,
+          selected: isSelected,
+          hoverStyle: style
+        }, overrideStyle), {}, {
+          disabled: isDisabled,
+          children: status.name
+        }), "status-".concat(status.name));
+      })
+    })
+  });
+}
+function ReducedStatusManager() {
+  var _useStatusNoteActionC6 = useStatusNoteActionContext();
+    _useStatusNoteActionC6.t;
+    _useStatusNoteActionC6.send;
+  var showRelatedStatuses = false;
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$7._change_lead_status__wrapper,
+    children: [/*#__PURE__*/jsx(StatusSelector, {}), /*#__PURE__*/jsx(AdditionalInfoSelect, {}), showRelatedStatuses ]
+  });
+}
+
+var css_248z$6 = ".statusNoteActions-module_modalContent__J9Z0X {\n  display: flex;\n  /* To overwite default styles*/\n  padding: 32px;\n  padding-bottom: 0;\n}\n\n.statusNoteActions-module_modalContent__J9Z0X > div {\n  width: 100%;\n  height: 600px !important;\n  flex-direction: row;\n  margin-bottom: 16px;\n}\n\n.statusNoteActions-module_sectionSeparator__yosPT {\n  height: 100%;\n  border-right: 1px solid var(--verySoftPeanut);\n}\n\n.statusNoteActions-module_sectionContainer__A3YlY {\n  width: 33%;\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n}\n\n.statusNoteActions-module_sectionContainer__A3YlY:first-child {\n  padding-right: 24px;\n}\n\n.statusNoteActions-module_sectionContainer__A3YlY:nth-child(3) {\n  padding: 0 24px;\n}\n\n.statusNoteActions-module_sectionContainer__A3YlY:last-child {\n  padding-left: 24px;\n}\n\n.statusNoteActions-module__modal_footer__GODG4 {\n  display: flex;\n  justify-content: space-between;\n  z-index: 1;\n}\n\n.statusNoteActions-module_stepActions_button__1bmGx {\n  width: 177px;\n}\n";
+var styles$6 = {"modalContent":"statusNoteActions-module_modalContent__J9Z0X","sectionSeparator":"statusNoteActions-module_sectionSeparator__yosPT","sectionContainer":"statusNoteActions-module_sectionContainer__A3YlY","_modal_footer":"statusNoteActions-module__modal_footer__GODG4","stepActions_button":"statusNoteActions-module_stepActions_button__1bmGx"};
+styleInject(css_248z$6);
+
+function _typeof$i(obj) { "@babel/helpers - typeof"; return _typeof$i = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$i(obj); }
+function _slicedToArray$a(arr, i) { return _arrayWithHoles$a(arr) || _iterableToArrayLimit$a(arr, i) || _unsupportedIterableToArray$a(arr, i) || _nonIterableRest$a(); }
+function _nonIterableRest$a() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$a(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$a(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$a(o, minLen); }
+function _arrayLikeToArray$a(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$a(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$a(arr) { if (Array.isArray(arr)) return arr; }
+function ownKeys$b(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$b(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$b(Object(source), !0).forEach(function (key) { _defineProperty$h(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$b(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$h(obj, key, value) { key = _toPropertyKey$h(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$h(arg) { var key = _toPrimitive$h(arg, "string"); return _typeof$i(key) === "symbol" ? key : String(key); }
+function _toPrimitive$h(input, hint) { if (_typeof$i(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$i(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var withProvider$1 = function withProvider(Component) {
+  return function (props) {
+    return /*#__PURE__*/jsx(StatusNoteActionProvider, _objectSpread$b(_objectSpread$b({}, props), {}, {
+      children: /*#__PURE__*/jsx(Component, {})
+    }));
+  };
+};
+var StatusNoteActionsComponent = function StatusNoteActionsComponent() {
+  var _useStatusNoteActionC = useStatusNoteActionContext(),
+    handleUpdateStatus = _useStatusNoteActionC.handleUpdateStatus,
+    loading = _useStatusNoteActionC.loading,
+    send = _useStatusNoteActionC.send,
+    t = _useStatusNoteActionC.t,
+    formMethods = _useStatusNoteActionC.formMethods,
+    bobject = _useStatusNoteActionC.bobject,
+    buttonsConfig = _useStatusNoteActionC.buttonsConfig,
+    setLoading = _useStatusNoteActionC.setLoading,
+    hasSaved = _useStatusNoteActionC.hasSaved,
+    statusHasChangedState = _useStatusNoteActionC.statusHasChangedState;
+  var _ref = statusHasChangedState || [],
+    _ref2 = _slicedToArray$a(_ref, 2),
+    statusHasChanged = _ref2[0];
+    _ref2[1];
+  function handleSubmit(manageTasks) {
+    setLoading(true);
+    //TODO if more fields are gonna be updated maybe we can move this callback to the context
+    handleUpdateStatus(formMethods.getValues()).then(function (response) {
+      setLoading(false);
+      createToast({
+        message: t('toasts.updateSalesforceSuccess'),
+        type: 'success'
+      });
+      if (response === 'noUpdates' && !manageTasks) {
+        mixpanel.track(MIXPANEL_EVENTS.STATUS_NOTE_ACTIONS_FINISH_REPORTING);
+        return send(EVENTS.FINISH);
+      }
+      if (manageTasks) {
+        mixpanel.track(MIXPANEL_EVENTS.STATUS_NOTE_ACTIONS_GO_TO_MANAGE_TASKS);
+        send(EVENTS.NEXT, {
+          selectedOpportunityObject: bobject,
+          manageTasks: true
+        });
+      } else {
+        mixpanel.track(MIXPANEL_EVENTS.STATUS_NOTE_ACTIONS_FINISH_REPORTING);
+        send(EVENTS.FINISH);
+      }
+      if (hasSaved) {
+        mixpanel.track(MIXPANEL_EVENTS.STATUS_NOTE_ACTIONS_AUTO_SAVED_NOTE);
+      }
+      if (statusHasChanged) {
+        mixpanel.track(MIXPANEL_EVENTS.STATUS_NOTE_ACTIONS_CHANGE_STATUS);
+      }
+    })["catch"](function (e) {
+      var _e$response, _e$response$data;
+      setLoading(false);
+      createToast({
+        message: t('toasts.updateSalesforceError', {
+          error: e !== null && e !== void 0 && (_e$response = e.response) !== null && _e$response !== void 0 && (_e$response$data = _e$response.data) !== null && _e$response$data !== void 0 && _e$response$data.message ? ": ".concat(e.response.data.message) : '.'
+        }),
+        type: 'error'
+      });
+    });
+  }
+  return /*#__PURE__*/jsxs(FormProvider, _objectSpread$b(_objectSpread$b({}, formMethods), {}, {
+    children: [/*#__PURE__*/jsxs(ModalContent, {
+      className: styles$6.modalContent,
+      children: [/*#__PURE__*/jsx("div", {
+        className: styles$6.sectionContainer,
+        children: /*#__PURE__*/jsx(StatusColumn, {})
+      }), /*#__PURE__*/jsx("div", {
+        className: styles$6.sectionSeparator
+      }), /*#__PURE__*/jsx("div", {
+        className: styles$6.sectionContainer,
+        children: /*#__PURE__*/jsx(NoteColumn, {})
+      }), /*#__PURE__*/jsx("div", {
+        className: styles$6.sectionSeparator
+      }), /*#__PURE__*/jsx("div", {
+        className: styles$6.sectionContainer,
+        children: /*#__PURE__*/jsx(QuickActionColumn, {})
+      })]
+    }), /*#__PURE__*/jsxs(ModalFooter, {
+      className: styles$6._modal_footer,
+      children: [/*#__PURE__*/jsx("div", {
+        children: /*#__PURE__*/jsx(Button, {
+          variant: "clear",
+          onClick: function onClick() {
+            return send(EVENTS.PREVIOUS);
+          },
+          uppercase: true,
+          children: t('buttons.back')
+        })
+      }), /*#__PURE__*/jsxs("div", {
+        style: {
+          display: 'flex',
+          gap: '8px'
+        },
+        children: [/*#__PURE__*/jsx(Button, {
+          onClick: function onClick() {
+            return handleSubmit(false);
+          },
+          uppercase: true,
+          variant: "secondary",
+          className: styles$6.stepActions_button,
+          disabled: loading,
+          children: loading ? /*#__PURE__*/jsx(Spinner, {
+            name: "loadingCircle",
+            size: 12
+          }) : t('buttons.finishReporting')
+        }), /*#__PURE__*/jsx(Button, {
+          onClick: function onClick() {
+            return handleSubmit(true);
+          },
+          uppercase: true,
+          className: styles$6.stepActions_button,
+          disabled: loading,
+          children: loading ? /*#__PURE__*/jsx(Spinner, {
+            name: "loadingCircle",
+            size: 12
+          }) : (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.nextButtonTitle) || t('buttons.manageTasks')
+        })]
+      })]
+    })]
+  }));
+};
+var StatusNoteActions = withProvider$1(StatusNoteActionsComponent);
+
+var TaskActionStates;
+(function (TaskActionStates) {
+  TaskActionStates[TaskActionStates["NoTasks"] = 0] = "NoTasks";
+  TaskActionStates[TaskActionStates["NextSteps"] = 1] = "NextSteps";
+  TaskActionStates[TaskActionStates["CadenceOnGoing"] = 2] = "CadenceOnGoing";
+})(TaskActionStates || (TaskActionStates = {}));
+var Actions;
+(function (Actions) {
+  Actions[Actions["AddNextSteps"] = 0] = "AddNextSteps";
+  Actions[Actions["StartCadence"] = 1] = "StartCadence";
+  Actions[Actions["ChangeCadence"] = 2] = "ChangeCadence";
+  Actions[Actions["RescheduleCadence"] = 3] = "RescheduleCadence";
+  Actions[Actions["StopCadence"] = 4] = "StopCadence";
+})(Actions || (Actions = {}));
+var TaskManagementModals;
+(function (TaskManagementModals) {
+  TaskManagementModals[TaskManagementModals["None"] = 0] = "None";
+  TaskManagementModals[TaskManagementModals["NextStep"] = 1] = "NextStep";
+  TaskManagementModals[TaskManagementModals["StartCadence"] = 2] = "StartCadence";
+  TaskManagementModals[TaskManagementModals["RescheduleCadence"] = 3] = "RescheduleCadence";
+  TaskManagementModals[TaskManagementModals["StopCadence"] = 4] = "StopCadence";
+  TaskManagementModals[TaskManagementModals["RescheduleTask"] = 5] = "RescheduleTask";
+})(TaskManagementModals || (TaskManagementModals = {}));
+
+function _typeof$h(obj) { "@babel/helpers - typeof"; return _typeof$h = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$h(obj); }
+function ownKeys$a(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$a(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$a(Object(source), !0).forEach(function (key) { _defineProperty$g(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$a(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$g(obj, key, value) { key = _toPropertyKey$g(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$g(arg) { var key = _toPrimitive$g(arg, "string"); return _typeof$h(key) === "symbol" ? key : String(key); }
+function _toPrimitive$g(input, hint) { if (_typeof$h(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$h(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$9(arr, i) { return _arrayWithHoles$9(arr) || _iterableToArrayLimit$9(arr, i) || _unsupportedIterableToArray$9(arr, i) || _nonIterableRest$9(); }
+function _nonIterableRest$9() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$9(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$9(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$9(o, minLen); }
+function _arrayLikeToArray$9(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$9(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$9(arr) { if (Array.isArray(arr)) return arr; }
+function generateTaskFeedRequest(filterValues, pagination, sort, configuration) {
+  return {
+    filters: Object.values(filterValues || {}),
+    pagination: pagination,
+    sort: sort,
+    extraFieldShown: configuration.extraFieldsShownOnEachCard.map(function (_ref) {
+      var id = _ref.id,
+        name = _ref.name,
+        type = _ref.type,
+        icon = _ref.icon;
+      return {
+        field: id,
+        name: name,
+        icon: icon,
+        bobjectType: type,
+        type: 'FIELD'
+      };
+    })
+  };
+}
+var defaultSort = {
+  type: 'BY_BLOOBIRDS_CLUSTERING'
+};
+var defaultClusterPagination = {
+  type: 'CLUSTERED',
+  scheduledTasks: {
+    page: 0,
+    size: 10
+  },
+  dailyTasks: {
+    page: 0,
+    size: 10
+  },
+  overdueTasks: {
+    page: 0,
+    size: 10
+  }
+};
+var defaultConfiguration = {
+  dateFilterEnabled: false,
+  sortableFields: [],
+  sortingStrategies: [],
+  extraFieldsShownOnEachCard: [],
+  filtrableFields: [],
+  canSeeImportance: false
+};
+var sectionOrder = ['overdueTasks', 'scheduledTasks', 'dailyTasks'];
+var useCurrentTasks = function useCurrentTasks(bobjectId) {
+  var _sortedClusters$daily, _sortedClusters$sched;
+  var userTimeZone = getUserTimeZone();
+  var _useState = useState(defaultClusterPagination),
+    _useState2 = _slicedToArray$9(_useState, 2),
+    pagination = _useState2[0],
+    setPagination = _useState2[1];
+  var now = new Date();
+  var startOfDay = new Date(now.toLocaleString('en-US', {
+    timeZone: userTimeZone
+  }));
+  startOfDay.setHours(0, 0, 0, 0);
+  var endOfDay = new Date(now.toLocaleString('en-US', {
+    timeZone: userTimeZone
+  }));
+  endOfDay.setHours(23, 59, 59, 999);
+  var defaultFilterValues = {
+    date: {
+      type: 'DATE',
+      dateRange: {
+        lte: addYears(now, 5).toISOString(),
+        gte: startOfDay.toISOString()
+      }
+    }
+  };
+  var accountId = useActiveAccountId();
+  var paginationStringified = JSON.stringify(pagination);
+  var taskFeedRequest = useMemo(function () {
+    return generateTaskFeedRequest(defaultFilterValues, pagination, defaultSort, defaultConfiguration);
+  }, [paginationStringified]);
+  var _useSWR = useSWR("task-feed/contact-flow/".concat(bobjectId === null || bobjectId === void 0 ? void 0 : bobjectId.typeName, "/").concat(bobjectId === null || bobjectId === void 0 ? void 0 : bobjectId.objectId) + paginationStringified, function () {
+      return api.post("/bobjects/".concat(accountId, "/task/feed/").concat(bobjectId === null || bobjectId === void 0 ? void 0 : bobjectId.typeName, "/").concat(bobjectId === null || bobjectId === void 0 ? void 0 : bobjectId.objectId), taskFeedRequest).then(function (res) {
+        return res.data;
+      });
+    }, {
+      keepPreviousData: true,
+      revalidateOnFocus: true
+    }),
+    data = _useSWR.data,
+    isLoading = _useSWR.isLoading,
+    mutate = _useSWR.mutate,
+    error = _useSWR.error;
+
+  //TODO review this
+  var sortedClusters = (data === null || data === void 0 ? void 0 : data.clusters) && Object.fromEntries(Object.entries(data.clusters).sort(function (a, b) {
+    return sectionOrder.indexOf(a[0]) - sectionOrder.indexOf(b[0]);
+  }));
+  return _objectSpread$a(_objectSpread$a({}, data), {}, {
+    mutate: mutate,
+    error: error,
+    clusters: sortedClusters,
+    isLoading: isLoading,
+    taskFeedRequest: taskFeedRequest,
+    visibleClusters: ['overdueTasks', 'scheduledTasks', 'dailyTasks'],
+    paginationState: {
+      pagination: pagination,
+      setPagination: setPagination
+    },
+    configuration: defaultConfiguration,
+    hasCadenceSteps: (sortedClusters === null || sortedClusters === void 0 ? void 0 : (_sortedClusters$daily = sortedClusters.dailyTasks) === null || _sortedClusters$daily === void 0 ? void 0 : _sortedClusters$daily.totalElements) > 0,
+    hasNextSteps: (sortedClusters === null || sortedClusters === void 0 ? void 0 : (_sortedClusters$sched = sortedClusters.scheduledTasks) === null || _sortedClusters$sched === void 0 ? void 0 : _sortedClusters$sched.totalElements) > 0
+  });
+};
+
+function _typeof$g(obj) { "@babel/helpers - typeof"; return _typeof$g = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$g(obj); }
+var _excluded$2 = ["children", "machineContext"],
+  _excluded2 = ["hasCadenceSteps", "hasNextSteps", "mutate", "error", "clusters", "isLoading"];
+function ownKeys$9(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$9(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$9(Object(source), !0).forEach(function (key) { _defineProperty$f(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$9(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$f(obj, key, value) { key = _toPropertyKey$f(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$f(arg) { var key = _toPrimitive$f(arg, "string"); return _typeof$g(key) === "symbol" ? key : String(key); }
+function _toPrimitive$f(input, hint) { if (_typeof$g(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$g(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$8(arr, i) { return _arrayWithHoles$8(arr) || _iterableToArrayLimit$8(arr, i) || _unsupportedIterableToArray$8(arr, i) || _nonIterableRest$8(); }
+function _nonIterableRest$8() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$8(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$8(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$8(o, minLen); }
+function _arrayLikeToArray$8(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$8(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$8(arr) { if (Array.isArray(arr)) return arr; }
+function _objectWithoutProperties$2(source, excluded) { if (source == null) return {}; var target = _objectWithoutPropertiesLoose$2(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
+function _objectWithoutPropertiesLoose$2(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
+var defaultModalContext = {
+  modal: undefined,
+  task: undefined
+};
+var TaskManagementContext = /*#__PURE__*/createContext(null);
+var TaskManagementProvider = function TaskManagementProvider(_ref) {
+  var children = _ref.children,
+    machineContext = _ref.machineContext,
+    props = _objectWithoutProperties$2(_ref, _excluded$2);
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards.steps.taskManagement'
+    }),
+    t = _useTranslation.t;
+  var _useState = useState(defaultModalContext),
+    _useState2 = _slicedToArray$8(_useState, 2),
+    modalContext = _useState2[0],
+    _setModalContext = _useState2[1];
+  var _useState3 = useState(false),
+    _useState4 = _slicedToArray$8(_useState3, 2),
+    isProcessingTasks = _useState4[0],
+    setIsProcessingTasks = _useState4[1];
+  var lastModalOpened = useRef(null);
+  var referenceBobject = machineContext.referenceBobject,
+    selectedOpportunityObject = machineContext.selectedOpportunityObject;
+  var bobject = selectedOpportunityObject !== null && selectedOpportunityObject !== void 0 ? selectedOpportunityObject : referenceBobject;
+  var _useCurrentTasks = useCurrentTasks(bobject === null || bobject === void 0 ? void 0 : bobject.id),
+    hasCadenceSteps = _useCurrentTasks.hasCadenceSteps,
+    hasNextSteps = _useCurrentTasks.hasNextSteps,
+    _mutate = _useCurrentTasks.mutate,
+    error = _useCurrentTasks.error,
+    clusters = _useCurrentTasks.clusters,
+    isLoading = _useCurrentTasks.isLoading,
+    currentTasksProps = _objectWithoutProperties$2(_useCurrentTasks, _excluded2);
+  var getStepState = function getStepState() {
+    if (hasCadenceSteps) {
+      return TaskActionStates.CadenceOnGoing;
+    } else if (hasNextSteps) {
+      return TaskActionStates.NextSteps;
+    } else {
+      return TaskActionStates.NoTasks;
+    }
+  };
+  useEventSubscription(EventTypes.Cadence, function (data) {
+    var _bobject$id;
+    if ((bobject === null || bobject === void 0 ? void 0 : (_bobject$id = bobject.id) === null || _bobject$id === void 0 ? void 0 : _bobject$id.value) === (data === null || data === void 0 ? void 0 : data.bobjectId) && (data === null || data === void 0 ? void 0 : data.operation) === 'SCHEDULED') {
+      _mutate();
+      window.dispatchEvent(new CustomEvent(MessagesEvents.ActiveBobjectUpdated, {
+        detail: {
+          type: BobjectTypes.Task
+        }
+      }));
+      setIsProcessingTasks(false);
+    }
+  });
+  var resetModalContext = function resetModalContext() {
+    var softReset = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+    _setModalContext(defaultModalContext);
+    if (!softReset) lastModalOpened.current = null;
+  };
+  return /*#__PURE__*/jsx(TaskManagementContext.Provider, {
+    value: _objectSpread$9({
+      bobject: bobject,
+      t: t,
+      modalContext: modalContext,
+      setModalContext: function setModalContext(modalContext) {
+        _setModalContext(modalContext);
+        lastModalOpened.current = modalContext === null || modalContext === void 0 ? void 0 : modalContext.modal;
+      },
+      lastModalOpened: lastModalOpened,
+      handleSaveCadence: function handleSaveCadence() {
+        var timeout = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10000;
+        setIsProcessingTasks(true);
+        setTimeout(function () {
+          setIsProcessingTasks(false);
+        }, timeout);
+      },
+      handleSaveModal: function handleSaveModal() {
+        var timeout = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
+        setIsProcessingTasks(true);
+        setTimeout(function () {
+          _mutate().then(function () {
+            window.dispatchEvent(new CustomEvent(MessagesEvents.ActiveBobjectUpdated, {
+              detail: {
+                type: BobjectTypes.Task
+              }
+            }));
+            setIsProcessingTasks(false);
+            resetModalContext();
+          });
+        }, timeout);
+      },
+      handleCloseModal: function handleCloseModal(softReset) {
+        return resetModalContext(softReset);
+      },
+      stepState: getStepState(),
+      currentTasksProps: _objectSpread$9(_objectSpread$9({}, currentTasksProps), {}, {
+        mutate: function mutate() {
+          lastModalOpened.current = null;
+          _mutate();
+        },
+        error: error,
+        clusters: clusters,
+        hasCadenceSteps: hasCadenceSteps,
+        isLoading: isLoading || isProcessingTasks
+      }),
+      machineContext: machineContext
+    }, props),
+    children: children
+  });
+};
+var useTaskManagementContext = function useTaskManagementContext() {
+  var context = useContext(TaskManagementContext);
+  if (context === undefined) {
+    throw new Error('useTaskManagement must be used within the modal provider');
+  }
+  return context;
+};
+
+var css_248z$5 = ".taskTabsList-module_header__5ndV5 {\n  display: flex;\n  height: 28px;\n  padding: 0 4px;\n  align-items: center;\n  justify-content: space-between;\n  gap: 4px;\n  align-self: stretch;\n  margin-bottom: 8px;\n\n}\n\n.taskTabsList-module_title__Uh3nT {\n  display: flex;\n  align-items: center;\n  gap: 4px;\n  flex-grow: 1;\n  flex-shrink: 0;\n  margin-top: 4px;\n}\n\n.taskTabsList-module_title__Uh3nT > .taskTabsList-module_titleText__YMVJR {\n  color: var(--peanut);\n  font-family: Inter, sans-serif;\n  font-size: 11px;\n  font-style: normal;\n  font-weight: 400;\n  line-height: 16px;\n}\n\n.taskTabsList-module_counter__8y9DG {\n  height: 24px;\n  min-width: 24px;\n  padding: 0 6px;\n  border-radius: 12px;\n  background: var(--white);\n  color: var(--peanut);\n  font-size: 13px;\n  font-weight: 700;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n\n.taskTabsList-module_list__rKqS6 {\n  display: flex;\n  flex-direction: column;\n  align-items: flex-start;\n  align-self: stretch;\n}\n\n.taskTabsList-module_taskGroup__WskDU {\n  position: relative;\n  padding: 2px 2px 38px;\n  box-sizing: border-box;\n}\n\n/*.taskGroupHidden {\n  position: relative;\n  padding: 2px 2px 2px;\n  box-sizing: border-box;\n}*/\n\n.taskTabsList-module_taskGroup__WskDU:not(:last-child) {\n  margin-bottom: 4px;\n}\n\n.taskTabsList-module_hoverStyle__D55zl:hover {\n  border-radius: 4px;\n  background: var(--Main-bloobirds-lightest, #EDF1F5);\n  padding-bottom: 2px;\n}\n\n.taskTabsList-module_footer__L4fB6 {\n  display: none;\n  margin-bottom: 4px;\n  margin-top: 8px;\n}\n\n.taskTabsList-module_taskGroup__WskDU:hover .taskTabsList-module_footer__L4fB6 {\n  display: flex;\n  justify-content: center;\n}\n\n.taskTabsList-module_taskCard__ljqyD {\n  border-radius: 4px;\n  border-top: 1px solid var(--Main-peanut-very-light, #E5ECF5);\n  border-right: 1px solid var(--Main-peanut-very-light, #E5ECF5);\n  border-bottom: 1px solid var(--Main-peanut-very-light, #E5ECF5);\n  border-left: 4px solid var(--Main-peanut-very-light, #E5ECF5);\n  background: #FFF;\n  box-shadow: 0 2px 4px 0 rgba(25, 145, 255, 0.08);\n  width: 98%;\n  min-height: 80px;\n\n    position: relative;\n    display: flex;\n    padding: 12px 8px;\n    flex-direction: column;\n    justify-content: start;\n    align-items: flex-start;\n    align-self: stretch;\n    gap: 10px;\n    cursor: pointer;\n  transition: margin-bottom 0.2s ease-in-out;\n\n  margin-bottom: 0;\n}\n\n.taskTabsList-module_isExpanded__uVvR9 {\n    margin-bottom:  4px;\n}\n\n.taskTabsList-module_hiddenTaskCard__Rv9Ga {\n  border-radius: 0 0 4px 4px;\n  border-right: 1px solid var(--Main-peanut-very-light, #E5ECF5);\n  border-bottom: 1px solid var(--Main-peanut-very-light, #E5ECF5);\n  border-left: 4px solid var(--Main-peanut-very-light, #E5ECF5);\n  background: #FFF;\n  box-shadow: 0 2px 4px 0 rgba(25, 145, 255, 0.08);\n  width: 98%;\n  height: 8px;\n  position: relative;\n  margin-top: -2px;\n  gap: 4px;\n}\n\n.taskTabsList-module_taskCard__ljqyD.taskTabsList-module_overdue__eKvJX {\n  border-top: 1px solid var(--verySoftTomato);\n  border-right: 1px solid var(--verySoftTomato);\n  border-bottom: 1px solid var(--verySoftTomato);\n  border-left: 4px solid var(--softTomato);\n}\n\n.taskTabsList-module_hiddenTaskCard__Rv9Ga.taskTabsList-module_overdue__eKvJX {\n  border-right: 1px solid var(--verySoftTomato);\n  border-bottom: 1px solid var(--verySoftTomato);\n  border-left: 4px solid var(--softTomato);\n}\n\n.taskTabsList-module_taskCardHeader__hYznR {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  align-self: stretch;\n  justify-content: space-between;\n}\n\n.taskTabsList-module_taskCardSubtitle__iLkwZ {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  align-self: stretch;\n}\n\n.taskTabsList-module_taskCardTitle__9lK5m {\n    color: var(--peanut);\n    font-family: Inter, sans-serif;\n    font-size: 11px;\n    font-style: normal;\n    font-weight: 400;\n    line-height: 16px;\n    align-self: stretch;\n    flex-grow: 1;\n}\n\n.taskTabsList-module_customTaskIcon__V-Mz3{\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  flex-shrink: 0;\n}\n\n.taskTabsList-module_taskCardHeader__hYznR > .taskTabsList-module_taskCardScheduledDate__IPOeL {\n  color: var(--darkBloobirds, #0077B5);\n  text-align: right;\n  font-size: 11px;\n  font-style: normal;\n  font-weight: 500;\n  line-height: 16px;\n}\n\n.taskTabsList-module_taskCardBodyText__GK5ur {\n  color: var(--peanut, #464F57);\n  font-size: 12px;\n  font-style: normal;\n  font-weight: 300;\n  line-height: 16px;\n  max-height: 48px;\n  text-overflow: ellipsis;\n  overflow-y: hidden;\n  white-space: normal;\n}\n\n.taskTabsList-module_taskCardBodyText__GK5ur > * {\n  font-size: 12px;\n}\n\n.taskTabsList-module_bobjectName__-L-Gw {\n  display: flex;\n  align-items: center;\n  gap: 4px;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n}\n\n.taskTabsList-module_bobjectName__-L-Gw > svg {\n  flex-shrink: 0;\n}\n\n.taskTabsList-module_bobjectNameText__H3yxi {\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n}\n\n.taskTabsList-module_taskCardContent__eWfXW {\n  width: 90%;\n  display: flex;\n  gap: 8px;\n  flex-direction: column;\n  padding-left: 16px;\n}\n\n.taskTabsList-module_taskCardRow__-mIQU {\n  display: flex;\n  align-items: center;\n  gap: 4px;\n}\n\n.taskTabsList-module_taskCardRow__-mIQU > span {\n  flex-grow: 0;\n  flex-shrink: 0;\n}\n\n.taskTabsList-module_taskCardRowTimezone__HYZ8s {\n  display: flex;\n  gap: 4px;\n  align-items: center;\n  font-size: 11px;\n  font-style: normal;\n  font-weight: 400;\n  color: var(--darkBloobirds);\n  line-height: 16px;\n}\n\n.taskTabsList-module_taskCardIcons__p2ImK {\n  display: flex;\n}\n\n.taskTabsList-module_bobjectNamesSeparator__GsNTU {\n  height: 8px;\n  border-right: 1px solid var(--softPeanut);\n}\n\n.taskTabsList-module_bobjectNames__xVy9C {\n  display: flex;\n  align-items: center;\n  gap: 4px;\n  width: 100%;\n  max-width: 75%;\n}\n\n.taskTabsList-module_extraFields__XQZ0n {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 4px;\n  align-items: center;\n}\n\n.taskTabsList-module_extraField__Q7Q1k {\n  display: flex;\n  flex: 1;\n  align-items: center;\n  color: var(--peanut);\n  max-width: 100%;\n}\n\n.taskTabsList-module_extraField__Q7Q1k svg {\n  flex-shrink: 0;\n}\n\n.taskTabsList-module_extraField__Q7Q1k > div {\n  overflow: hidden;\n}\n\n.taskTabsList-module_extraField__Q7Q1k p {\n  text-overflow: ellipsis;\n  overflow: hidden;\n  white-space: nowrap;\n}\n\n.taskTabsList-module_startButton__dCyhL {\n  padding: 2px 8px;\n  font-size: 11px;\n  margin-right: 6px;\n}\n\n.taskTabsList-module__time_marker__Xn1wy {\n  display: flex;\n  align-items: center;\n  margin: 8px 0;\n}\n\n.taskTabsList-module__time_marker_line__WZ2uh {\n  background-color: var(--tomato);\n  height: 1px;\n  width: 100%;\n}\n\n.taskTabsList-module__time_marker_bullet__2THOd {\n  background-color: var(--tomato);\n  width: 9px;\n  height: 9px;\n  border-radius: 9px;\n  display: block;\n}\n\n.taskTabsList-module__mark_as_done__bBfqd{\n  display: flex;\n  align-items: center;\n  gap: 4px;\n  cursor: pointer;\n  white-space: nowrap;\n  overflow: hidden;\n  margin-right: 8px;\n}\n\n\n.taskTabsList-module__mark_as_done_text__YHrLw{\n    font-size: 12px;\n    line-height: 16px;\n}\n\n.taskTabsList-module__mark_as_done_text__YHrLw:hover {\n  color: #2AA0E0;\n}\n\n.taskTabsList-module_emptyState__VPkmP {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  margin: 24px;\n  height: 70px;\n}\n\n.taskTabsList-module_emptyState__VPkmP > h1 {\n  font-size: 13px;\n  font-style: normal;\n  color: var(--peanut, #464F57);\n  font-weight: 500;\n  line-height: 16px; /* 123.077% */\n  letter-spacing: 0.5px;\n}\n\n.taskTabsList-module_emptyState__VPkmP > h2 {\n  font-size: 13px;\n  font-style: normal;\n  line-height: 16px;\n  color: var(--softPeanut, #94A5BA);\n  text-align: center;\n  margin-top: 2px;\n}\n\n.taskTabsList-module_taskCardHeaderLeft__bf3om{\n  display: flex;\n  align-items: center;\n  gap: 4px;\n  flex-shrink: 0;\n}\n\n.taskTabsList-module_taskCardHeaderRight__aho5V{\n  display: flex;\n  align-items: center;\n  gap: 4px;\n  flex-shrink: 0;\n}\n\n.taskTabsList-module__load_tasks_button__Tqfnu{\n  display: flex;\n  font-size: 12px;\n  line-height: 16px;\n  letter-spacing: 0;\n}\n\n";
+var styles$5 = {"header":"taskTabsList-module_header__5ndV5","title":"taskTabsList-module_title__Uh3nT","titleText":"taskTabsList-module_titleText__YMVJR","counter":"taskTabsList-module_counter__8y9DG","list":"taskTabsList-module_list__rKqS6","taskGroup":"taskTabsList-module_taskGroup__WskDU","hoverStyle":"taskTabsList-module_hoverStyle__D55zl","footer":"taskTabsList-module_footer__L4fB6","taskCard":"taskTabsList-module_taskCard__ljqyD","isExpanded":"taskTabsList-module_isExpanded__uVvR9","hiddenTaskCard":"taskTabsList-module_hiddenTaskCard__Rv9Ga","overdue":"taskTabsList-module_overdue__eKvJX","taskCardHeader":"taskTabsList-module_taskCardHeader__hYznR","taskCardSubtitle":"taskTabsList-module_taskCardSubtitle__iLkwZ","taskCardTitle":"taskTabsList-module_taskCardTitle__9lK5m","customTaskIcon":"taskTabsList-module_customTaskIcon__V-Mz3","taskCardScheduledDate":"taskTabsList-module_taskCardScheduledDate__IPOeL","taskCardBodyText":"taskTabsList-module_taskCardBodyText__GK5ur","bobjectName":"taskTabsList-module_bobjectName__-L-Gw","bobjectNameText":"taskTabsList-module_bobjectNameText__H3yxi","taskCardContent":"taskTabsList-module_taskCardContent__eWfXW","taskCardRow":"taskTabsList-module_taskCardRow__-mIQU","taskCardRowTimezone":"taskTabsList-module_taskCardRowTimezone__HYZ8s","taskCardIcons":"taskTabsList-module_taskCardIcons__p2ImK","bobjectNamesSeparator":"taskTabsList-module_bobjectNamesSeparator__GsNTU","bobjectNames":"taskTabsList-module_bobjectNames__xVy9C","extraFields":"taskTabsList-module_extraFields__XQZ0n","extraField":"taskTabsList-module_extraField__Q7Q1k","startButton":"taskTabsList-module_startButton__dCyhL","_time_marker":"taskTabsList-module__time_marker__Xn1wy","_time_marker_line":"taskTabsList-module__time_marker_line__WZ2uh","_time_marker_bullet":"taskTabsList-module__time_marker_bullet__2THOd","_mark_as_done":"taskTabsList-module__mark_as_done__bBfqd","_mark_as_done_text":"taskTabsList-module__mark_as_done_text__YHrLw","emptyState":"taskTabsList-module_emptyState__VPkmP","taskCardHeaderLeft":"taskTabsList-module_taskCardHeaderLeft__bf3om","taskCardHeaderRight":"taskTabsList-module_taskCardHeaderRight__aho5V","_load_tasks_button":"taskTabsList-module__load_tasks_button__Tqfnu"};
+styleInject(css_248z$5);
+
+var isoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
+var isoDateTimePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(.\d{3})?(Z|[+-]\d{2}:\d{2})?$/;
+function ExtraFields(_ref) {
+  var extraFields = _ref.extraFields;
+  var _useTranslation = useTranslation(),
+    i18n = _useTranslation.i18n;
+  var formatDate = function formatDate(value) {
+    if (isoDatePattern.test(value)) {
+      return new Date(value).toLocaleDateString();
+    } else if (isoDateTimePattern.test(value)) {
+      return getI18nSpacetimeLng(i18n.language, new Date(), getUserTimeZone()).since(getI18nSpacetimeLng(i18n.language, new Date(value), getUserTimeZone())).rounded;
+    } else {
+      return value;
+    }
+  };
+  var getColorByDateTime = function getColorByDateTime(value) {
+    if (isoDateTimePattern.test(value)) {
+      var now = new Date();
+      var pastDate = new Date(value);
+      //@ts-ignore
+      var timeDiff = Math.abs(now - pastDate);
+      var hoursDiff = Math.floor(timeDiff / (1000 * 60 * 60));
+      if (hoursDiff < 2) {
+        return 'melon'; // < 2 hours
+      } else if (hoursDiff < 6) {
+        return 'banana'; // < 6 hours
+      } else if (hoursDiff < 12) {
+        return 'tangerine'; // < 12 hours
+      } else if (hoursDiff <= 24) {
+        return 'softTomato'; // 12 - 24 hours
+      } else {
+        return 'softPeanut'; // > 24 hours
+      }
+    }
+
+    return 'lightBloobirds';
+  };
+  return /*#__PURE__*/jsx("div", {
+    className: styles$5.extraFields,
+    children: extraFields.map(function (field, index) {
+      if (!field.value) return null;
+      var formattedValue = formatDate(field.value);
+      var iconColor = getColorByDateTime(field.value);
+      var icon = iconColor !== 'lightBloobirds' ? 'flagFilled' : field.icon || 'circle';
+      return /*#__PURE__*/jsx("div", {
+        className: styles$5.extraField,
+        children: /*#__PURE__*/jsxs(Tooltip, {
+          title: "".concat(field.name, ": ").concat(field.value),
+          position: "top",
+          children: [/*#__PURE__*/jsx(Icon, {
+            name: icon,
+            color: iconColor,
+            size: 16
+          }), /*#__PURE__*/jsx(Text, {
+            size: "xs",
+            color: "peanut",
+            weight: "bold",
+            children: formattedValue
+          })]
+        })
+      }, index);
+    })
+  });
+}
+
+function TaskDate(_ref) {
+  var task = _ref.task;
+  var date = useGetI18nSpacetime(task.scheduledDatetime, getUserTimeZone());
+  var isOverdue;
+  if (task.type === 'PROSPECT_CADENCE') {
+    var currentDate = new Date();
+    var startOfDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+    isOverdue = date.isBefore(startOfDay);
+  } else {
+    isOverdue = date.isBefore(new Date());
+  }
+  var formattedDate = task.type === 'PROSPECT_CADENCE' ? date.format('{month-short} {date}') : date.format('{hour-24}:{minute-pad}, {month-short} {date}');
+  return /*#__PURE__*/jsx(Text, {
+    color: isOverdue ? 'tomato' : 'softPeanut',
+    size: "xs",
+    children: formattedDate
+  });
+}
+
+function _typeof$f(obj) { "@babel/helpers - typeof"; return _typeof$f = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$f(obj); }
+function ownKeys$8(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$8(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$8(Object(source), !0).forEach(function (key) { _defineProperty$e(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$8(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$e(obj, key, value) { key = _toPropertyKey$e(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$e(arg) { var key = _toPrimitive$e(arg, "string"); return _typeof$f(key) === "symbol" ? key : String(key); }
+function _toPrimitive$e(input, hint) { if (_typeof$f(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$f(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var TaskIcon = function TaskIcon(iconProps) {
+  return /*#__PURE__*/jsx(Icon, _objectSpread$8({
+    size: 16
+  }, iconProps));
+};
+var CustomTaskIcon = function CustomTaskIcon(_ref) {
+  var customTaskId = _ref.customTaskId;
+  var _useCustomTasks = useCustomTasks(),
+    customTasks = _useCustomTasks.customTasks;
+  var customTask = customTasks === null || customTasks === void 0 ? void 0 : customTasks.find(function (ct) {
+    return ct.id === customTaskId;
+  });
+  if (!customTask) {
+    return null;
+  }
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$5.customTaskIcon,
+    children: [/*#__PURE__*/jsx(TaskIcon, {
+      name: customTask.icon,
+      color: customTask.iconColor
+    }), /*#__PURE__*/jsx("span", {
+      className: styles$5.taskCardTitle,
+      style: {
+        marginTop: '2px'
+      },
+      children: customTask.name
+    })]
+  });
+};
+var TaskIcons = function TaskIcons(_ref2) {
+  var task = _ref2.task;
+  return /*#__PURE__*/jsx("div", {
+    className: styles$5.taskCardIcons,
+    children: task.customTaskId ? /*#__PURE__*/jsx(CustomTaskIcon, {
+      customTaskId: task.customTaskId
+    }) : task.type === 'PROSPECT_CADENCE' ? [task.actionCall && /*#__PURE__*/jsx(TaskIcon, {
+      name: "phone",
+      color: "extraCall"
+    }), task.actionEmail && /*#__PURE__*/jsx(TaskIcon, {
+      name: "mail",
+      color: "tangerine"
+    }), task.actionLinkedin && /*#__PURE__*/jsx(TaskIcon, {
+      name: "linkedin",
+      color: "darkBloobirds"
+    })] : task.customTaskId ? /*#__PURE__*/jsx(CustomTaskIcon, {
+      customTaskId: task.customTaskId
+    }) : task !== null && task !== void 0 && task.actionCall ? /*#__PURE__*/jsx(TaskIcon, {
+      name: "phone",
+      color: "extraCall"
+    }) : task !== null && task !== void 0 && task.actionEmail ? /*#__PURE__*/jsx(TaskIcon, {
+      name: "mail",
+      color: "tangerine"
+    }) : task !== null && task !== void 0 && task.actionLinkedin ? /*#__PURE__*/jsx(TaskIcon, {
+      name: "linkedin",
+      color: "darkBloobirds"
+    }) : /*#__PURE__*/jsx(TaskIcon, {
+      name: task.icon,
+      color: task.color
+    })
+  });
+};
+
+function _typeof$e(obj) { "@babel/helpers - typeof"; return _typeof$e = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$e(obj); }
+function _defineProperty$d(obj, key, value) { key = _toPropertyKey$d(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$d(arg) { var key = _toPrimitive$d(arg, "string"); return _typeof$e(key) === "symbol" ? key : String(key); }
+function _toPrimitive$d(input, hint) { if (_typeof$e(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$e(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var TaskPriorityButton = function TaskPriorityButton(_ref) {
+  var task = _ref.task,
+    _ref$displayOnly = _ref.displayOnly,
+    displayOnly = _ref$displayOnly === void 0 ? false : _ref$displayOnly;
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  var dataModel = useDataModel();
+  var _useTaskManagementCon = useTaskManagementContext(),
+    currentTasksProps = _useTaskManagementCon.currentTasksProps;
+  var _ref2 = currentTasksProps || {},
+    mutate = _ref2.mutate;
+  var priorityTaskFields = dataModel === null || dataModel === void 0 ? void 0 : dataModel.findValuesByFieldLogicRole(TASK_FIELDS_LOGIC_ROLE.PRIORITY);
+  var defaultValue = priorityTaskFields === null || priorityTaskFields === void 0 ? void 0 : priorityTaskFields.find(function (priorityTask) {
+    return [priorityTask.logicRole, priorityTask.name, priorityTask.id].includes(task.priority);
+  });
+  var isImportantSelected = (defaultValue === null || defaultValue === void 0 ? void 0 : defaultValue.logicRole) === TASK_PRIORITY_VALUE.IMPORTANT;
+  var handleChangePriority = function handleChangePriority(e) {
+    e === null || e === void 0 ? void 0 : e.preventDefault();
+    e === null || e === void 0 ? void 0 : e.stopPropagation();
+    api.patch("/bobjects/".concat(task === null || task === void 0 ? void 0 : task.id, "/raw"), {
+      contents: _defineProperty$d({}, TASK_FIELDS_LOGIC_ROLE.PRIORITY, isImportantSelected ? TASK_PRIORITY_VALUE.NO_PRIORITY : TASK_PRIORITY_VALUE.IMPORTANT),
+      params: {
+        skipEmptyUpdates: true
+      }
+    }).then(function () {
+      createToast({
+        type: 'success',
+        message: t('extension.card.toasts.changesSaved.success')
+      });
+      mixpanel.track(MIXPANEL_EVENTS.TASK_MANAGEMENT_STEP_CHANGE_TASK_PRIORITY_FROM_CARD);
+      mutate === null || mutate === void 0 ? void 0 : mutate();
+      window.dispatchEvent(new CustomEvent(MessagesEvents.ActiveBobjectUpdated, {
+        detail: {
+          type: BobjectTypes.Task
+        }
+      }));
+    });
+  };
+  if (displayOnly) return isImportantSelected ? /*#__PURE__*/jsx(Label, {
+    overrideStyle: {
+      backgroundColor: defaultValue === null || defaultValue === void 0 ? void 0 : defaultValue.backgroundColor,
+      color: defaultValue === null || defaultValue === void 0 ? void 0 : defaultValue.textColor,
+      borderColor: defaultValue === null || defaultValue === void 0 ? void 0 : defaultValue.backgroundColor,
+      textTransform: 'initial'
+    },
+    hoverStyle: {
+      opacity: 0.7
+    },
+    size: 'small',
+    children: /*#__PURE__*/jsx(Icon, {
+      name: "flagFilled",
+      size: 12,
+      color: 'softTomato'
+    })
+  }, defaultValue === null || defaultValue === void 0 ? void 0 : defaultValue.id) : null;
+  return /*#__PURE__*/jsx("div", {
+    onClick: handleChangePriority,
+    children: /*#__PURE__*/jsx(Button, {
+      variant: "secondary",
+      color: isImportantSelected ? 'softTomato' : 'bloobirds',
+      size: 'small',
+      children: /*#__PURE__*/jsx(Icon, {
+        name: "flagFilled",
+        size: 12,
+        color: isImportantSelected ? 'tomato' : 'bloobirds'
+      })
+    }, defaultValue === null || defaultValue === void 0 ? void 0 : defaultValue.id)
+  });
+};
+
+var css_248z$4 = ".taskCard-module_container__rVTk- {\n    margin-bottom: 4px;\n    cursor: pointer;\n    height: 40px;\n}\n\n.taskCard-module_withBody__4Z2-u {\n    height: -moz-fit-content;\n    height: fit-content;\n}\n\n.taskCard-module_rightSide__riv-l {\n    margin-left: auto;\n}\n\n.taskCard-module_rightSideSpace__QStgZ {\n    width: 8px;\n}\n\n.taskCard-module__plain_component__ffi7T {\n    white-space: nowrap;\n}\n\n.taskCard-module_isCompleted__0TiiC {\n    transition: height 300ms;\n    height: 0 !important;\n    margin-bottom: 0 !important;\n}\n\n.taskCard-module_container__rVTk- > div {\n    padding: 7px 0 7px 10px !important;\n    height: 40px;\n    display: flex;\n    border-left: 4px solid;\n}\n\n.taskCard-module_container__rVTk- > div > div {\n    width: 100%;\n    min-height: 21px;\n}\n\n.taskCard-module_withBody__4Z2-u > div {\n    height: -moz-fit-content;\n    height: fit-content;\n    flex-direction: column;\n}\n\n.taskCard-module_container__rVTk- > div > div > div:nth-child(2) {\n    padding: 0 !important;\n    max-width: 90%;\n}\n\n.taskCard-module_container__rVTk- div[class*='CardContent-module_content'] {\n    margin-top: 2px;\n}\n\n.taskCard-module_container__rVTk- div[class*='CardRight-module_right'] {\n    margin-right: 8px;\n}\n\n.taskCard-module_borderGreen__yRZ8s > div {\n    border-color: #d9fdee !important;\n    border: 1px solid;\n    border-left: 4px solid var(--verySoftGrape) !important;\n}\n\n.taskCard-module_borderGray__ZHFNQ > div {\n    border-color: #e5ecf5 !important;\n    border: 1px solid;\n    border-left: 4px solid var(--softPeanut) !important;\n}\n\n.taskCard-module_border__tErLJ > div {\n    border-color:  var(--lightestBloobirds) !important;\n    border: 1px solid;\n    border-left: 4px solid var(--lightPeanut) !important;\n}\n\n.taskCard-module_borderRed__Vzccq > div:not(.taskCard-module__dashed_line__uW7a7) {\n    border-color: var(--extraMeeting) !important;\n    border: 1px solid;\n    border-left: 4px solid var(--extraMeeting) !important;\n}\n\n.taskCard-module__icons__5-hRx {\n    flex-shrink: 0;\n    margin-right: 9px;\n}\n\n.taskCard-module__icons__5-hRx > svg {\n    margin-right: 2px;\n}\n\n.taskCard-module__title__ZoG7J {\n    height: 24px;\n    flex-shrink: 1;\n    margin-right: 4px;\n    display: flex;\n    align-items: center;\n    text-overflow: ellipsis;\n    overflow: hidden;\n    white-space: nowrap;\n}\n\n.taskCard-module__title__ZoG7J > div[class*='Tooltip-module_anchor'] {\n    overflow: hidden;\n}\n\n.taskCard-module_verticalEllipsis__k3-fa {\n    padding: 0 10px 0 0;\n    max-width: 100%;\n    white-space: normal;\n    height: -moz-fit-content;\n    height: fit-content;\n}\n\n.taskCard-module_verticalEllipsis__k3-fa p {\n    display: -webkit-box;\n    -webkit-line-clamp: 3;\n    -webkit-box-orient: vertical;\n    overflow: hidden;\n}\n\n.taskCard-module__description__Tcdb4 {\n    padding: 0 10px 0 0;\n}\n\n.taskCard-module__datetime__ixEqv {\n    display: flex;\n    gap: 4px;\n}\n\n.taskCard-module__datetime__ixEqv > p {\n    white-space: nowrap;\n}\n\n.taskCard-module__time__exzVI {\n    margin-left: 4px;\n}\n\n.taskCard-module_cardButtons__ezHrH {\n    max-height: 32px;\n    display: flex;\n    align-items: center;\n    justify-content: flex-end;\n    flex-shrink: 0;\n    gap: 4px;\n    margin-left: auto;\n    padding-bottom: 3px;\n    background-color: white;\n}\n\n.taskCard-module_cardButtons__ezHrH > div button[data-test='Button-Subhome-NextStep'] {\n    transform: rotate(180deg);\n}\n\n.taskCard-module_cardButtons__ezHrH div[class^='CardHoverButtons-module_container'] {\n    padding: 8px 0 8px 8px !important;\n}\n\n.taskCard-module__mark_as_done__bPO9X {\n    transition: background-color ease-in-out 0.3s;\n}\n\n.taskCard-module__mark_as_done_clicked__ZvRNq {\n    background-color: var(--verySoftMelon) !important;\n    border-color: var(--verySoftMelon) !important;\n}\n\n.taskCard-module__mark_as_done_clicked__ZvRNq > svg > path {\n    fill: var(--melon) !important;\n}\n\n.taskCard-module__container__GqYlt {\n    position: relative;\n    margin: 8px 0;\n    cursor: pointer;\n}\n\n.taskCard-module__container__GqYlt > div {\n    height: 60px;\n    padding-left: 16px;\n    display: flex;\n    align-content: center;\n}\n\n.taskCard-module__container__GqYlt > div > div {\n    display: flex;\n    align-items: center;\n    width: 100%;\n}\n\n.taskCard-module__container__GqYlt .taskCard-module__link_wrapper_ml__cyNj6 {\n    margin-left: 0;\n}\n\n.taskCard-module__dashed_line__uW7a7 {\n    position: absolute;\n    width: 0;\n    height: 8px;\n    left: 28px;\n    border-left: 1px dashed #c5d1dd;\n}\n\n.taskCard-module__container__GqYlt:last-child {\n    margin-bottom: 16px;\n}\n\n/* Card */\n\n/* Card Left */\n\n.taskCard-module__card_checkbox__gA7w6 {\n    margin-right: 9px;\n}\n\n.taskCard-module__icons__5-hRx {\n    display: flex;\n    flex-shrink: 0;\n    margin-right: 9px;\n}\n\n.taskCard-module__icons__5-hRx > svg {\n    margin-right: 2px;\n}\n\n.taskCard-module__title__ZoG7J {\n    flex: 1;\n    margin-right: 4px;\n    display: flex;\n    align-items: center;\n}\n\n.taskCard-module__now_time__cedWh {\n    flex-shrink: 1;\n    font-size: 14px;\n    min-width: 0;\n    display: flex;\n    align-items: center;\n    justify-content: space-between;\n    margin-right: 6px;\n}\n\n.taskCard-module__now_time__cedWh Text {\n    margin-left: 6px;\n}\n\n.taskCard-module__timezone__bbvOH {\n    display: flex;\n    align-items: center;\n    margin-right: 4px;\n}\n\n.taskCard-module__datetime__ixEqv {\n    flex-shrink: 0;\n    display: flex;\n    align-items: center;\n    margin-right: 4px;\n}\n\n.taskCard-module__datetime_hour__Vh2wx {\n    margin-right: 4px;\n}\n\n.taskCard-module__high_priority_icon__QJfNe {\n    margin-right: 12px;\n}\n\n.taskCard-module__bobject_name__KoBaQ {\n    flex-shrink: 1;\n    font-size: 11px;\n    line-height: 16px;\n    font-weight: 400;\n    min-width: 0;\n    display: flex;\n    align-items: flex-end;\n}\n\n.taskCard-module__bobject_name__KoBaQ > div {\n    display: block;\n}\n\n.taskCard-module__status_wrapper__XdgUR {\n    margin-right: 4px;\n    text-align: left;\n    flex-shrink: 0;\n}\n\n.taskCard-module__target_market_wrapper__9HNbI {\n    font-size: 13px;\n    flex-shrink: 0;\n    margin-right: 4px;\n}\n\n.taskCard-module__url_wrapper__E9em- {\n    flex-shrink: 1;\n    min-width: 0;\n    font-size: 13px;\n}\n\n.taskCard-module__text_wrapper__8zvxk {\n    margin-left: 8px;\n    margin-right: 24px;\n    flex-shrink: 0;\n}\n\n.taskCard-module__source__0tcFE {\n    margin-right: 12px;\n    flex-shrink: 0;\n}\n\n.taskCard-module__number_leads_wrapper__c8nof {\n    font-size: 13px;\n    margin-left: 3px;\n    margin-right: 4px;\n    flex-shrink: 0;\n}\n\n.taskCard-module__amount_wrapper__G9TTU {\n    font-size: 13px;\n    margin-left: 3px;\n    margin-right: 4px;\n    flex-shrink: 0;\n    display: flex;\n    gap: 4px;\n}\n\n.taskCard-module__separator__iWNoj {\n    display: flex;\n    align-self: center;\n    margin-right: 4px;\n    width: 1px;\n    height: 12px;\n    background-color: var(--softPeanut);\n}\n\n.taskCard-module__country__RWW1F {\n    margin-right: 4px;\n    flex-shrink: 0;\n}\n\n.taskCard-module__icon__container__dKRcu {\n    display: flex;\n}\n\n/* Card Right */\n.taskCard-module__status__L2niV,\n.taskCard-module__date__txx7m,\n.taskCard-module__overdue__9Eipu {\n    margin-left: 8px;\n    flex-shrink: 0;\n}\n\n.taskCard-module__assigned_circle__Z0YrH {\n    margin-left: 6px;\n    margin-right: 6px;\n    flex-shrink: 0;\n    margin-top: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.taskCard-module_priority_container__Tde0x {\n    margin-right: 8px;\n    margin-left: 4px;\n    margin-top: -1px;\n}\n\n.taskCard-module__assigned_to__TmqdM {\n    margin-right: 8px;\n}\n\n.taskCard-module__date__txx7m {\n    margin-left: 20px;\n}\n\n.taskCard-module_skipTask_button__4vcIa {\n    padding: 3px 8px !important;\n}\n\n/* END - Card */\n\n/* Content */\n\n.taskCard-module__name_wrapper__j73I7 {\n    margin-right: 4px;\n    max-width: 182px;\n    display: flex;\n    justify-content: flex-start;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    display: -webkit-box;\n    -webkit-line-clamp: 2;\n    -webkit-box-orient: vertical;\n    white-space: nowrap;\n}\n\n.taskCard-module__status_wrapper__XdgUR {\n    margin-left: 8px;\n    margin-right: 24px;\n    min-width: 64px;\n    text-align: left;\n}\n\n.taskCard-module__header__k8JRL {\n    margin-bottom: 24px;\n    margin-top: 24px;\n}\n\n.taskCard-module__header__k8JRL:first-child {\n    margin-top: 0;\n}\n\n.taskCard-module__card_wrapper__1k8fB {\n    display: flex;\n    align-content: center;\n}\n\n.taskCard-module__header__k8JRL :first-child {\n    margin-right: 4px;\n}\n\n.taskCard-module__filters__title__VKKFI {\n    margin-right: 12px;\n}\n\n.taskCard-module__clear_wrapper__usXcT {\n    width: 85px;\n}\n\n.taskCard-module__clear_wrapper__usXcT button {\n    padding: 0;\n}\n\n.taskCard-module__url_wrapper__E9em- {\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    display: flex;\n}\n\n.taskCard-module__footer_wrapper__iU-Jm {\n    margin-top: 25px;\n}\n\n.taskCard-module__timezome_wrapper__S5LcO {\n    margin-right: 12px;\n    white-space: nowrap;\n    max-width: 285px;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    display: flex;\n}\n\n.taskCard-module__name_container__OylLs {\n    min-width: 0;\n    font-size: 11px;\n    font-weight: 500;\n}\n\n.taskCard-module__name_container__OylLs > div {\n    display: block;\n}\n\n.taskCard-module__timezome_wrapper__S5LcO > p:nth-child(1) {\n    margin-right: 12px;\n}\n\n.taskCard-module__icon_wrapper__s-EtT {\n    margin-right: 4px;\n    flex-shrink: 0;\n    display: flex;\n}\n\n.taskCard-module_linkedinDropdown__E8gfQ > div {\n    display: flex !important;\n    align-items: center;\n    justify-content: center;\n}\n\n.taskCard-module__more_filter_input__L0vhD {\n    background: var(--lightestBloobirds);\n    color: var(--peanut);\n    box-sizing: border-box;\n    border-radius: 4px;\n    max-width: 180px;\n    padding: 4px 6px;\n    font-size: 12px;\n    display: flex;\n    align-items: center;\n    justify-content: space-between;\n    cursor: pointer;\n    margin-top: 2px;\n}\n\n.taskCard-module__filled_more_filter_input__W4YHg {\n    background: var(--softPeanut);\n    color: var(--white);\n}\n\n.taskCard-module__more_filter_input__L0vhD > svg {\n    margin-left: 8px;\n}\n\n.taskCard-module__select_all_wrapper__1zi3p {\n    padding-left: 8px;\n    display: flex;\n    align-items: center;\n    justify-content: space-between;\n    margin: 8px 0 12px 0;\n}\n\n.taskCard-module__transition__Q4R2W {\n    height: 0;\n}\n\n.taskCard-module__transition__Q4R2W > * {\n    transform: translateY(-100px);\n}\n\n.taskCard-module__filter_container__HIw9i {\n    transition: height 0.3s ease;\n    overflow: hidden;\n    justify-content: center;\n}\n\n.taskCard-module__filter_container__HIw9i > * {\n    transform: translate(0px, 0px);\n    transition: transform 400ms cubic-bezier(0, 0, 0.2, 1) 0ms;\n}\n\n.taskCard-module__button_wrapper__cAYDo {\n    margin-left: 16px;\n    display: inline;\n}\n\n.taskCard-module__message__WkW5m {\n    background-color: #ebf0f7;\n    padding: 8px;\n    text-align: center;\n    border-radius: 4px;\n}\n\n.taskCard-module__hidden__9A7vM {\n    visibility: hidden;\n    height: 0;\n}\n\n@media (max-width: 1192px) {\n    .taskCard-module__clear_wrapper__usXcT {\n        margin-top: 10px;\n    }\n\n    .taskCard-module__show_complete_wrapper__r67JP > div {\n        padding-left: 0;\n    }\n}\n\n.taskCard-module__footer_wrapper__iU-Jm {\n    margin-top: 25px;\n}\n\n.taskCard-module__cadence_name__BxXcY {\n    margin-left: 8px;\n    display: flex;\n    gap: 4px;\n    align-items: center;\n    overflow: hidden;\n}\n\n.taskCard-module__cadence_name__BxXcY > svg {\n    min-width: 18px;\n}\n\n.taskCard-module__cadence_name_text__vYKQz {\n    text-overflow: ellipsis;\n    white-space: nowrap;\n    overflow: hidden;\n}\n\n@media (max-width: 1192px) {\n    .taskCard-module__clear_wrapper__usXcT {\n        margin-top: 10px;\n    }\n\n    .taskCard-module__show_complete_wrapper__r67JP > div {\n        padding-left: 0;\n    }\n}\n\n@media screen and (min-width: 1521px) {\n    .taskCard-module__date_wrapper__ZQX83 {\n        max-width: inherit;\n    }\n}\n\n@media screen and (min-width: 1421px) and (max-width: 1520px) {\n    .taskCard-module__date_wrapper__ZQX83 > p {\n        max-width: 75px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        display: block;\n    }\n}\n\n@media screen and (min-width: 1421px) {\n    .taskCard-module__url_wrapper__E9em- {\n        margin-right: 4px;\n    }\n\n    .taskCard-module__status_wrapper__XdgUR > div > span {\n        max-width: 150px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        display: block;\n    }\n\n    .taskCard-module__name_wrapper__j73I7 > p {\n        max-width: 130px;\n        overflow: hidden;\n        text-overflow: ellipsis;\n        white-space: nowrap;\n        display: block;\n    }\n}\n\n@media screen and (min-width: 1221px) and (max-width: 1420px) {\n    .taskCard-module__timezome_wrapper__S5LcO > p:nth-child(1) {\n        max-width: 60px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n    }\n\n    .taskCard-module__name_wrapper__j73I7 > p {\n        max-width: 110px;\n        overflow: hidden;\n        text-overflow: ellipsis;\n        white-space: nowrap;\n        display: block;\n    }\n\n    .taskCard-module__status_wrapper__XdgUR {\n        margin-right: 4px;\n    }\n\n    .taskCard-module__status_wrapper__XdgUR > div > span {\n        max-width: 110px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        display: block;\n    }\n\n    .taskCard-module__url_wrapper__E9em- > span {\n        max-width: 60px;\n        overflow: hidden;\n        text-overflow: ellipsis;\n        white-space: nowrap;\n        display: block;\n    }\n\n    .taskCard-module__date_wrapper__ZQX83 > p {\n        max-width: 55px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        display: block;\n    }\n}\n\n.taskCard-module_amount_currency__IIgno {\n    flex-shrink: 0;\n}\n\n.taskCard-module_controlDiv__cbxD8 {\n    width: 20px;\n    height: 20px;\n    background-color: red;\n}\n\n.taskCard-module_cardButtons__ezHrH > div > button {\n    display: flex;\n    justify-content: center;\n    height: 22px;\n    width: 32px;\n    padding: 1px 6px !important;\n}\n\n/*For dropdown cases (linkedIn button)*/\n.taskCard-module_cardButtons__ezHrH > div > div > div > button {\n    display: flex;\n    justify-content: center;\n    height: 22px;\n    width: 32px;\n    padding: 1px 6px !important;\n}\n\n.taskCard-module_container__rVTk- > div > div > div > div[class^='CardHoverButtons-module_container'] {\n    padding: 0 !important;\n}\n\n.taskCard-module_cardNewTag__-r7-g {\n    background-color: var(--verySoftMelon);\n    margin-right: 8px;\n    padding: 0 4px;\n    color: var(--melon);\n    border-radius: 4px;\n    font-size: 10px;\n}\n\n@media screen and (min-width: 1181px) and (max-width: 1220px) {\n    .taskCard-module__timezome_wrapper__S5LcO > p:nth-child(1) {\n        max-width: 60px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n    }\n\n    .taskCard-module__date_wrapper__ZQX83 > p {\n        max-width: 65px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        display: block;\n    }\n\n    .taskCard-module__status_wrapper__XdgUR {\n        margin-right: 4px;\n    }\n\n    .taskCard-module__status_wrapper__XdgUR > div > span {\n        max-width: 80px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        display: block;\n    }\n\n    .taskCard-module__name_wrapper__j73I7 > p {\n        max-width: 90px;\n        overflow: hidden;\n        text-overflow: ellipsis;\n        white-space: nowrap;\n        display: block;\n    }\n\n    .taskCard-module__url_wrapper__E9em- > span {\n        max-width: 60px;\n        overflow: hidden;\n        text-overflow: ellipsis;\n        white-space: nowrap;\n        display: block;\n        margin-right: 4px;\n    }\n}\n\n@media screen and (min-width: 1111px) and (max-width: 1180px) {\n    .taskCard-module__date_wrapper__ZQX83 > p {\n        max-width: 150px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        display: block;\n    }\n\n    .taskCard-module__status_wrapper__XdgUR {\n        margin-right: 4px;\n    }\n\n    .taskCard-module__status_wrapper__XdgUR > div > span {\n        max-width: 100px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        display: block;\n    }\n}\n\n@media screen and (min-width: 1079px) and (max-width: 1110px) {\n    .taskCard-module__status_wrapper__XdgUR {\n        margin-right: 4px;\n    }\n\n    .taskCard-module__status_wrapper__XdgUR > div > span {\n        max-width: 90px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        display: block;\n    }\n\n    .taskCard-module__date_wrapper__ZQX83 > p {\n        max-width: 75px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        display: block;\n    }\n\n    .taskCard-module__name_wrapper__j73I7 > p {\n        max-width: 70px;\n        overflow: hidden;\n        text-overflow: ellipsis;\n        white-space: nowrap;\n        display: block;\n    }\n\n    .taskCard-module__url_wrapper__E9em- > span {\n        max-width: 60px;\n        overflow: hidden;\n        text-overflow: ellipsis;\n        white-space: nowrap;\n        display: block;\n    }\n}\n\n@media screen and (max-width: 1078px) {\n    .taskCard-module__filter_wrapper__WC3xp > div > div {\n        width: 75px;\n    }\n\n    .taskCard-module__name_wrapper__j73I7 > p {\n        max-width: 60px;\n        overflow: hidden;\n        text-overflow: ellipsis;\n        white-space: nowrap;\n        display: block;\n    }\n\n    .taskCard-module__text_wrapper__8zvxk {\n        margin-right: 12px;\n    }\n\n    .taskCard-module__url_wrapper__E9em- > span {\n        max-width: 60px;\n        overflow: hidden;\n        text-overflow: ellipsis;\n        white-space: nowrap;\n        display: block;\n    }\n\n    .taskCard-module__status_wrapper__XdgUR {\n        margin-left: 0;\n        margin-right: 4px;\n    }\n\n    .taskCard-module__status_wrapper__XdgUR > div > span {\n        max-width: 60px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        display: block;\n    }\n\n    .taskCard-module__date_wrapper__ZQX83 > p {\n        max-width: 70px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        display: block;\n    }\n}\n\n@media (max-width: 900px) {\n    .taskCard-module__xs_hidden__RfNtC {\n        display: none;\n    }\n}\n\n@media (max-width: 1150px) {\n    .taskCard-module__s_hidden__nemkh {\n        display: none;\n    }\n}\n\n@media (max-width: 1550px) {\n    .taskCard-module__m_hidden__-OQoz {\n        display: none;\n    }\n}\n\n@media (max-width: 1700px) {\n    .taskCard-module__l_hidden__-Au74 {\n        display: none;\n    }\n}\n\n.taskCard-module_plainContainer__e8nyD {\n    min-width: 0px;\n}\n\n.taskCard-module_plainContainer__e8nyD > div {\n    display: flex;\n}\n\n.taskCard-module_plainContainer__e8nyD > div > div {\n    flex: 1;\n    min-width: 0px;\n}\n\n.taskCard-module_plainContainer__e8nyD > div > div > p {\n    overflow: hidden;\n    text-overflow: ellipsis;\n}\n";
+var styles$4 = {"container":"taskCard-module_container__rVTk-","withBody":"taskCard-module_withBody__4Z2-u","rightSide":"taskCard-module_rightSide__riv-l","rightSideSpace":"taskCard-module_rightSideSpace__QStgZ","_plain_component":"taskCard-module__plain_component__ffi7T","isCompleted":"taskCard-module_isCompleted__0TiiC","borderGreen":"taskCard-module_borderGreen__yRZ8s","borderGray":"taskCard-module_borderGray__ZHFNQ","border":"taskCard-module_border__tErLJ","borderRed":"taskCard-module_borderRed__Vzccq","_dashed_line":"taskCard-module__dashed_line__uW7a7","_icons":"taskCard-module__icons__5-hRx","_title":"taskCard-module__title__ZoG7J","verticalEllipsis":"taskCard-module_verticalEllipsis__k3-fa","_description":"taskCard-module__description__Tcdb4","_datetime":"taskCard-module__datetime__ixEqv","_time":"taskCard-module__time__exzVI","cardButtons":"taskCard-module_cardButtons__ezHrH","_mark_as_done":"taskCard-module__mark_as_done__bPO9X","_mark_as_done_clicked":"taskCard-module__mark_as_done_clicked__ZvRNq","_container":"taskCard-module__container__GqYlt","_link_wrapper_ml":"taskCard-module__link_wrapper_ml__cyNj6","_card_checkbox":"taskCard-module__card_checkbox__gA7w6","_now_time":"taskCard-module__now_time__cedWh","_timezone":"taskCard-module__timezone__bbvOH","_datetime_hour":"taskCard-module__datetime_hour__Vh2wx","_high_priority_icon":"taskCard-module__high_priority_icon__QJfNe","_bobject_name":"taskCard-module__bobject_name__KoBaQ","_status_wrapper":"taskCard-module__status_wrapper__XdgUR","_target_market_wrapper":"taskCard-module__target_market_wrapper__9HNbI","_url_wrapper":"taskCard-module__url_wrapper__E9em-","_text_wrapper":"taskCard-module__text_wrapper__8zvxk","_source":"taskCard-module__source__0tcFE","_number_leads_wrapper":"taskCard-module__number_leads_wrapper__c8nof","_amount_wrapper":"taskCard-module__amount_wrapper__G9TTU","_separator":"taskCard-module__separator__iWNoj","_country":"taskCard-module__country__RWW1F","_icon__container":"taskCard-module__icon__container__dKRcu","_status":"taskCard-module__status__L2niV","_date":"taskCard-module__date__txx7m","_overdue":"taskCard-module__overdue__9Eipu","_assigned_circle":"taskCard-module__assigned_circle__Z0YrH","priority_container":"taskCard-module_priority_container__Tde0x","_assigned_to":"taskCard-module__assigned_to__TmqdM","skipTask_button":"taskCard-module_skipTask_button__4vcIa","_name_wrapper":"taskCard-module__name_wrapper__j73I7","_header":"taskCard-module__header__k8JRL","_card_wrapper":"taskCard-module__card_wrapper__1k8fB","_filters__title":"taskCard-module__filters__title__VKKFI","_clear_wrapper":"taskCard-module__clear_wrapper__usXcT","_footer_wrapper":"taskCard-module__footer_wrapper__iU-Jm","_timezome_wrapper":"taskCard-module__timezome_wrapper__S5LcO","_name_container":"taskCard-module__name_container__OylLs","_icon_wrapper":"taskCard-module__icon_wrapper__s-EtT","linkedinDropdown":"taskCard-module_linkedinDropdown__E8gfQ","_more_filter_input":"taskCard-module__more_filter_input__L0vhD","_filled_more_filter_input":"taskCard-module__filled_more_filter_input__W4YHg","_select_all_wrapper":"taskCard-module__select_all_wrapper__1zi3p","_transition":"taskCard-module__transition__Q4R2W","_filter_container":"taskCard-module__filter_container__HIw9i","_button_wrapper":"taskCard-module__button_wrapper__cAYDo","_message":"taskCard-module__message__WkW5m","_hidden":"taskCard-module__hidden__9A7vM","_show_complete_wrapper":"taskCard-module__show_complete_wrapper__r67JP","_cadence_name":"taskCard-module__cadence_name__BxXcY","_cadence_name_text":"taskCard-module__cadence_name_text__vYKQz","_date_wrapper":"taskCard-module__date_wrapper__ZQX83","amount_currency":"taskCard-module_amount_currency__IIgno","controlDiv":"taskCard-module_controlDiv__cbxD8","cardNewTag":"taskCard-module_cardNewTag__-r7-g","_filter_wrapper":"taskCard-module__filter_wrapper__WC3xp","_xs_hidden":"taskCard-module__xs_hidden__RfNtC","_s_hidden":"taskCard-module__s_hidden__nemkh","_m_hidden":"taskCard-module__m_hidden__-OQoz","_l_hidden":"taskCard-module__l_hidden__-Au74","plainContainer":"taskCard-module_plainContainer__e8nyD"};
+styleInject(css_248z$4);
+
+function _typeof$d(obj) { "@babel/helpers - typeof"; return _typeof$d = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$d(obj); }
+function _regeneratorRuntime$1() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime$1 = function _regeneratorRuntime() { return exports; }; var exports = {}, Op = Object.prototype, hasOwn = Op.hasOwnProperty, defineProperty = Object.defineProperty || function (obj, key, desc) { obj[key] = desc.value; }, $Symbol = "function" == typeof Symbol ? Symbol : {}, iteratorSymbol = $Symbol.iterator || "@@iterator", asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator", toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag"; function define(obj, key, value) { return Object.defineProperty(obj, key, { value: value, enumerable: !0, configurable: !0, writable: !0 }), obj[key]; } try { define({}, ""); } catch (err) { define = function define(obj, key, value) { return obj[key] = value; }; } function wrap(innerFn, outerFn, self, tryLocsList) { var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator, generator = Object.create(protoGenerator.prototype), context = new Context(tryLocsList || []); return defineProperty(generator, "_invoke", { value: makeInvokeMethod(innerFn, self, context) }), generator; } function tryCatch(fn, obj, arg) { try { return { type: "normal", arg: fn.call(obj, arg) }; } catch (err) { return { type: "throw", arg: err }; } } exports.wrap = wrap; var ContinueSentinel = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var IteratorPrototype = {}; define(IteratorPrototype, iteratorSymbol, function () { return this; }); var getProto = Object.getPrototypeOf, NativeIteratorPrototype = getProto && getProto(getProto(values([]))); NativeIteratorPrototype && NativeIteratorPrototype !== Op && hasOwn.call(NativeIteratorPrototype, iteratorSymbol) && (IteratorPrototype = NativeIteratorPrototype); var Gp = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(IteratorPrototype); function defineIteratorMethods(prototype) { ["next", "throw", "return"].forEach(function (method) { define(prototype, method, function (arg) { return this._invoke(method, arg); }); }); } function AsyncIterator(generator, PromiseImpl) { function invoke(method, arg, resolve, reject) { var record = tryCatch(generator[method], generator, arg); if ("throw" !== record.type) { var result = record.arg, value = result.value; return value && "object" == _typeof$d(value) && hasOwn.call(value, "__await") ? PromiseImpl.resolve(value.__await).then(function (value) { invoke("next", value, resolve, reject); }, function (err) { invoke("throw", err, resolve, reject); }) : PromiseImpl.resolve(value).then(function (unwrapped) { result.value = unwrapped, resolve(result); }, function (error) { return invoke("throw", error, resolve, reject); }); } reject(record.arg); } var previousPromise; defineProperty(this, "_invoke", { value: function value(method, arg) { function callInvokeWithMethodAndArg() { return new PromiseImpl(function (resolve, reject) { invoke(method, arg, resolve, reject); }); } return previousPromise = previousPromise ? previousPromise.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(innerFn, self, context) { var state = "suspendedStart"; return function (method, arg) { if ("executing" === state) throw new Error("Generator is already running"); if ("completed" === state) { if ("throw" === method) throw arg; return doneResult(); } for (context.method = method, context.arg = arg;;) { var delegate = context.delegate; if (delegate) { var delegateResult = maybeInvokeDelegate(delegate, context); if (delegateResult) { if (delegateResult === ContinueSentinel) continue; return delegateResult; } } if ("next" === context.method) context.sent = context._sent = context.arg;else if ("throw" === context.method) { if ("suspendedStart" === state) throw state = "completed", context.arg; context.dispatchException(context.arg); } else "return" === context.method && context.abrupt("return", context.arg); state = "executing"; var record = tryCatch(innerFn, self, context); if ("normal" === record.type) { if (state = context.done ? "completed" : "suspendedYield", record.arg === ContinueSentinel) continue; return { value: record.arg, done: context.done }; } "throw" === record.type && (state = "completed", context.method = "throw", context.arg = record.arg); } }; } function maybeInvokeDelegate(delegate, context) { var methodName = context.method, method = delegate.iterator[methodName]; if (undefined === method) return context.delegate = null, "throw" === methodName && delegate.iterator["return"] && (context.method = "return", context.arg = undefined, maybeInvokeDelegate(delegate, context), "throw" === context.method) || "return" !== methodName && (context.method = "throw", context.arg = new TypeError("The iterator does not provide a '" + methodName + "' method")), ContinueSentinel; var record = tryCatch(method, delegate.iterator, context.arg); if ("throw" === record.type) return context.method = "throw", context.arg = record.arg, context.delegate = null, ContinueSentinel; var info = record.arg; return info ? info.done ? (context[delegate.resultName] = info.value, context.next = delegate.nextLoc, "return" !== context.method && (context.method = "next", context.arg = undefined), context.delegate = null, ContinueSentinel) : info : (context.method = "throw", context.arg = new TypeError("iterator result is not an object"), context.delegate = null, ContinueSentinel); } function pushTryEntry(locs) { var entry = { tryLoc: locs[0] }; 1 in locs && (entry.catchLoc = locs[1]), 2 in locs && (entry.finallyLoc = locs[2], entry.afterLoc = locs[3]), this.tryEntries.push(entry); } function resetTryEntry(entry) { var record = entry.completion || {}; record.type = "normal", delete record.arg, entry.completion = record; } function Context(tryLocsList) { this.tryEntries = [{ tryLoc: "root" }], tryLocsList.forEach(pushTryEntry, this), this.reset(!0); } function values(iterable) { if (iterable) { var iteratorMethod = iterable[iteratorSymbol]; if (iteratorMethod) return iteratorMethod.call(iterable); if ("function" == typeof iterable.next) return iterable; if (!isNaN(iterable.length)) { var i = -1, next = function next() { for (; ++i < iterable.length;) if (hasOwn.call(iterable, i)) return next.value = iterable[i], next.done = !1, next; return next.value = undefined, next.done = !0, next; }; return next.next = next; } } return { next: doneResult }; } function doneResult() { return { value: undefined, done: !0 }; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, defineProperty(Gp, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), defineProperty(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, toStringTagSymbol, "GeneratorFunction"), exports.isGeneratorFunction = function (genFun) { var ctor = "function" == typeof genFun && genFun.constructor; return !!ctor && (ctor === GeneratorFunction || "GeneratorFunction" === (ctor.displayName || ctor.name)); }, exports.mark = function (genFun) { return Object.setPrototypeOf ? Object.setPrototypeOf(genFun, GeneratorFunctionPrototype) : (genFun.__proto__ = GeneratorFunctionPrototype, define(genFun, toStringTagSymbol, "GeneratorFunction")), genFun.prototype = Object.create(Gp), genFun; }, exports.awrap = function (arg) { return { __await: arg }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, asyncIteratorSymbol, function () { return this; }), exports.AsyncIterator = AsyncIterator, exports.async = function (innerFn, outerFn, self, tryLocsList, PromiseImpl) { void 0 === PromiseImpl && (PromiseImpl = Promise); var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList), PromiseImpl); return exports.isGeneratorFunction(outerFn) ? iter : iter.next().then(function (result) { return result.done ? result.value : iter.next(); }); }, defineIteratorMethods(Gp), define(Gp, toStringTagSymbol, "Generator"), define(Gp, iteratorSymbol, function () { return this; }), define(Gp, "toString", function () { return "[object Generator]"; }), exports.keys = function (val) { var object = Object(val), keys = []; for (var key in object) keys.push(key); return keys.reverse(), function next() { for (; keys.length;) { var key = keys.pop(); if (key in object) return next.value = key, next.done = !1, next; } return next.done = !0, next; }; }, exports.values = values, Context.prototype = { constructor: Context, reset: function reset(skipTempReset) { if (this.prev = 0, this.next = 0, this.sent = this._sent = undefined, this.done = !1, this.delegate = null, this.method = "next", this.arg = undefined, this.tryEntries.forEach(resetTryEntry), !skipTempReset) for (var name in this) "t" === name.charAt(0) && hasOwn.call(this, name) && !isNaN(+name.slice(1)) && (this[name] = undefined); }, stop: function stop() { this.done = !0; var rootRecord = this.tryEntries[0].completion; if ("throw" === rootRecord.type) throw rootRecord.arg; return this.rval; }, dispatchException: function dispatchException(exception) { if (this.done) throw exception; var context = this; function handle(loc, caught) { return record.type = "throw", record.arg = exception, context.next = loc, caught && (context.method = "next", context.arg = undefined), !!caught; } for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i], record = entry.completion; if ("root" === entry.tryLoc) return handle("end"); if (entry.tryLoc <= this.prev) { var hasCatch = hasOwn.call(entry, "catchLoc"), hasFinally = hasOwn.call(entry, "finallyLoc"); if (hasCatch && hasFinally) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } else if (hasCatch) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); } else { if (!hasFinally) throw new Error("try statement without catch or finally"); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } } } }, abrupt: function abrupt(type, arg) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc <= this.prev && hasOwn.call(entry, "finallyLoc") && this.prev < entry.finallyLoc) { var finallyEntry = entry; break; } } finallyEntry && ("break" === type || "continue" === type) && finallyEntry.tryLoc <= arg && arg <= finallyEntry.finallyLoc && (finallyEntry = null); var record = finallyEntry ? finallyEntry.completion : {}; return record.type = type, record.arg = arg, finallyEntry ? (this.method = "next", this.next = finallyEntry.finallyLoc, ContinueSentinel) : this.complete(record); }, complete: function complete(record, afterLoc) { if ("throw" === record.type) throw record.arg; return "break" === record.type || "continue" === record.type ? this.next = record.arg : "return" === record.type ? (this.rval = this.arg = record.arg, this.method = "return", this.next = "end") : "normal" === record.type && afterLoc && (this.next = afterLoc), ContinueSentinel; }, finish: function finish(finallyLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.finallyLoc === finallyLoc) return this.complete(entry.completion, entry.afterLoc), resetTryEntry(entry), ContinueSentinel; } }, "catch": function _catch(tryLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc === tryLoc) { var record = entry.completion; if ("throw" === record.type) { var thrown = record.arg; resetTryEntry(entry); } return thrown; } } throw new Error("illegal catch attempt"); }, delegateYield: function delegateYield(iterable, resultName, nextLoc) { return this.delegate = { iterator: values(iterable), resultName: resultName, nextLoc: nextLoc }, "next" === this.method && (this.arg = undefined), ContinueSentinel; } }, exports; }
+function _defineProperty$c(obj, key, value) { key = _toPropertyKey$c(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$c(arg) { var key = _toPrimitive$c(arg, "string"); return _typeof$d(key) === "symbol" ? key : String(key); }
+function _toPrimitive$c(input, hint) { if (_typeof$d(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$d(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function asyncGeneratorStep$1(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function _asyncToGenerator$1(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep$1(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep$1(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+var EditTaskButton = function EditTaskButton(_ref) {
+  var task = _ref.task;
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  var company = task.company;
+  var lead = task.lead;
+  var opportunity = task.opportunity;
+  var _useMinimizableModals = useMinimizableModals(),
+    openMinimizableModal = _useMinimizableModals.openMinimizableModal;
+  var _useTaskManagementCon = useTaskManagementContext(),
+    handleCloseModal = _useTaskManagementCon.handleCloseModal,
+    handleSaveModal = _useTaskManagementCon.handleSaveModal;
+  var openTaskModal = /*#__PURE__*/function () {
+    var _ref2 = _asyncToGenerator$1( /*#__PURE__*/_regeneratorRuntime$1().mark(function _callee(event) {
+      var taskBobject;
+      return _regeneratorRuntime$1().wrap(function _callee$(_context) {
+        while (1) switch (_context.prev = _context.next) {
+          case 0:
+            event === null || event === void 0 ? void 0 : event.preventDefault();
+            event === null || event === void 0 ? void 0 : event.stopPropagation();
+            _context.next = 4;
+            return api.get("/bobjects/".concat(task === null || task === void 0 ? void 0 : task.id, "/form?injectReferences=true"));
+          case 4:
+            taskBobject = _context.sent;
+            openMinimizableModal({
+              type: 'taskStatic',
+              data: _defineProperty$c(_defineProperty$c(_defineProperty$c(_defineProperty$c(_defineProperty$c({}, BobjectTypes.Task.toLowerCase(), taskBobject === null || taskBobject === void 0 ? void 0 : taskBobject.data), "bobjectId", task === null || task === void 0 ? void 0 : task.id), "company", company), "lead", lead), "opportunity", opportunity),
+              onClose: handleCloseModal,
+              onSave: function onSave() {
+                handleSaveModal();
+                mixpanel.track(MIXPANEL_EVENTS.TASK_MANAGEMENT_STEP_EDIT_TASK_FROM_CARD);
+              }
+            });
+          case 6:
+          case "end":
+            return _context.stop();
+        }
+      }, _callee);
+    }));
+    return function openTaskModal(_x) {
+      return _ref2.apply(this, arguments);
+    };
+  }();
+  return /*#__PURE__*/jsx(Tooltip, {
+    title: t('extension.card.editTaskButton'),
+    position: "top",
+    children: /*#__PURE__*/jsx(CardButton, {
+      dataTest: "task-edit",
+      iconLeft: "edit",
+      variant: "secondary",
+      color: "bloobirds",
+      onClick: openTaskModal,
+      size: "small"
+    })
+  });
+};
+
+function _typeof$c(obj) { "@babel/helpers - typeof"; return _typeof$c = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$c(obj); }
+function _regeneratorRuntime() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return exports; }; var exports = {}, Op = Object.prototype, hasOwn = Op.hasOwnProperty, defineProperty = Object.defineProperty || function (obj, key, desc) { obj[key] = desc.value; }, $Symbol = "function" == typeof Symbol ? Symbol : {}, iteratorSymbol = $Symbol.iterator || "@@iterator", asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator", toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag"; function define(obj, key, value) { return Object.defineProperty(obj, key, { value: value, enumerable: !0, configurable: !0, writable: !0 }), obj[key]; } try { define({}, ""); } catch (err) { define = function define(obj, key, value) { return obj[key] = value; }; } function wrap(innerFn, outerFn, self, tryLocsList) { var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator, generator = Object.create(protoGenerator.prototype), context = new Context(tryLocsList || []); return defineProperty(generator, "_invoke", { value: makeInvokeMethod(innerFn, self, context) }), generator; } function tryCatch(fn, obj, arg) { try { return { type: "normal", arg: fn.call(obj, arg) }; } catch (err) { return { type: "throw", arg: err }; } } exports.wrap = wrap; var ContinueSentinel = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var IteratorPrototype = {}; define(IteratorPrototype, iteratorSymbol, function () { return this; }); var getProto = Object.getPrototypeOf, NativeIteratorPrototype = getProto && getProto(getProto(values([]))); NativeIteratorPrototype && NativeIteratorPrototype !== Op && hasOwn.call(NativeIteratorPrototype, iteratorSymbol) && (IteratorPrototype = NativeIteratorPrototype); var Gp = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(IteratorPrototype); function defineIteratorMethods(prototype) { ["next", "throw", "return"].forEach(function (method) { define(prototype, method, function (arg) { return this._invoke(method, arg); }); }); } function AsyncIterator(generator, PromiseImpl) { function invoke(method, arg, resolve, reject) { var record = tryCatch(generator[method], generator, arg); if ("throw" !== record.type) { var result = record.arg, value = result.value; return value && "object" == _typeof$c(value) && hasOwn.call(value, "__await") ? PromiseImpl.resolve(value.__await).then(function (value) { invoke("next", value, resolve, reject); }, function (err) { invoke("throw", err, resolve, reject); }) : PromiseImpl.resolve(value).then(function (unwrapped) { result.value = unwrapped, resolve(result); }, function (error) { return invoke("throw", error, resolve, reject); }); } reject(record.arg); } var previousPromise; defineProperty(this, "_invoke", { value: function value(method, arg) { function callInvokeWithMethodAndArg() { return new PromiseImpl(function (resolve, reject) { invoke(method, arg, resolve, reject); }); } return previousPromise = previousPromise ? previousPromise.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(innerFn, self, context) { var state = "suspendedStart"; return function (method, arg) { if ("executing" === state) throw new Error("Generator is already running"); if ("completed" === state) { if ("throw" === method) throw arg; return doneResult(); } for (context.method = method, context.arg = arg;;) { var delegate = context.delegate; if (delegate) { var delegateResult = maybeInvokeDelegate(delegate, context); if (delegateResult) { if (delegateResult === ContinueSentinel) continue; return delegateResult; } } if ("next" === context.method) context.sent = context._sent = context.arg;else if ("throw" === context.method) { if ("suspendedStart" === state) throw state = "completed", context.arg; context.dispatchException(context.arg); } else "return" === context.method && context.abrupt("return", context.arg); state = "executing"; var record = tryCatch(innerFn, self, context); if ("normal" === record.type) { if (state = context.done ? "completed" : "suspendedYield", record.arg === ContinueSentinel) continue; return { value: record.arg, done: context.done }; } "throw" === record.type && (state = "completed", context.method = "throw", context.arg = record.arg); } }; } function maybeInvokeDelegate(delegate, context) { var methodName = context.method, method = delegate.iterator[methodName]; if (undefined === method) return context.delegate = null, "throw" === methodName && delegate.iterator["return"] && (context.method = "return", context.arg = undefined, maybeInvokeDelegate(delegate, context), "throw" === context.method) || "return" !== methodName && (context.method = "throw", context.arg = new TypeError("The iterator does not provide a '" + methodName + "' method")), ContinueSentinel; var record = tryCatch(method, delegate.iterator, context.arg); if ("throw" === record.type) return context.method = "throw", context.arg = record.arg, context.delegate = null, ContinueSentinel; var info = record.arg; return info ? info.done ? (context[delegate.resultName] = info.value, context.next = delegate.nextLoc, "return" !== context.method && (context.method = "next", context.arg = undefined), context.delegate = null, ContinueSentinel) : info : (context.method = "throw", context.arg = new TypeError("iterator result is not an object"), context.delegate = null, ContinueSentinel); } function pushTryEntry(locs) { var entry = { tryLoc: locs[0] }; 1 in locs && (entry.catchLoc = locs[1]), 2 in locs && (entry.finallyLoc = locs[2], entry.afterLoc = locs[3]), this.tryEntries.push(entry); } function resetTryEntry(entry) { var record = entry.completion || {}; record.type = "normal", delete record.arg, entry.completion = record; } function Context(tryLocsList) { this.tryEntries = [{ tryLoc: "root" }], tryLocsList.forEach(pushTryEntry, this), this.reset(!0); } function values(iterable) { if (iterable) { var iteratorMethod = iterable[iteratorSymbol]; if (iteratorMethod) return iteratorMethod.call(iterable); if ("function" == typeof iterable.next) return iterable; if (!isNaN(iterable.length)) { var i = -1, next = function next() { for (; ++i < iterable.length;) if (hasOwn.call(iterable, i)) return next.value = iterable[i], next.done = !1, next; return next.value = undefined, next.done = !0, next; }; return next.next = next; } } return { next: doneResult }; } function doneResult() { return { value: undefined, done: !0 }; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, defineProperty(Gp, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), defineProperty(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, toStringTagSymbol, "GeneratorFunction"), exports.isGeneratorFunction = function (genFun) { var ctor = "function" == typeof genFun && genFun.constructor; return !!ctor && (ctor === GeneratorFunction || "GeneratorFunction" === (ctor.displayName || ctor.name)); }, exports.mark = function (genFun) { return Object.setPrototypeOf ? Object.setPrototypeOf(genFun, GeneratorFunctionPrototype) : (genFun.__proto__ = GeneratorFunctionPrototype, define(genFun, toStringTagSymbol, "GeneratorFunction")), genFun.prototype = Object.create(Gp), genFun; }, exports.awrap = function (arg) { return { __await: arg }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, asyncIteratorSymbol, function () { return this; }), exports.AsyncIterator = AsyncIterator, exports.async = function (innerFn, outerFn, self, tryLocsList, PromiseImpl) { void 0 === PromiseImpl && (PromiseImpl = Promise); var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList), PromiseImpl); return exports.isGeneratorFunction(outerFn) ? iter : iter.next().then(function (result) { return result.done ? result.value : iter.next(); }); }, defineIteratorMethods(Gp), define(Gp, toStringTagSymbol, "Generator"), define(Gp, iteratorSymbol, function () { return this; }), define(Gp, "toString", function () { return "[object Generator]"; }), exports.keys = function (val) { var object = Object(val), keys = []; for (var key in object) keys.push(key); return keys.reverse(), function next() { for (; keys.length;) { var key = keys.pop(); if (key in object) return next.value = key, next.done = !1, next; } return next.done = !0, next; }; }, exports.values = values, Context.prototype = { constructor: Context, reset: function reset(skipTempReset) { if (this.prev = 0, this.next = 0, this.sent = this._sent = undefined, this.done = !1, this.delegate = null, this.method = "next", this.arg = undefined, this.tryEntries.forEach(resetTryEntry), !skipTempReset) for (var name in this) "t" === name.charAt(0) && hasOwn.call(this, name) && !isNaN(+name.slice(1)) && (this[name] = undefined); }, stop: function stop() { this.done = !0; var rootRecord = this.tryEntries[0].completion; if ("throw" === rootRecord.type) throw rootRecord.arg; return this.rval; }, dispatchException: function dispatchException(exception) { if (this.done) throw exception; var context = this; function handle(loc, caught) { return record.type = "throw", record.arg = exception, context.next = loc, caught && (context.method = "next", context.arg = undefined), !!caught; } for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i], record = entry.completion; if ("root" === entry.tryLoc) return handle("end"); if (entry.tryLoc <= this.prev) { var hasCatch = hasOwn.call(entry, "catchLoc"), hasFinally = hasOwn.call(entry, "finallyLoc"); if (hasCatch && hasFinally) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } else if (hasCatch) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); } else { if (!hasFinally) throw new Error("try statement without catch or finally"); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } } } }, abrupt: function abrupt(type, arg) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc <= this.prev && hasOwn.call(entry, "finallyLoc") && this.prev < entry.finallyLoc) { var finallyEntry = entry; break; } } finallyEntry && ("break" === type || "continue" === type) && finallyEntry.tryLoc <= arg && arg <= finallyEntry.finallyLoc && (finallyEntry = null); var record = finallyEntry ? finallyEntry.completion : {}; return record.type = type, record.arg = arg, finallyEntry ? (this.method = "next", this.next = finallyEntry.finallyLoc, ContinueSentinel) : this.complete(record); }, complete: function complete(record, afterLoc) { if ("throw" === record.type) throw record.arg; return "break" === record.type || "continue" === record.type ? this.next = record.arg : "return" === record.type ? (this.rval = this.arg = record.arg, this.method = "return", this.next = "end") : "normal" === record.type && afterLoc && (this.next = afterLoc), ContinueSentinel; }, finish: function finish(finallyLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.finallyLoc === finallyLoc) return this.complete(entry.completion, entry.afterLoc), resetTryEntry(entry), ContinueSentinel; } }, "catch": function _catch(tryLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc === tryLoc) { var record = entry.completion; if ("throw" === record.type) { var thrown = record.arg; resetTryEntry(entry); } return thrown; } } throw new Error("illegal catch attempt"); }, delegateYield: function delegateYield(iterable, resultName, nextLoc) { return this.delegate = { iterator: values(iterable), resultName: resultName, nextLoc: nextLoc }, "next" === this.method && (this.arg = undefined), ContinueSentinel; } }, exports; }
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+var RescheduleTaskButton = function RescheduleTaskButton(_ref) {
+  var task = _ref.task;
+  var _useTaskManagementCon = useTaskManagementContext(),
+    setModalContext = _useTaskManagementCon.setModalContext;
+  var isB2CAccount = useIsB2CAccount();
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  //TODO study different way to do this
+  var _useSWR = useSWR('/taskFeed/cadences', function () {
+      return api.get("/messaging/cadences/?bobjectTypes=".concat(!isB2CAccount ? BobjectTypes.Company : '', ",").concat(BobjectTypes.Lead, ",").concat(BobjectTypes.Opportunity)).then(function (response) {
+        return response.data;
+      });
+    }),
+    cadenceEntities = _useSWR.data;
+  var cadenceEntity = cadenceEntities === null || cadenceEntities === void 0 ? void 0 : cadenceEntities.cadences.find(function (cadenceElement) {
+    return (cadenceElement === null || cadenceElement === void 0 ? void 0 : cadenceElement.id) === task.cadenceId;
+  });
+  var isNextStep = task.type === TASK_TYPE.NEXT_STEP;
+  var shouldDisplayButton = (cadenceEntity === null || cadenceEntity === void 0 ? void 0 : cadenceEntity.reschedulableMode) === 'RESCHEDULABLE' || isNextStep;
+  return shouldDisplayButton && /*#__PURE__*/jsx(Tooltip, {
+    title: t('extension.card.rescheduleTask'),
+    position: "top",
+    children: /*#__PURE__*/jsx(CardButton, {
+      dataTest: "task-reschedule",
+      iconLeft: "clock",
+      variant: "secondary",
+      color: "bloobirds",
+      onClick: /*#__PURE__*/function () {
+        var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(e) {
+          var taskBobject;
+          return _regeneratorRuntime().wrap(function _callee$(_context) {
+            while (1) switch (_context.prev = _context.next) {
+              case 0:
+                e === null || e === void 0 ? void 0 : e.stopPropagation();
+                e === null || e === void 0 ? void 0 : e.preventDefault();
+                _context.next = 4;
+                return api.get("/bobjects/".concat(task === null || task === void 0 ? void 0 : task.id, "/form?injectReferences=true"));
+              case 4:
+                taskBobject = _context.sent;
+                mixpanel.track(MIXPANEL_EVENTS.TASK_MANAGEMENT_STEP_RESCHEDULE_TASK_FROM_CARD);
+                setModalContext({
+                  modal: TaskManagementModals.RescheduleTask,
+                  task: injectReferencedBobjects(taskBobject === null || taskBobject === void 0 ? void 0 : taskBobject.data)
+                });
+              case 7:
+              case "end":
+                return _context.stop();
+            }
+          }, _callee);
+        }));
+        return function (_x) {
+          return _ref2.apply(this, arguments);
+        };
+      }(),
+      size: "small"
+    })
+  });
+};
+
+var SkipTaskButton = function SkipTaskButton(_ref) {
+  var task = _ref.task,
+    onBanish = _ref.onBanish;
+  var _useOpenSkipTaskModal = useOpenSkipTaskModal(),
+    openSkipTaskModal = _useOpenSkipTaskModal.openSkipTaskModal;
+  var _useTaskManagementCon = useTaskManagementContext(),
+    currentTasksProps = _useTaskManagementCon.currentTasksProps;
+  var _ref2 = currentTasksProps || {},
+    mutate = _ref2.mutate;
+  var _useSkipModal = useSkipModal(),
+    hasSkipReasons = _useSkipModal.hasSkipReasons,
+    skipTask = _useSkipModal.skipTask;
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  var onSaveCallback = function onSaveCallback() {
+    onBanish();
+    mutate === null || mutate === void 0 ? void 0 : mutate();
+    window.dispatchEvent(new CustomEvent(MessagesEvents.ActiveBobjectUpdated, {
+      detail: {
+        type: BobjectTypes.Task
+      }
+    }));
+  };
+  return /*#__PURE__*/jsx(Tooltip, {
+    title: t('extension.card.skipTask'),
+    position: "top",
+    children: /*#__PURE__*/jsx(CardButton, {
+      iconLeft: "skipForward",
+      dataTest: "Skip-Task",
+      variant: "secondary",
+      onClick: function onClick(event) {
+        mixpanel.track(MIXPANEL_EVENTS.TASK_MANAGEMENT_STEP_SKIP_TASK_FROM_CARD);
+        event === null || event === void 0 ? void 0 : event.preventDefault();
+        event === null || event === void 0 ? void 0 : event.stopPropagation();
+        if (hasSkipReasons) {
+          openSkipTaskModal(task, onSaveCallback);
+        } else {
+          skipTask(task).then(function () {
+            return onSaveCallback();
+          });
+        }
+      }
+    })
+  });
+};
+
+function _typeof$b(obj) { "@babel/helpers - typeof"; return _typeof$b = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$b(obj); }
+function _defineProperty$b(obj, key, value) { key = _toPropertyKey$b(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$b(arg) { var key = _toPrimitive$b(arg, "string"); return _typeof$b(key) === "symbol" ? key : String(key); }
+function _toPrimitive$b(input, hint) { if (_typeof$b(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$b(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$7(arr, i) { return _arrayWithHoles$7(arr) || _iterableToArrayLimit$7(arr, i) || _unsupportedIterableToArray$7(arr, i) || _nonIterableRest$7(); }
+function _nonIterableRest$7() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$7(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$7(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$7(o, minLen); }
+function _arrayLikeToArray$7(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$7(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$7(arr) { if (Array.isArray(arr)) return arr; }
+var ButtonStatus;
+(function (ButtonStatus) {
+  ButtonStatus["Idle"] = "idle";
+  ButtonStatus["Processing"] = "processing";
+  ButtonStatus["Completed"] = "completed";
+})(ButtonStatus || (ButtonStatus = {}));
+var TaskButtons = function TaskButtons(_ref) {
+  var _settings$user;
+  var task = _ref.task,
+    setBanished = _ref.setBanished,
+    setIsProcessing = _ref.setIsProcessing;
+  var _useState = useState(ButtonStatus.Idle),
+    _useState2 = _slicedToArray$7(_useState, 2),
+    buttonStatus = _useState2[0],
+    setButtonStatus = _useState2[1];
+  var _useTaskManagementCon = useTaskManagementContext(),
+    currentTasksProps = _useTaskManagementCon.currentTasksProps;
+  var _ref2 = currentTasksProps || {},
+    configuration = _ref2.configuration,
+    mutate = _ref2.mutate;
+  var _useActiveUserSetting = useActiveUserSettings(),
+    settings = _useActiveUserSetting.settings;
+  var _useQuickLogActivity = useQuickLogActivity(),
+    logCustomActivity = _useQuickLogActivity.logCustomActivity;
+  var hasAutoLogCustomActivity = settings === null || settings === void 0 ? void 0 : (_settings$user = settings.user) === null || _settings$user === void 0 ? void 0 : _settings$user.autoLogCustomActivity;
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  var _useActivities = useActivities(),
+    logActivityFromTask = _useActivities.logActivityFromTask;
+
+  // data needed from task
+  var referencedBobject = getReferencedBobject(task);
+  var type = task.type;
+  var canEditTask = type === TASK_TYPE.NEXT_STEP;
+  var isSkippable = task.skippable;
+  var isCallAction = canEditTask && task.actionCall;
+  var company = task.company;
+
+  // Logic when checking tasks
+  var buttonData = {
+    disabled: !(task.canBeMarkedAsDone || task.skippable),
+    tooltip: ''
+  };
+  var _useCustomTasks = useCustomTasks(),
+    customTasks = _useCustomTasks.customTasks;
+  var customTaskId = task === null || task === void 0 ? void 0 : task.customTaskId;
+  var customTask = customTasks === null || customTasks === void 0 ? void 0 : customTasks.find(function (ct) {
+    return ct.id === customTaskId;
+  });
+  function handleHideAndComplete() {
+    setButtonStatus(ButtonStatus.Completed);
+    createToast({
+      type: 'success',
+      message: t('tasks.toasts.completedSuccess')
+    });
+    setTimeout(function () {
+      mutate === null || mutate === void 0 ? void 0 : mutate();
+      setBanished();
+      setIsProcessing(false);
+    }, 400);
+  }
+  var handleMarkAsDone = function handleMarkAsDone(event, id) {
+    event === null || event === void 0 ? void 0 : event.preventDefault();
+    event === null || event === void 0 ? void 0 : event.stopPropagation();
+    setButtonStatus(ButtonStatus.Processing);
+    setIsProcessing(true);
+    api.patch("/bobjects/".concat(id, "/raw"), {
+      contents: _defineProperty$b({}, TASK_FIELDS_LOGIC_ROLE.STATUS, TASK_STATUS_VALUE_LOGIC_ROLE.COMPLETED),
+      params: {
+        skipEmptyUpdates: true
+      }
+    }).then(function () {
+      if (hasAutoLogCustomActivity && customTask) {
+        logCustomActivity({
+          customTask: customTask,
+          selectedBobject: referencedBobject,
+          leads: [],
+          companyId: company === null || company === void 0 ? void 0 : company.id,
+          company: company
+        });
+      }
+      if (isCallAction) {
+        logActivityFromTask({
+          taskId: task === null || task === void 0 ? void 0 : task.id,
+          callback: function callback() {
+            window.dispatchEvent(new CustomEvent(MessagesEvents.ActiveBobjectUpdated, {
+              detail: {
+                type: BobjectTypes.Activity
+              }
+            }));
+          }
+        });
+      }
+      mixpanel.track(MIXPANEL_EVENTS.TASK_MANAGEMENT_STEP_MARK_TASK_AS_COMPLETED_FROM_CARD);
+      handleHideAndComplete();
+    });
+  };
+  return /*#__PURE__*/jsx("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      width: '100%',
+      position: 'absolute',
+      paddingRight: '16px'
+    },
+    children: /*#__PURE__*/jsxs("div", {
+      className: styles$4.cardButtons,
+      children: [canEditTask && /*#__PURE__*/jsx(EditTaskButton, {
+        task: task
+      }), !!(configuration !== null && configuration !== void 0 && configuration.canSeeImportance) && /*#__PURE__*/jsx(TaskPriorityButton, {
+        task: task
+      }), /*#__PURE__*/jsx(RescheduleTaskButton, {
+        task: task
+      }), isSkippable && /*#__PURE__*/jsx(SkipTaskButton, {
+        task: {
+          id: {
+            value: task.id
+          }
+        },
+        onBanish: function onBanish() {
+          return setBanished();
+        }
+      }), /*#__PURE__*/jsx(Tooltip, {
+        title: buttonData === null || buttonData === void 0 ? void 0 : buttonData.tooltip,
+        position: "top",
+        children: /*#__PURE__*/jsx(CardButton, {
+          dataTest: "home-MarkAsDone",
+          iconLeft: buttonStatus === ButtonStatus.Idle ? 'check' : undefined,
+          variant: buttonData.disabled ? 'secondary' : 'primary',
+          color: buttonData.disabled ? 'verySoftPeanut' : 'bloobirds',
+          className: clsx(styles$4._mark_as_done, _defineProperty$b({}, styles$4._mark_as_done_clicked, buttonStatus === ButtonStatus.Completed)),
+          onClick: function onClick(event) {
+            handleMarkAsDone(event, task === null || task === void 0 ? void 0 : task.id);
+          },
+          disabled: buttonData.disabled,
+          size: "small",
+          children: buttonStatus === ButtonStatus.Processing && /*#__PURE__*/jsx("div", {
+            children: /*#__PURE__*/jsx(Spinner, {
+              name: "loadingCircle",
+              size: 10,
+              color: "melon"
+            })
+          })
+        })
+      })]
+    })
+  });
+};
+
+function _slicedToArray$6(arr, i) { return _arrayWithHoles$6(arr) || _iterableToArrayLimit$6(arr, i) || _unsupportedIterableToArray$6(arr, i) || _nonIterableRest$6(); }
+function _nonIterableRest$6() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$6(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$6(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$6(o, minLen); }
+function _arrayLikeToArray$6(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$6(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$6(arr) { if (Array.isArray(arr)) return arr; }
+var vartiants = {
+  active: {
+    x: 0,
+    opacity: 1
+  },
+  banished: {
+    x: 400,
+    opacity: 0,
+    display: ['', '', 'none']
+  }
+};
+var backgroundVartiants = {
+  active: {
+    x: 0,
+    opacity: 1
+  },
+  banished: {
+    x: -400,
+    opacity: 0,
+    display: ['', '', 'none']
+  }
+};
+function TaskCard(_ref) {
+  var _task$extraFields, _backgroundTask$extra;
+  var task = _ref.task,
+    className = _ref.className,
+    backgroundTask = _ref.backgroundTask;
+  //TODO completion management
+  var _useState = useState(false),
+    _useState2 = _slicedToArray$6(_useState, 2),
+    banished = _useState2[0],
+    _setBanished = _useState2[1];
+  var _useState3 = useState(false),
+    _useState4 = _slicedToArray$6(_useState3, 2),
+    isProcessing = _useState4[0],
+    setIsProcessing = _useState4[1];
+  var _useHover = useHover(),
+    _useHover2 = _slicedToArray$6(_useHover, 2),
+    ref = _useHover2[0],
+    isHovering = _useHover2[1];
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  var _useTaskManagementCon = useTaskManagementContext(),
+    currentTasksProps = _useTaskManagementCon.currentTasksProps;
+  var _ref2 = currentTasksProps || {},
+    configuration = _ref2.configuration;
+  var getCadenceStep = function getCadenceStep() {
+    if (task.step === '1') {
+      return t('tasksTitles.cadenceStep.1');
+    }
+    if (task.step === '2') {
+      return t('tasksTitles.cadenceStep.2');
+    }
+    if (task.step === '3') {
+      return t('tasksTitles.cadenceStep.3');
+    }
+    return t('tasksTitles.cadenceStep.other', {
+      number: task.step
+    });
+  };
+  var getTaskCardTitle = function getTaskCardTitle() {
+    if (task.cadenceName) {
+      return task.cadenceName;
+    } else if (task.actionCall) {
+      return t('tasksTitles.call');
+    } else if (task.actionEmail) {
+      return t('tasksTitles.email');
+    } else if (task.actionLinkedin) {
+      return t('tasksTitles.linkedin');
+    } else {
+      return task.title;
+    }
+  };
+  var getTimezoneHour = function getTimezoneHour(timezone) {
+    var location = timezone;
+    try {
+      location = startCase(timezone.replace(/[_/]/g, ' ')).replace(' ', ', ');
+    } catch (e) {
+      console.warn('Error parsing timezone', e);
+    }
+    try {
+      return t('tasksTitles.timezone', {
+        hour: spacetime(new Date(), timezone).format('time-24'),
+        location: location
+      });
+    } catch (error) {
+      return t('tasksTitles.timezoneError', {
+        location: location
+      });
+    }
+  };
+  if (!task) {
+    return null;
+  }
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsxs(motion.div, {
+      animate: banished ? 'banished' : 'active',
+      variants: vartiants,
+      transition: {
+        duration: 0.3
+      },
+      style: {
+        zIndex: '10',
+        height: 'auto',
+        overflow: 'hidden'
+      },
+      className: className,
+      ref: ref,
+      children: [/*#__PURE__*/jsxs("div", {
+        className: styles$5.taskCardHeader,
+        children: [/*#__PURE__*/jsxs("div", {
+          className: styles$5.taskCardHeaderLeft,
+          children: [/*#__PURE__*/jsx(TaskIcons, {
+            task: task
+          }), !task.customTaskId && /*#__PURE__*/jsx("span", {
+            className: styles$5.taskCardTitle,
+            children: getTaskCardTitle()
+          })]
+        }), /*#__PURE__*/jsxs("div", {
+          className: styles$5.taskCardHeaderRight,
+          children: [/*#__PURE__*/jsx(TaskDate, {
+            task: task
+          }), !!(configuration !== null && configuration !== void 0 && configuration.canSeeImportance) && /*#__PURE__*/jsx(TaskPriorityButton, {
+            task: task,
+            displayOnly: true
+          })]
+        })]
+      }), /*#__PURE__*/jsxs("div", {
+        className: styles$5.taskCardContent,
+        children: [/*#__PURE__*/jsxs("div", {
+          className: styles$5.taskCardRow,
+          children: [task.step && task.cadenceId && /*#__PURE__*/jsx("span", {
+            className: styles$5.taskCardTitle,
+            children: getCadenceStep()
+          }), task.cadenceId && task.timezone && /*#__PURE__*/jsx("div", {
+            className: styles$5.bobjectNamesSeparator
+          }), task.timezone && /*#__PURE__*/jsxs("span", {
+            className: styles$5.taskCardRowTimezone,
+            children: [/*#__PURE__*/jsx(Icon, {
+              name: "clock",
+              color: "darkBloobirds",
+              size: 12
+            }), getTimezoneHour(task.timezone)]
+          })]
+        }), (task === null || task === void 0 ? void 0 : task.description) && /*#__PURE__*/jsx("div", {
+          className: styles$5.taskCardBodyText,
+          dangerouslySetInnerHTML: {
+            __html: task.description
+          }
+        }), !!((_task$extraFields = task.extraFields) !== null && _task$extraFields !== void 0 && _task$extraFields.length) && /*#__PURE__*/jsx(ExtraFields, {
+          extraFields: task.extraFields
+        })]
+      }), (isHovering || isProcessing) && /*#__PURE__*/jsx(TaskButtons, {
+        task: task,
+        setBanished: function setBanished() {
+          return _setBanished(true);
+        },
+        setIsProcessing: setIsProcessing
+      })]
+    }), backgroundTask && /*#__PURE__*/jsxs(motion.div, {
+      animate: banished ? 'active' : 'banished',
+      variants: backgroundVartiants,
+      transition: {
+        duration: 0.2
+      },
+      style: {
+        zIndex: '10',
+        height: 'auto',
+        overflow: 'hidden',
+        display: banished ? 'flex' : 'none',
+        position: 'absolute',
+        width: 'calc(100% - 4px)'
+      },
+      className: className,
+      children: [/*#__PURE__*/jsxs("div", {
+        className: styles$5.taskCardHeader,
+        children: [/*#__PURE__*/jsxs("div", {
+          className: styles$5.taskCardHeaderLeft,
+          children: [/*#__PURE__*/jsx(TaskIcons, {
+            task: backgroundTask
+          }), !backgroundTask.customTaskId && /*#__PURE__*/jsx("span", {
+            className: styles$5.taskCardTitle,
+            children: backgroundTask.cadenceName ? backgroundTask.cadenceName : backgroundTask.title
+          })]
+        }), /*#__PURE__*/jsxs("div", {
+          className: styles$5.taskCardHeaderRight,
+          children: [/*#__PURE__*/jsx(TaskDate, {
+            task: backgroundTask
+          }), !!(configuration !== null && configuration !== void 0 && configuration.canSeeImportance) && /*#__PURE__*/jsx(TaskPriorityButton, {
+            task: backgroundTask,
+            displayOnly: true
+          })]
+        })]
+      }), /*#__PURE__*/jsxs("div", {
+        className: styles$5.taskCardContent,
+        children: [/*#__PURE__*/jsxs("div", {
+          className: styles$5.taskCardRow,
+          children: [backgroundTask.step && backgroundTask.cadenceId && /*#__PURE__*/jsx("span", {
+            className: styles$5.taskCardTitle,
+            children: getCadenceStep()
+          }), backgroundTask.cadenceId && backgroundTask.timezone && /*#__PURE__*/jsx("div", {
+            className: styles$5.bobjectNamesSeparator
+          }), backgroundTask.timezone && /*#__PURE__*/jsx("span", {
+            className: styles$5.taskCardRowTimezone,
+            children: getTimezoneHour(backgroundTask.timezone)
+          })]
+        }), (backgroundTask === null || backgroundTask === void 0 ? void 0 : backgroundTask.description) && /*#__PURE__*/jsx("div", {
+          className: styles$5.taskCardBodyText,
+          dangerouslySetInnerHTML: {
+            __html: backgroundTask.description
+          }
+        }), !!((_backgroundTask$extra = backgroundTask.extraFields) !== null && _backgroundTask$extra !== void 0 && _backgroundTask$extra.length) && /*#__PURE__*/jsx(ExtraFields, {
+          extraFields: backgroundTask.extraFields
+        })]
+      })]
+    })]
+  });
+}
+
+function _typeof$a(obj) { "@babel/helpers - typeof"; return _typeof$a = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$a(obj); }
+function ownKeys$7(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$7(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$7(Object(source), !0).forEach(function (key) { _defineProperty$a(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$7(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _toArray(arr) { return _arrayWithHoles$5(arr) || _iterableToArray(arr) || _unsupportedIterableToArray$5(arr) || _nonIterableRest$5(); }
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function _defineProperty$a(obj, key, value) { key = _toPropertyKey$a(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$a(arg) { var key = _toPrimitive$a(arg, "string"); return _typeof$a(key) === "symbol" ? key : String(key); }
+function _toPrimitive$a(input, hint) { if (_typeof$a(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$a(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray$5(arr, i) { return _arrayWithHoles$5(arr) || _iterableToArrayLimit$5(arr, i) || _unsupportedIterableToArray$5(arr, i) || _nonIterableRest$5(); }
+function _nonIterableRest$5() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$5(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$5(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$5(o, minLen); }
+function _arrayLikeToArray$5(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$5(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$5(arr) { if (Array.isArray(arr)) return arr; }
+var CLUSTER = {
+  dailyTasks: {
+    apiName: 'DAILY_TASKS',
+    icon: 'calendar'
+  },
+  scheduledTasks: {
+    apiName: 'SCHEDULED_TASKS',
+    icon: 'event'
+  },
+  reminders: {
+    apiName: 'REMINDERS',
+    icon: 'clock'
+  },
+  overdueTasks: {
+    apiName: 'OVERDUE_TASKS',
+    icon: 'calendar'
+  }
+};
+function getIsNow(prevTask, nextTask) {
+  if (!prevTask || !nextTask) return false;else {
+    var prevDate = new Date(prevTask.scheduledDatetime);
+    var nextDate = new Date(nextTask.scheduledDatetime);
+    var now = new Date();
+    return prevDate < now && nextDate > now;
+  }
+}
+function TaskTabFeedGroupTitle(_ref) {
+  var cluster = _ref.cluster;
+  var _useTranslation = useTranslation(),
+    t = _useTranslation.t;
+  var icon = CLUSTER[cluster].icon;
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$5.title,
+    children: [/*#__PURE__*/jsx(Icon, {
+      name: icon,
+      size: 16,
+      color: "softPeanut"
+    }), /*#__PURE__*/jsx("span", {
+      className: styles$5.titleText,
+      children: t('taskFeed.' + cluster)
+    })]
+  });
+}
+function TimeBar() {
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$5._time_marker,
+    children: [/*#__PURE__*/jsx("span", {
+      className: styles$5._time_marker_bullet
+    }), /*#__PURE__*/jsx("span", {
+      className: styles$5._time_marker_line
+    })]
+  });
+}
+function TaskTabFeedGroup(_ref2) {
+  var _tasks$tasks;
+  var tasks = _ref2.tasks,
+    clusterName = _ref2.clusterName,
+    isLoading = _ref2.isLoading,
+    parentRef = _ref2.parentRef,
+    _ref2$defaultOpen = _ref2.defaultOpen,
+    defaultOpen = _ref2$defaultOpen === void 0 ? false : _ref2$defaultOpen;
+  var _useState = useState(defaultOpen),
+    _useState2 = _slicedToArray$5(_useState, 2),
+    isExpanded = _useState2[0],
+    setIsExpanded = _useState2[1];
+  //const [isHidden, setIsHidden] = useState(clusterName === 'overdueTasks');
+  var _useTaskManagementCon = useTaskManagementContext(),
+    currentTasksProps = _useTaskManagementCon.currentTasksProps;
+  var _ref3 = currentTasksProps || {},
+    paginationState = _ref3.paginationState;
+  var listClass = clsx(styles$5.list, _defineProperty$a({}, styles$5.collapsed, !isExpanded));
+  var isOverdue = clusterName === 'overdueTasks';
+  var taskCardClass = clsx(styles$5.taskCard, _defineProperty$a(_defineProperty$a({}, styles$5.overdue, isOverdue), styles$5.isExpanded, isExpanded));
+  var _ref4 = tasks.tasks || [],
+    _ref5 = _toArray(_ref4),
+    headerTask = _ref5[0],
+    bodyTasks = _ref5.slice(1);
+  var noTasks = (tasks === null || tasks === void 0 ? void 0 : (_tasks$tasks = tasks.tasks) === null || _tasks$tasks === void 0 ? void 0 : _tasks$tasks.length) === 0;
+  var hasTimelineBar = ['reminders', 'scheduledTasks'].includes(clusterName);
+
+  //const toggleVisibility = () => setIsHidden(!isHidden);
+
+  useEffect(function () {
+    if (defaultOpen && !isExpanded) {
+      setIsExpanded(true);
+    }
+  }, [defaultOpen]);
+  return /*#__PURE__*/jsxs("div", {
+    className: clsx(styles$5.taskGroup, _defineProperty$a({}, styles$5.hoverStyle, !noTasks)),
+    children: [/*#__PURE__*/jsxs("div", {
+      className: styles$5.header,
+      onClick: function onClick() {
+        if (tasks.totalElements > 1) isExpanded ? setIsExpanded(false) : setIsExpanded(true);
+      },
+      children: [/*#__PURE__*/jsx(TaskTabFeedGroupTitle, {
+        cluster: clusterName
+      }), /*#__PURE__*/jsx("div", {
+        style: {
+          display: 'flex',
+          gap: '4px',
+          alignItems: 'center'
+        },
+        children: !noTasks && /*#__PURE__*/jsx("div", {
+          className: styles$5.counter,
+          children: tasks.totalElements
+        })
+      })]
+    }), headerTask ? /*#__PURE__*/jsxs("div", {
+      className: listClass,
+      id: "card-list",
+      children: [/*#__PURE__*/jsx(TaskCard, {
+        task: headerTask,
+        className: taskCardClass,
+        backgroundTask: !isExpanded && bodyTasks[0]
+      }, headerTask.id), /*#__PURE__*/jsx(AnimatePresence, {
+        children: !isExpanded ? /*#__PURE__*/jsx(ThreeHiddenCards, {
+          isOverdue: isOverdue,
+          bodyTasks: bodyTasks
+        }) : /*#__PURE__*/jsx(UnCollapsedTasks, {
+          tasks: tasks,
+          bodyTasks: bodyTasks,
+          isLoading: isLoading,
+          taskCardClass: taskCardClass,
+          hasTimelineBar: hasTimelineBar
+        })
+      })]
+    }) : /*#__PURE__*/jsx(EmptyState, {}), !noTasks && /*#__PURE__*/jsx(ControlButtons, {
+      tasks: tasks,
+      isExpandedState: {
+        isExpanded: isExpanded,
+        setIsExpanded: setIsExpanded
+      },
+      paginationState: paginationState,
+      clusterName: clusterName,
+      parentRef: parentRef
+    })]
+  });
+}
+var UnCollapsedTasks = function UnCollapsedTasks(_ref6) {
+  var tasks = _ref6.tasks,
+    bodyTasks = _ref6.bodyTasks,
+    hasTimelineBar = _ref6.hasTimelineBar,
+    taskCardClass = _ref6.taskCardClass,
+    isLoading = _ref6.isLoading;
+  return /*#__PURE__*/jsxs(motion.section, {
+    initial: "collapsed",
+    animate: "open",
+    exit: "collapsed",
+    variants: {
+      open: {
+        opacity: 1,
+        height: 'auto',
+        width: '100%',
+        transition: {
+          staggerChildren: 0.5
+        }
+      },
+      collapsed: {
+        opacity: 0,
+        height: 0,
+        width: '100%',
+        transition: {
+          when: 'beforeChildren'
+        }
+      }
+    },
+    transition: {
+      duration: 0.5,
+      ease: [0.04, 0.62, 0.23, 0.98]
+    },
+    children: [bodyTasks.map(function (task, index) {
+      if (task && task.scheduledDatetime) {
+        return /*#__PURE__*/jsxs(Fragment, {
+          children: [hasTimelineBar && getIsNow(tasks === null || tasks === void 0 ? void 0 : tasks.tasks[index], task) && /*#__PURE__*/jsx(TimeBar, {}), /*#__PURE__*/jsx(TaskCard, {
+            task: task,
+            className: taskCardClass
+          }, task.id), hasTimelineBar && index === bodyTasks.length - 1 && isBefore(new Date(task.scheduledDatetime), new Date()) && /*#__PURE__*/jsx(TimeBar, {})]
+        });
+      }
+      return null;
+    }), isLoading && /*#__PURE__*/jsx("div", {
+      style: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '4px'
+      },
+      children: Array.from({
+        length: 3
+      }).map(function (_, index) {
+        return /*#__PURE__*/jsx(Skeleton, {
+          height: "80px",
+          width: "100%",
+          variant: "rect"
+        }, 'skeleton' + index);
+      })
+    })]
+  }, "content");
+};
+var ThreeHiddenCards = function ThreeHiddenCards(_ref7) {
+  var bodyTasks = _ref7.bodyTasks,
+    isOverdue = _ref7.isOverdue;
+  var hideTaskCardClass = clsx(styles$5.hiddenTaskCard, _defineProperty$a({}, styles$5.overdue, isOverdue));
+  return bodyTasks.map(function (task, index) {
+    if (index < 3) {
+      return /*#__PURE__*/jsx("div", {
+        className: hideTaskCardClass,
+        style: {
+          zIndex: "".concat(9 - index)
+        }
+      }, task.id);
+    } else {
+      return null;
+    }
+  });
+};
+var EmptyState = function EmptyState() {
+  var _useTranslation2 = useTranslation(),
+    t = _useTranslation2.t;
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$5.emptyState,
+    children: [/*#__PURE__*/jsx("h1", {
+      children: t('taskFeed.noTasks')
+    }), /*#__PURE__*/jsx("h2", {
+      children: t('taskFeed.noTasksHint')
+    })]
+  });
+};
+var ControlButtons = function ControlButtons(_ref8) {
+  var isExpandedState = _ref8.isExpandedState,
+    tasks = _ref8.tasks,
+    paginationState = _ref8.paginationState,
+    clusterName = _ref8.clusterName,
+    parentRef = _ref8.parentRef;
+  var pagination = paginationState.pagination,
+    setPagination = paginationState.setPagination;
+  var isExpanded = isExpandedState.isExpanded,
+    setIsExpanded = isExpandedState.setIsExpanded;
+  var _useTranslation3 = useTranslation(),
+    t = _useTranslation3.t;
+  function increasePagination() {
+    setPagination(_objectSpread$7(_objectSpread$7({}, pagination), {}, _defineProperty$a({}, clusterName, _objectSpread$7(_objectSpread$7({}, pagination[clusterName]), {}, {
+      size: pagination[clusterName].size + 10
+    }))));
+  }
+  function closeAndScroll() {
+    parentRef.current.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+    setIsExpanded(false);
+  }
+  return /*#__PURE__*/jsx("div", {
+    className: styles$5.footer,
+    children: isExpanded ? /*#__PURE__*/jsxs(Fragment, {
+      children: [/*#__PURE__*/jsx(Button, {
+        variant: "clear",
+        size: "small",
+        iconLeft: "arrowDown",
+        uppercase: false,
+        disabled: (tasks.page + 1) * tasks.size >= tasks.totalElements,
+        onClick: increasePagination,
+        className: styles$5._load_tasks_button,
+        children: t('taskFeed.loadMoreTasks')
+      }), /*#__PURE__*/jsx(Button, {
+        variant: "clear",
+        size: "small",
+        iconLeft: "arrowUp",
+        uppercase: false,
+        onClick: closeAndScroll,
+        className: styles$5._load_tasks_button,
+        children: t('taskFeed.closeTasks')
+      })]
+    }) : /*#__PURE__*/jsx(Button, {
+      variant: "clear",
+      size: "small",
+      iconLeft: "arrowDown",
+      disabled: tasks.totalElements < 2,
+      uppercase: false,
+      onClick: function onClick() {
+        return setIsExpanded(true);
+      },
+      className: styles$5._load_tasks_button,
+      children: t('taskFeed.loadMoreTasks')
+    })
+  });
+};
+
+function _typeof$9(obj) { "@babel/helpers - typeof"; return _typeof$9 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$9(obj); }
+function _slicedToArray$4(arr, i) { return _arrayWithHoles$4(arr) || _iterableToArrayLimit$4(arr, i) || _unsupportedIterableToArray$4(arr, i) || _nonIterableRest$4(); }
+function _nonIterableRest$4() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$4(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$4(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$4(o, minLen); }
+function _arrayLikeToArray$4(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$4(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$4(arr) { if (Array.isArray(arr)) return arr; }
+function ownKeys$6(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$6(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$6(Object(source), !0).forEach(function (key) { _defineProperty$9(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$6(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$9(obj, key, value) { key = _toPropertyKey$9(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$9(arg) { var key = _toPrimitive$9(arg, "string"); return _typeof$9(key) === "symbol" ? key : String(key); }
+function _toPrimitive$9(input, hint) { if (_typeof$9(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$9(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var clusterNames = ['dailyTasks', 'scheduledTasks', 'overdueTasks'];
+function injectCadenceName(task, cadences) {
+  var _cadences$find;
+  if (!cadences) return task;
+  var cadenceName = (_cadences$find = cadences.find(function (cadence) {
+    return cadence.id === task.cadenceId;
+  })) === null || _cadences$find === void 0 ? void 0 : _cadences$find.name;
+  return _objectSpread$6(_objectSpread$6({}, task), {}, {
+    cadenceName: cadenceName
+  });
+}
+var TasksTabList = function TasksTabList(_ref) {
+  var parentRef = _ref.parentRef;
+  var _useTaskManagementCon = useTaskManagementContext(),
+    tasks = _useTaskManagementCon.currentTasksProps;
+  var _ref2 = tasks || {},
+    visibleClusters = _ref2.visibleClusters;
+  var _useSWR = useSWR('/taskFeed/cadences', {
+      revalidateOnFocus: false
+    }),
+    data = _useSWR.data;
+  if (!tasks || tasks.isLoading && !tasks.clusters) {
+    return /*#__PURE__*/jsx("div", {
+      style: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '32px'
+      },
+      children: clusterNames.map(function (name) {
+        return /*#__PURE__*/jsxs("div", {
+          style: {
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px'
+          },
+          children: [/*#__PURE__*/jsx("div", {
+            className: styles$5.header,
+            children: /*#__PURE__*/jsx(TaskTabFeedGroupTitle, {
+              cluster: name
+            })
+          }), /*#__PURE__*/jsx(Skeleton, {
+            variant: "rect",
+            width: "100%",
+            height: "90px"
+          })]
+        }, name + 'clusterLoader');
+      })
+    });
+  }
+  if (tasks !== null && tasks !== void 0 && tasks.error) {
+    return /*#__PURE__*/jsx(TaskFeedErrorPage, {
+      onClick: function onClick() {
+        var _tasks$mutate;
+        return tasks === null || tasks === void 0 ? void 0 : (_tasks$mutate = tasks.mutate) === null || _tasks$mutate === void 0 ? void 0 : _tasks$mutate.call(tasks);
+      }
+    });
+  }
+  return /*#__PURE__*/jsx(Fragment, {
+    children: (tasks === null || tasks === void 0 ? void 0 : tasks.type) === 'clustered' ? Object.entries(tasks.clusters).filter(function (_ref3) {
+      var _ref4 = _slicedToArray$4(_ref3, 2),
+        clusterName = _ref4[0];
+        _ref4[1];
+      return visibleClusters.includes(clusterName);
+    }).map(function (_ref5) {
+      var _ref6 = _slicedToArray$4(_ref5, 2),
+        clusterName = _ref6[0],
+        clusterTasks = _ref6[1];
+      return /*#__PURE__*/jsx(TaskTabFeedGroup, {
+        tasks: _objectSpread$6(_objectSpread$6({}, clusterTasks), {}, {
+          tasks: clusterTasks === null || clusterTasks === void 0 ? void 0 : clusterTasks.tasks.map(function (task) {
+            return injectCadenceName(task, data === null || data === void 0 ? void 0 : data.cadences);
+          })
+        }),
+        clusterName: clusterName,
+        isLoading: tasks.isLoading,
+        parentRef: parentRef,
+        defaultOpen: visibleClusters.length === 1
+      }, clusterName);
+    }) : /*#__PURE__*/jsx("div", {
+      children: "NOT CLUSTERED"
+    })
+  });
+};
+
+var CurrentTasks = function CurrentTasks() {
+  var parentRef = useRef();
+  return /*#__PURE__*/jsx("div", {
+    ref: parentRef,
+    children: /*#__PURE__*/jsx(TasksTabList, {
+      parentRef: parentRef
+    })
+  });
+};
+
+var css_248z$3 = ".taskManagement-module_modalContent__yrMSO{\n    display: flex;\n    padding: 16px 24px;\n}\n\n.taskManagement-module_modalContent__yrMSO > div{\n    width: 100%;\n    height: 600px !important;\n    flex-direction: row;\n    margin-bottom: 16px;\n}\n\n.taskManagement-module_sectionSeparator__ReiZs{\n    height: 100%;\n    border-right: 1px solid var(--verySoftPeanut);\n}\n\n.taskManagement-module_sectionContainer__227KK{\n    display: flex;\n    flex-direction: column;\n    gap: 8px;\n}\n\n.taskManagement-module_sectionContainer__227KK:first-child{\n    width: 45%;\n    padding-right: 24px;\n    overflow-y: scroll;\n    scrollbar-width: none;\n}\n\n.taskManagement-module_sectionContainer__227KK:nth-child(3){\n    width: 55%;\n    padding: 0 24px;\n}\n\n\n.taskManagement-module_taskActionsWrapper__7f7qq {\n    display: flex;\n    flex-direction: column;\n    align-items: center;\n    justify-content: center;\n    height: 100%;\n    gap: 16px;\n}\n\n.taskManagement-module_taskActionsTitle__4mPdQ {\n    display: flex;\n    flex-direction: column;\n    align-items: center;\n    justify-content: center;\n    gap: 8px;\n}\n\n.taskManagement-module_taskActionsIcon__x4dww {\n    display: flex;\n    background: var(--bloobirds);\n    width: 45px;\n    height: 45px;\n    align-items: center;\n    justify-content: center;\n    border-radius: 8px;\n}\n\n.taskManagement-module_actionButton__V-B4U {\n    display: flex;\n    width: 200px;\n    height: 68px;\n    border: 1px var(--bloobirds) solid;\n    border-radius: 8px;\n    flex-direction: column;\n    align-items: center;\n    justify-content: center;\n}\n\n.taskManagement-module_actionButton__V-B4U:hover {\n    background: var(--lightestBloobirds);\n    cursor: pointer;\n}\n\n.taskManagement-module_actionButtonDisabled__QfmSQ {\n    border: 1px var(--lightPeanut) solid;\n}\n\n.taskManagement-module_actionButtonDisabled__QfmSQ:hover {\n    background: var(--lightestPeanut);\n    cursor: default;\n}\n\n.taskManagement-module_actionButtonsWrapper__B65HJ {\n    display: grid;\n    grid-template-columns: auto auto;\n    grid-column-gap: 20px;\n    grid-row-gap: 20px;\n}\n";
+var styles$3 = {"modalContent":"taskManagement-module_modalContent__yrMSO","sectionSeparator":"taskManagement-module_sectionSeparator__ReiZs","sectionContainer":"taskManagement-module_sectionContainer__227KK","taskActionsWrapper":"taskManagement-module_taskActionsWrapper__7f7qq","taskActionsTitle":"taskManagement-module_taskActionsTitle__4mPdQ","taskActionsIcon":"taskManagement-module_taskActionsIcon__x4dww","actionButton":"taskManagement-module_actionButton__V-B4U","actionButtonDisabled":"taskManagement-module_actionButtonDisabled__QfmSQ","actionButtonsWrapper":"taskManagement-module_actionButtonsWrapper__B65HJ"};
+styleInject(css_248z$3);
+
+function _typeof$8(obj) { "@babel/helpers - typeof"; return _typeof$8 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$8(obj); }
+function _defineProperty$8(obj, key, value) { key = _toPropertyKey$8(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$8(arg) { var key = _toPrimitive$8(arg, "string"); return _typeof$8(key) === "symbol" ? key : String(key); }
+function _toPrimitive$8(input, hint) { if (_typeof$8(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$8(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var ActionDetails = _defineProperty$8(_defineProperty$8(_defineProperty$8(_defineProperty$8(_defineProperty$8({}, Actions.StopCadence, {
+  icon: 'slash',
+  title: 'stopCadence',
+  modal: TaskManagementModals.StopCadence
+}), Actions.AddNextSteps, {
+  icon: 'taskAction',
+  title: 'addNextSteps',
+  modal: TaskManagementModals.NextStep
+}), Actions.StartCadence, {
+  icon: 'plus',
+  title: 'startCadence',
+  modal: TaskManagementModals.StartCadence
+}), Actions.ChangeCadence, {
+  icon: 'plus',
+  title: 'changeCadence',
+  modal: TaskManagementModals.StartCadence
+}), Actions.RescheduleCadence, {
+  icon: 'cadenceUpdate',
+  title: 'rescheduleCadence',
+  modal: TaskManagementModals.RescheduleCadence
+});
+var StateActions = _defineProperty$8(_defineProperty$8(_defineProperty$8({}, TaskActionStates.CadenceOnGoing, {
+  title: 'cadenceOnGoing',
+  subtitle: 'cadenceOnGoingSubtitle',
+  icon: 'cadence',
+  actions: [Actions.AddNextSteps, Actions.ChangeCadence, Actions.RescheduleCadence, Actions.StopCadence]
+}), TaskActionStates.NoTasks, {
+  title: 'noTasks',
+  subtitle: 'noTasksSubtitle',
+  icon: 'inbox',
+  actions: [Actions.AddNextSteps, Actions.StartCadence]
+}), TaskActionStates.NextSteps, {
+  title: 'nextSteps',
+  subtitle: 'nextStepsSubtitle',
+  icon: 'taskAction',
+  actions: [Actions.AddNextSteps, Actions.StartCadence]
+});
+var ModalSkeleton = function ModalSkeleton() {
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsx("div", {
+      className: styles$3.taskActionsIcon,
+      children: /*#__PURE__*/jsx(Skeleton, {
+        width: 30,
+        height: 30,
+        variant: "rect"
+      })
+    }), /*#__PURE__*/jsxs("div", {
+      className: styles$3.taskActionsTitle,
+      children: [/*#__PURE__*/jsx(Skeleton, {
+        width: 132,
+        height: 32,
+        variant: "text"
+      }), /*#__PURE__*/jsx(Skeleton, {
+        width: 154,
+        height: 26,
+        variant: "text"
+      })]
+    })]
+  });
+};
+var TaskActions = function TaskActions() {
+  var _referenceBobject$id;
+  var _useTaskManagementCon = useTaskManagementContext(),
+    t = _useTaskManagementCon.t,
+    stepState = _useTaskManagementCon.stepState,
+    currentTasksProps = _useTaskManagementCon.currentTasksProps,
+    machineContext = _useTaskManagementCon.machineContext;
+  var _StateActions$stepSta = StateActions[stepState],
+    icon = _StateActions$stepSta.icon,
+    title = _StateActions$stepSta.title,
+    subtitle = _StateActions$stepSta.subtitle,
+    actions = _StateActions$stepSta.actions;
+  var _ref = currentTasksProps || {},
+    isLoading = _ref.isLoading;
+  var referenceBobject = machineContext.referenceBobject;
+  var bobjectName = getValueFromLogicRole(referenceBobject, FIELDS_LOGIC_ROLE[referenceBobject === null || referenceBobject === void 0 ? void 0 : (_referenceBobject$id = referenceBobject.id) === null || _referenceBobject$id === void 0 ? void 0 : _referenceBobject$id.typeName].NAME);
+  return /*#__PURE__*/jsxs("div", {
+    className: styles$3.taskActionsWrapper,
+    children: [isLoading ? /*#__PURE__*/jsx(ModalSkeleton, {}) : /*#__PURE__*/jsxs(Fragment, {
+      children: [/*#__PURE__*/jsx("div", {
+        className: styles$3.taskActionsIcon,
+        children: /*#__PURE__*/jsx(Icon, {
+          name: icon,
+          color: "white",
+          size: 32
+        })
+      }), /*#__PURE__*/jsxs("div", {
+        className: styles$3.taskActionsTitle,
+        children: [/*#__PURE__*/jsx(Text, {
+          children: t("taskActions.titles.".concat(title))
+        }), /*#__PURE__*/jsx(Text, {
+          size: "m",
+          color: "softPeanut",
+          children: t("taskActions.subtitles.".concat(subtitle), {
+            objectName: bobjectName
+          })
+        })]
+      })]
+    }), /*#__PURE__*/jsx("div", {
+      className: styles$3.actionButtonsWrapper,
+      children: actions.map(function (action) {
+        return /*#__PURE__*/jsx(ActionButton, {
+          action: action
+        }, action);
+      })
+    })]
+  });
+};
+var ActionButton = function ActionButton(_ref2) {
+  var action = _ref2.action;
+  var _ActionDetails$action = ActionDetails[action],
+    title = _ActionDetails$action.title,
+    icon = _ActionDetails$action.icon,
+    modal = _ActionDetails$action.modal;
+  var _useTaskManagementCon2 = useTaskManagementContext(),
+    t = _useTaskManagementCon2.t,
+    setModalContext = _useTaskManagementCon2.setModalContext,
+    currentTasksProps = _useTaskManagementCon2.currentTasksProps,
+    lastModalOpened = _useTaskManagementCon2.lastModalOpened;
+  var _ref3 = currentTasksProps || {},
+    isLoading = _ref3.isLoading;
+  var onClick = function onClick() {
+    setModalContext({
+      modal: modal
+    });
+  };
+  return /*#__PURE__*/jsxs("div", {
+    className: clsx(styles$3.actionButton, _defineProperty$8({}, styles$3.actionButtonDisabled, isLoading && modal !== (lastModalOpened === null || lastModalOpened === void 0 ? void 0 : lastModalOpened.current))),
+    onClick: !isLoading ? onClick : function () {},
+    children: [isLoading && modal === (lastModalOpened === null || lastModalOpened === void 0 ? void 0 : lastModalOpened.current) ? /*#__PURE__*/jsx(Spinner, {
+      name: "loadingCircle",
+      size: 16
+    }) : /*#__PURE__*/jsx(Icon, {
+      name: icon,
+      color: isLoading ? 'softPeanut' : 'bloobirds'
+    }), /*#__PURE__*/jsx(Text, {
+      size: "s",
+      color: isLoading ? 'softPeanut' : 'bloobirds',
+      children: t("taskActions.buttonsTitle.".concat(title + (isLoading && modal === (lastModalOpened === null || lastModalOpened === void 0 ? void 0 : lastModalOpened.current) ? 'Loading' : '')))
+    })]
+  });
+};
+
+function _typeof$7(obj) { "@babel/helpers - typeof"; return _typeof$7 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$7(obj); }
+function _defineProperty$7(obj, key, value) { key = _toPropertyKey$7(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$7(arg) { var key = _toPrimitive$7(arg, "string"); return _typeof$7(key) === "symbol" ? key : String(key); }
+function _toPrimitive$7(input, hint) { if (_typeof$7(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$7(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var TasksModalsController = function TasksModalsController() {
+  var _useTaskManagementCon = useTaskManagementContext(),
+    referenceBobject = _useTaskManagementCon.bobject,
+    modalContext = _useTaskManagementCon.modalContext,
+    handleCloseModal = _useTaskManagementCon.handleCloseModal,
+    handleSaveModal = _useTaskManagementCon.handleSaveModal,
+    handleSaveCadence = _useTaskManagementCon.handleSaveCadence,
+    currentTasksProps = _useTaskManagementCon.currentTasksProps;
+  var modal = modalContext.modal,
+    task = modalContext.task;
+  var hasCadenceSteps = currentTasksProps.hasCadenceSteps;
+  var _useMinimizableModals = useMinimizableModals(),
+    openMinimizableModal = _useMinimizableModals.openMinimizableModal;
+  useEffect(function () {
+    if (modal === TaskManagementModals.NextStep && referenceBobject) {
+      openMinimizableModal({
+        type: 'taskStatic',
+        data: _defineProperty$7({}, referenceBobject.id.typeName.toLowerCase(), referenceBobject),
+        onClose: handleCloseModal,
+        onSave: function onSave() {
+          mixpanel.track(MIXPANEL_EVENTS.TASK_MANAGEMENT_STEP_CREATE_TASK);
+          handleSaveModal();
+        }
+      });
+    }
+  }, [modal]);
+  switch (modal) {
+    case TaskManagementModals.NextStep:
+      // Since we've already called openMinimizableModal in useEffect, return null here
+      return null;
+    case TaskManagementModals.RescheduleCadence:
+      return /*#__PURE__*/jsx(RescheduleCadence, {
+        bobject: referenceBobject,
+        onClose: handleCloseModal,
+        onSave: function onSave() {
+          handleSaveModal(3000);
+          mixpanel.track(MIXPANEL_EVENTS.TASK_MANAGEMENT_STEP_RESCHEDULE_CADENCE);
+        }
+      });
+    case TaskManagementModals.StartCadence:
+      return /*#__PURE__*/jsx(CadenceControlModal, {
+        bobject: referenceBobject,
+        setIsOpen: function setIsOpen(open) {
+          if (!open) handleCloseModal(true);
+        },
+        initialStep: {
+          step: 'CONFIGURE_CADENCE',
+          hadStartedCadence: false
+        },
+        callbackOnSave: function callbackOnSave() {
+          handleSaveCadence(hasCadenceSteps ? 12000 : 8000);
+          mixpanel.track(MIXPANEL_EVENTS.TASK_MANAGEMENT_STEP_START_CADENCE);
+        }
+      });
+    case TaskManagementModals.StopCadence:
+      return /*#__PURE__*/jsx(StopCadenceModal, {
+        bobject: referenceBobject,
+        handleClose: handleCloseModal,
+        handleSave: function handleSave() {
+          handleSaveModal();
+          mixpanel.track(MIXPANEL_EVENTS.TASK_MANAGEMENT_STEP_STOP_CADENCE);
+        },
+        size: "small"
+      });
+    case TaskManagementModals.RescheduleTask:
+      return /*#__PURE__*/jsx(RescheduleModal, {
+        bobject: task,
+        onSave: function onSave() {
+          handleSaveModal();
+          mixpanel.track(MIXPANEL_EVENTS.TASK_MANAGEMENT_STEP_RESCHEDULE_TASK);
+        },
+        onClose: handleCloseModal
+      });
+    default:
+      return /*#__PURE__*/jsx(Fragment, {});
+  }
+};
+
+function _typeof$6(obj) { "@babel/helpers - typeof"; return _typeof$6 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$6(obj); }
+function ownKeys$5(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$5(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$5(Object(source), !0).forEach(function (key) { _defineProperty$6(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$5(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$6(obj, key, value) { key = _toPropertyKey$6(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$6(arg) { var key = _toPrimitive$6(arg, "string"); return _typeof$6(key) === "symbol" ? key : String(key); }
+function _toPrimitive$6(input, hint) { if (_typeof$6(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$6(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var withProvider = function withProvider(Component) {
+  return function (props) {
+    return /*#__PURE__*/jsx(TaskManagementProvider, _objectSpread$5(_objectSpread$5({}, props), {}, {
+      children: /*#__PURE__*/jsx(Component, {})
+    }));
+  };
+};
+var TaskManagementComponent = function TaskManagementComponent() {
+  var _useTaskManagementCon = useTaskManagementContext(),
+    t = _useTaskManagementCon.t,
+    send = _useTaskManagementCon.send,
+    buttonsConfig = _useTaskManagementCon.buttonsConfig;
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [/*#__PURE__*/jsxs(ModalContent, {
+      className: styles$3.modalContent,
+      children: [/*#__PURE__*/jsx("div", {
+        className: styles$3.sectionContainer,
+        children: /*#__PURE__*/jsx(CurrentTasks, {})
+      }), /*#__PURE__*/jsx("div", {
+        className: styles$3.sectionSeparator
+      }), /*#__PURE__*/jsx("div", {
+        className: styles$3.sectionContainer,
+        children: /*#__PURE__*/jsx(TaskActions, {})
+      })]
+    }), /*#__PURE__*/jsxs(ModalFooter, {
+      className: styles$3._modal_footer,
+      children: [/*#__PURE__*/jsx("div", {
+        children: /*#__PURE__*/jsx(Button, {
+          variant: "clear",
+          onClick: function onClick() {
+            return send(EVENTS.PREVIOUS);
+          },
+          uppercase: true,
+          children: t('buttons.back')
+        })
+      }), /*#__PURE__*/jsx(Button, {
+        onClick: function onClick() {
+          window.dispatchEvent(new CustomEvent(MessagesEvents.ActiveBobjectUpdated, {
+            detail: {
+              type: BobjectTypes.Task
+            }
+          }));
+          send(EVENTS.FINISH);
+        },
+        uppercase: true,
+        children: (buttonsConfig === null || buttonsConfig === void 0 ? void 0 : buttonsConfig.nextButtonTitle) || t('buttons.finish')
+      })]
+    }), /*#__PURE__*/jsx(TasksModalsController, {})]
+  });
+};
+var TaskManagement = withProvider(TaskManagementComponent);
+
+function _typeof$5(obj) { "@babel/helpers - typeof"; return _typeof$5 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$5(obj); }
+function ownKeys$4(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$4(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$4(Object(source), !0).forEach(function (key) { _defineProperty$5(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$4(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$5(obj, key, value) { key = _toPropertyKey$5(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$5(arg) { var key = _toPrimitive$5(arg, "string"); return _typeof$5(key) === "symbol" ? key : String(key); }
+function _toPrimitive$5(input, hint) { if (_typeof$5(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$5(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var WizardStepFactory = function WizardStepFactory(_ref) {
+  var step = _ref.step,
+    send = _ref.send,
+    buttonsConfig = _ref.buttonsConfig,
+    wizardKey = _ref.wizardKey,
+    children = _ref.children,
+    convertedLeads = _ref.convertedLeads,
+    machineContext = _ref.machineContext,
+    customObjectConfig = _ref.customObjectConfig;
+  var component = null;
+  var matchingChild = null;
+  var _useWizardContext = useWizardContext(),
+    getWizardProperties = _useWizardContext.getWizardProperties;
+  var _getWizardProperties = getWizardProperties(wizardKey),
+    referenceBobject = _getWizardProperties.referenceBobject,
+    handleClose = _getWizardProperties.handleClose,
+    handleOnSave = _getWizardProperties.handleOnSave,
+    statusInfo = _getWizardProperties.statusInfo,
+    dataModel = _getWizardProperties.dataModel;
+  switch (step) {
+    case 'INITIAL':
+      component = /*#__PURE__*/jsx(LoadingStep, {});
+      break;
+    case 'STATUS_NOTE_ACTIONS':
+      component = /*#__PURE__*/jsx(StatusNoteActions, {});
+      break;
+    case 'TASK_MANAGEMENT':
+      component = /*#__PURE__*/jsx(TaskManagement, {});
+      break;
+    case 'INACTIVE_HANDLING':
+      component = /*#__PURE__*/jsx(InactiveHandling, {});
+      break;
+    case 'MEETING_RESULT':
+      component = /*#__PURE__*/jsx(MeetingReportResult, {});
+      break;
+    case 'NOTES':
+      component = /*#__PURE__*/jsx(MeetingResultNotes, {});
+      break;
+    case 'CALL_RESULTS':
+      component = /*#__PURE__*/jsx(CallResult, {});
+      break;
+    case 'CALL_RESULTS_OPP':
+      component = /*#__PURE__*/jsx(CallResultOpportunity, {});
+      break;
+    case 'NOTES_AND_QQ':
+      component = /*#__PURE__*/jsx(NoteAndQQ, {
+        showNotes: true
+      });
+      break;
+    case 'CRM_UPDATES':
+      component = /*#__PURE__*/jsx(CrmUpdates, {});
+      break;
+    case 'ONLY_QQS':
+      component = /*#__PURE__*/jsx(NoteAndQQ, {
+        showNotes: false
+      });
+      break;
+    case 'SALES_CHANGE_STATUS':
+      component = /*#__PURE__*/jsx(ChangeSalesStatus, {
+        handleNext: function handleNext(companyStatus, leadStatus) {
+          send(EVENTS.NEXT, {
+            companyStatus: companyStatus,
+            leadStatus: leadStatus,
+            bobject: referenceBobject
+          });
+        }
+      });
+      break;
+    case 'CHANGE_STATUS':
+      component = /*#__PURE__*/jsx(ChangeStatus, {
+        handleNext: function handleNext(companyStatus, leadStatus) {
+          send(EVENTS.NEXT, {
+            companyStatus: companyStatus,
+            leadStatus: leadStatus,
+            bobject: referenceBobject
+          });
+        }
+      });
+      break;
+    case 'SCHEDULE_NEXT_STEPS':
+      component = /*#__PURE__*/jsx(ScheduleNextSteps, {});
+      break;
+    case 'CONVERT_OBJECT':
+      if (children) {
+        var _matchingChild;
+        if (Array.isArray(children)) {
+          matchingChild = children.find(function (child) {
+            return child.key === step;
+          });
+        } else if (children.key === step) {
+          matchingChild = children;
+        }
+        if (matchingChild && (_matchingChild = matchingChild) !== null && _matchingChild !== void 0 && _matchingChild.props.children) {
+          var _matchingChild2;
+          component = /*#__PURE__*/React.cloneElement((_matchingChild2 = matchingChild) === null || _matchingChild2 === void 0 ? void 0 : _matchingChild2.props.children, {
+            handleNext: function handleNext(createOpportunity, leads) {
+              if (createOpportunity) {
+                send(EVENTS.NEXT, {
+                  leads: leads
+                });
+              } else {
+                handleClose();
+              }
+            }
+          });
+        }
+      }
+      break;
+    case 'OPPORTUNITY_CONTROL':
+      if (children) {
+        var _matchingChild3;
+        if (Array.isArray(children)) {
+          matchingChild = children.find(function (child) {
+            return child.key === step;
+          });
+        } else if (children.key === step) {
+          matchingChild = children;
+        }
+        if (matchingChild && (_matchingChild3 = matchingChild) !== null && _matchingChild3 !== void 0 && _matchingChild3.props.children) {
+          var _matchingChild4;
+          component = /*#__PURE__*/React.cloneElement((_matchingChild4 = matchingChild) === null || _matchingChild4 === void 0 ? void 0 : _matchingChild4.props.children, {
+            leads: convertedLeads || []
+          });
+        }
+      }
+      break;
+    case 'CUSTOM_OBJECT':
+      component = /*#__PURE__*/jsx(CustomObject, {
+        customObjectConfig: customObjectConfig
+      });
+      break;
+    case 'OPPORTUNITY_CONTROL_OTO':
+      component = /*#__PURE__*/jsx(OpportunityControlOTO, {
+        handleNext: function handleNext(selectedOpportunity) {
+          send(EVENTS.NEXT, {
+            selectedOpportunity: selectedOpportunity
+          });
+        }
+      });
+      break;
+    case 'BOBJECT_FORM':
+      component = /*#__PURE__*/jsx(BobjectForm, {
+        customObjectConfig: customObjectConfig,
+        handleNext: function handleNext(selectedOpportunityObject) {
+          send(EVENTS.NEXT, {
+            selectedOpportunityObject: selectedOpportunityObject
+          });
+        }
+      });
+      break;
+    case 'CHANGE_STATUS_SALESFORCE':
+      component = /*#__PURE__*/jsx(ChangeStatusSalesforce, {});
+      break;
+    case 'ORIGINAL_CHANGE_STATUS_COMPONENT':
+      component = /*#__PURE__*/jsx(ChangeStatusModal$1, {
+        onSave: handleOnSave,
+        handleClose: handleClose,
+        bobject: referenceBobject,
+        statusInfo: statusInfo,
+        dataModel: dataModel
+      });
+      break;
+    case 'CADENCE_CONTROL':
+      component = /*#__PURE__*/jsx(CadenceControlModal, {
+        bobject: machineContext !== null && machineContext !== void 0 && machineContext.selectedOpportunityObject ? machineContext === null || machineContext === void 0 ? void 0 : machineContext.selectedOpportunityObject : referenceBobject,
+        initialStep: {
+          step: 'NEXT_STEPS'
+        },
+        callbackOnClose: handleClose
+      });
+      break;
+    case 'CUSTOM_ACTIONS_SALESFORCE':
+      component = /*#__PURE__*/jsx(CustomActionsSalesforce, {});
+      break;
+    case 'ADD_LEAD_TO_ACTIVITY':
+      component = /*#__PURE__*/jsx(AddLeadToActivity, {});
+      break;
+  }
+  return component && /*#__PURE__*/React.cloneElement(component, _objectSpread$4({
+    handleNext: function () {
+      var _component, _component$props, _component2, _component2$props;
+      mixpanel.track(MIXPANEL_EVENTS.CLICK_ON_NEXT_IN_WIZARD_STEP_ + step);
+      return (_component = component) !== null && _component !== void 0 && (_component$props = _component.props) !== null && _component$props !== void 0 && _component$props.handleNext ? (_component2 = component) === null || _component2 === void 0 ? void 0 : (_component2$props = _component2.props) === null || _component2$props === void 0 ? void 0 : _component2$props.handleNext : function () {
+        return send(EVENTS.NEXT);
+      };
+    }(),
+    handleBack: function handleBack() {
+      mixpanel.track(MIXPANEL_EVENTS.CLICK_ON_BACK_IN_WIZARD_STEP_ + step);
+      send(EVENTS.PREVIOUS);
+    },
+    handleSkip: function handleSkip(openCadenceControlOnClose) {
+      var _machineContext$markA;
+      mixpanel.track(MIXPANEL_EVENTS.CLICK_ON_SKIP_IN_WIZARD_STEP_ + step);
+      machineContext === null || machineContext === void 0 ? void 0 : (_machineContext$markA = machineContext.markAsReported) === null || _machineContext$markA === void 0 ? void 0 : _machineContext$markA.call(machineContext);
+      send(EVENTS.SKIP, {
+        openCadenceControlOnClose: openCadenceControlOnClose
+      });
+    },
+    buttonsConfig: buttonsConfig,
+    wizardKey: wizardKey,
+    send: send,
+    machineContext: machineContext
+  }, component.props));
+};
+
+var css_248z$2 = ".changeStatusModal-module__modal_header__H3UnR {\n  box-sizing: border-box;\n  padding: 16px;\n}\n\n.changeStatusModal-module__modal_header__H3UnR > div > svg{\n  transform: rotate(180deg);\n}\n\n.changeStatusModal-module__modal_content__-bTmu {\n  box-sizing: border-box;\n  padding: 32px 58px 10px ;\n  min-height: 583px;\n  max-height: calc(100vh - 130px);\n}\n\n.changeStatusModal-module__modal_footer__uMUA8 {\n  box-sizing: border-box;\n  padding: 8px 32px 40px 32px;\n  height: 80px;\n}\n\n.changeStatusModal-module__modal_content__-bTmu > div > section > div {\n  display: flex;\n  flex-direction: column;\n}\n\n.changeStatusModal-module__sections_container__Q7wat {\n  display: flex;\n  height: 272px;\n}\n\n.changeStatusModal-module__sections_container__Q7wat + main {\n  padding: 0;\n}\n\n.changeStatusModal-module__informationPanel__sE96l {\n  border: 1px solid var(--lightPurple);\n  border-radius: 4px;\n  background-color: var(--lightestPurple);\n  margin-left: 30px;\n  width: 198px;\n  padding: 16px;\n}\n\n.changeStatusModal-module__info_header__oPASW {\n  margin-bottom: 8px;\n  line-height: 16px;\n}\n\n.changeStatusModal-module__stage_callout__wrapper__Shr-p {\n  display: flex;\n  flex-direction: row;\n  padding: 0 30px;\n}\n\n.changeStatusModal-module__stage_callout__icon__W2lm7 {\n  align-self: center;\n  width: 50px;\n  margin-right: 16px;\n}\n\n.changeStatusModal-module_actions_wrapper__-OTWj {\n  width: 302px;\n}\n\n.changeStatusModal-module_actions_wrapper__-OTWj > div {\n  display: flex;\n  flex-direction: column;\n}\n\n.changeStatusModal-module__cadence_preview_wrapper__UtMR2 {\n  width: 564px;\n  margin-bottom: 24px;\n}\n\n.changeStatusModal-module__nurturing_preview_wrapper__UtZyC {\n  width: 564px;\n  margin-bottom: 24px;\n}\n\n.changeStatusModal-module__nurturing_preview_wrapper__UtZyC > div > span {\n  padding: 8px 0;\n}\n\n.changeStatusModal-module__section__wrapper__LqNxM {\n  margin-bottom: 12px;\n  display: flex;\n  flex-wrap: wrap;\n  flex-direction: row;\n  position: relative;\n}\n\n.changeStatusModal-module__list__wrapper__23DaK {\n  flex-direction: column;\n  flex-basis: 100%;\n  flex: 1;\n  margin-right: 15px;\n}\n\n.changeStatusModal-module_hidden__4eaC1 {\n  display: none;\n}\n\n.changeStatusModal-module_actions_wrapper__-OTWj > div > div {\n  margin-bottom: 8px;\n}\n\n.changeStatusModal-module__text_block__tJV06 {\n  margin-bottom: 12px;\n}\n\n.changeStatusModal-module__text_block__tJV06 > a {\n  text-decoration: none;\n  color: var(--bloobirds);\n}\n\n.changeStatusModal-module__nurturing_text_block__Cn6S7 {\n  font-size: 11px;\n  margin-bottom: 8px;\n}\n\n.changeStatusModal-module__nurturing_text_block__Cn6S7 > a {\n  text-decoration: none;\n  color: var(--bloobirds);\n}\n\n.changeStatusModal-module__selects_wrapper__AG2MQ {\n  margin-top: 20px;\n  width: 552px;\n  display: flex;\n  justify-content: space-between;\n}\n\n.changeStatusModal-module__note_text_area__9JiaW {\n  text-align: start;\n  margin-top: 15px;\n}\n\n.changeStatusModal-module__reassign_selects_wrapper__pSih1 {\n  margin-top: 20px;\n  width: 552px;\n  display: flex;\n  justify-content: space-between;\n  margin-bottom: 12px;\n}\n\n.changeStatusModal-module__add_task_module__WasOC {\n  margin-top: 16px;\n  display: flex;\n  flex-direction: column;\n  width: 100%;\n  align-content: center;\n}\n\n.changeStatusModal-module__add_task_title__f7Jn7 {\n  margin-bottom: 12px;\n}\n\n.changeStatusModal-module_box__JprXB {\n  position: relative;\n  z-index: 99;\n\n  bottom: 73%;\n  left: 50%;\n  transform: translateX(-50%);\n\n  width: 700px;\n  background: #ffffff;\n\n  /* Main/peanut-light */\n  border: 1px solid #d4e0f1;\n\n  /* snackbar-shadow */\n  box-shadow: 0 2px 8px rgba(70, 79, 87, 0.33);\n  border-radius: 4px;\n}\n\n.changeStatusModal-module__nurturing_bottom__6GrTp {\n  bottom: 68%;\n}\n\n@media (max-height: 800px) {\n  .changeStatusModal-module__modal_content__-bTmu {\n    height: calc(100vh - 155px);\n    min-height: auto;\n  }\n}\n";
+var styles$2 = {"_modal_header":"changeStatusModal-module__modal_header__H3UnR","_modal_content":"changeStatusModal-module__modal_content__-bTmu","_modal_footer":"changeStatusModal-module__modal_footer__uMUA8","_sections_container":"changeStatusModal-module__sections_container__Q7wat","_informationPanel":"changeStatusModal-module__informationPanel__sE96l","_info_header":"changeStatusModal-module__info_header__oPASW","_stage_callout__wrapper":"changeStatusModal-module__stage_callout__wrapper__Shr-p","_stage_callout__icon":"changeStatusModal-module__stage_callout__icon__W2lm7","actions_wrapper":"changeStatusModal-module_actions_wrapper__-OTWj","_cadence_preview_wrapper":"changeStatusModal-module__cadence_preview_wrapper__UtMR2","_nurturing_preview_wrapper":"changeStatusModal-module__nurturing_preview_wrapper__UtZyC","_section__wrapper":"changeStatusModal-module__section__wrapper__LqNxM","_list__wrapper":"changeStatusModal-module__list__wrapper__23DaK","hidden":"changeStatusModal-module_hidden__4eaC1","_text_block":"changeStatusModal-module__text_block__tJV06","_nurturing_text_block":"changeStatusModal-module__nurturing_text_block__Cn6S7","_selects_wrapper":"changeStatusModal-module__selects_wrapper__AG2MQ","_note_text_area":"changeStatusModal-module__note_text_area__9JiaW","_reassign_selects_wrapper":"changeStatusModal-module__reassign_selects_wrapper__pSih1","_add_task_module":"changeStatusModal-module__add_task_module__WasOC","_add_task_title":"changeStatusModal-module__add_task_title__f7Jn7","box":"changeStatusModal-module_box__JprXB","_nurturing_bottom":"changeStatusModal-module__nurturing_bottom__6GrTp"};
+styleInject(css_248z$2);
+
+function _typeof$4(obj) { "@babel/helpers - typeof"; return _typeof$4 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$4(obj); }
+function _slicedToArray$3(arr, i) { return _arrayWithHoles$3(arr) || _iterableToArrayLimit$3(arr, i) || _unsupportedIterableToArray$3(arr, i) || _nonIterableRest$3(); }
+function _nonIterableRest$3() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$3(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$3(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$3(o, minLen); }
+function _arrayLikeToArray$3(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$3(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$3(arr) { if (Array.isArray(arr)) return arr; }
+function ownKeys$3(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$3(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$3(Object(source), !0).forEach(function (key) { _defineProperty$4(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$3(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$4(obj, key, value) { key = _toPropertyKey$4(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$4(arg) { var key = _toPrimitive$4(arg, "string"); return _typeof$4(key) === "symbol" ? key : String(key); }
+function _toPrimitive$4(input, hint) { if (_typeof$4(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$4(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var visibilityHandler$3 = function visibilityHandler(Component) {
+  return function (props) {
+    var _useWizardContext = useWizardContext(),
+      getWizardProperties = _useWizardContext.getWizardProperties;
+    var wizardKey = props.wizardKey;
+    var wizardContext = getWizardProperties(wizardKey);
+    return wizardContext && wizardContext.visible && /*#__PURE__*/jsx(Component, _objectSpread$3({}, props));
+  };
+};
+var ChangeStatusModal = function ChangeStatusModal(props) {
+  var wizardKey = props.wizardKey;
+  var _useWizardContext2 = useWizardContext(),
+    getMachine = _useWizardContext2.getMachine,
+    hasCustomWizardsEnabled = _useWizardContext2.hasCustomWizardsEnabled,
+    getWizardProperties = _useWizardContext2.getWizardProperties,
+    getMetaInfoStep = _useWizardContext2.getMetaInfoStep;
+  var _getWizardProperties = getWizardProperties(wizardKey),
+    bobject = _getWizardProperties.bobject,
+    handleClose = _getWizardProperties.handleClose;
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards.modals.changeStatusModal'
+    }),
+    t = _useTranslation.t;
+  var hasNoStatusPlanEnabled = useIsNoStatusPlanAccount();
+  useEffect(function () {
+    removeScrollOfBox();
+    return function () {
+      recoverScrollOfBox();
+      handleClose();
+    };
+  }, []);
+  var machineDefinition = getMachine(wizardKey);
+  var _useMachine = useMachine(machineDefinition, {
+      context: {
+        hasNoStatusPlanEnabled: hasNoStatusPlanEnabled
+      },
+      actions: {
+        handleSkip: handleClose,
+        handleClose: handleClose
+      }
+    }),
+    _useMachine2 = _slicedToArray$3(_useMachine, 3),
+    step = _useMachine2[0].value,
+    send = _useMachine2[1],
+    service = _useMachine2[2];
+  var buttonStepConfig = null;
+  var customObjectConfig = null;
+  if (hasCustomWizardsEnabled) {
+    service.onTransition(function (state) {
+      var metaInfoStep = getMetaInfoStep(state.meta);
+      buttonStepConfig = metaInfoStep === null || metaInfoStep === void 0 ? void 0 : metaInfoStep.buttonStepConfig;
+      if (buttonStepConfig) {
+        buttonStepConfig.hasPreviousStep = state.can(EVENTS.PREVIOUS);
+        buttonStepConfig.hasNextStep = state.can(EVENTS.NEXT);
+      }
+      customObjectConfig = metaInfoStep === null || metaInfoStep === void 0 ? void 0 : metaInfoStep.customObjectConfig;
+    });
+  }
+  useLayoutEffect(function () {
+    send(hasNoStatusPlanEnabled ? STEPS$1.CHANGE_STATUS_SALESFORCE : STEPS$1.ORIGINAL_CHANGE_STATUS_COMPONENT);
+  }, [send]);
+  return hasNoStatusPlanEnabled ? /*#__PURE__*/jsx(Fragment, {
+    children: /*#__PURE__*/jsx(Modal, {
+      width: "100%",
+      open: true,
+      onClose: handleClose,
+      children: /*#__PURE__*/jsxs("div", {
+        className: styles$2._modal_wrapper,
+        children: [/*#__PURE__*/jsxs(ModalHeader, {
+          className: styles$2._modal_header,
+          children: [/*#__PURE__*/jsx(ModalTitle, {
+            color: "peanut",
+            icon: "salesforceOutlined",
+            size: "small",
+            children: t('title')
+          }), /*#__PURE__*/jsx(ModalCloseIcon, {
+            color: "peanut",
+            size: "small",
+            onClick: handleClose
+          })]
+        }), /*#__PURE__*/jsx(WizardStepFactory, {
+          step: step,
+          send: send,
+          buttonsConfig: buttonStepConfig,
+          bobject: bobject,
+          wizardKey: wizardKey,
+          customObjectConfig: customObjectConfig
+        })]
+      })
+    })
+  }) : /*#__PURE__*/jsx(WizardStepFactory, {
+    step: step,
+    send: send,
+    buttonsConfig: buttonStepConfig,
+    bobject: bobject,
+    wizardKey: wizardKey,
+    customObjectConfig: customObjectConfig
+  });
+};
+var ChangeStatusWizard = visibilityHandler$3(ChangeStatusModal);
+
+var css_248z$1 = ".contactFlow-module__modal_header__Uu5nm {\n  box-sizing: border-box;\n  padding: 16px;\n}\n\n.contactFlow-module__modal_content__8na81 {\n  box-sizing: border-box;\n  padding: 32px 58px 0;\n}\n\n.contactFlow-module__modal_footer__LrSto {\n  box-sizing: border-box;\n  padding: 0 32px 40px 32px;\n}\n\n.contactFlow-module__modal_content__8na81 > div > section > div {\n  display: flex;\n  flex-direction: column;\n}\n\n.contactFlow-module__sections_container__F6Gan {\n  display: flex;\n  height: 272px;\n}\n\n.contactFlow-module__sections_container__F6Gan + main {\n  padding: 0;\n}\n\n.contactFlow-module__informationPanel__YDE9i {\n  border: 1px solid var(--lightPurple);\n  border-radius: 4px;\n  background-color: var(--lightestPurple);\n  margin-left: 30px;\n  width: 198px;\n  padding: 16px;\n}\n\n.contactFlow-module__info_header__QTNns {\n  margin-bottom: 8px;\n  line-height: 20px;\n}\n\n.contactFlow-module__stage_callout__wrapper__C1Yrk {\n  display: flex;\n  flex-direction: row;\n  padding: 0 30px;\n}\n\n.contactFlow-module__stage_callout__icon__wkcK- {\n  align-self: center;\n  width: 50px;\n  margin-right: 16px;\n}\n\n.contactFlow-module_actions_wrapper__MLVql {\n  width: 302px;\n}\n\n.contactFlow-module_actions_wrapper__MLVql > div {\n  display: flex;\n  flex-direction: column;\n}\n\n.contactFlow-module__cadence_preview_wrapper__oTrKu {\n  width: 564px;\n  margin-bottom: 24px;\n}\n\n.contactFlow-module__nurturing_preview_wrapper__HtiNS {\n  width: 564px;\n  margin-bottom: 24px;\n}\n\n.contactFlow-module__nurturing_preview_wrapper__HtiNS > div > span {\n  padding: 8px 0;\n}\n\n.contactFlow-module__section__wrapper__nzshl {\n  margin-bottom: 12px;\n  display: flex;\n  flex-wrap: wrap;\n  flex-direction: row;\n  position: relative;\n}\n\n.contactFlow-module__list__wrapper__gpHwu {\n  flex-direction: column;\n  flex: 1;\n  margin-right: 15px;\n}\n\n.contactFlow-module_hidden__lHFsy {\n  display: none;\n}\n\n.contactFlow-module_actions_wrapper__MLVql > div > div {\n  margin-bottom: 8px;\n}\n\n.contactFlow-module__text_block__kuKbA {\n  margin-bottom: 12px;\n}\n\n.contactFlow-module__text_block__kuKbA > a {\n  text-decoration: none;\n  color: var(--bloobirds);\n}\n\n.contactFlow-module__nurturing_text_block__ucPYJ {\n  font-size: 11px;\n  margin-bottom: 8px;\n}\n\n.contactFlow-module__nurturing_text_block__ucPYJ > a {\n  text-decoration: none;\n  color: var(--bloobirds);\n}\n\n.contactFlow-module__selects_wrapper__kknUQ {\n  margin-top: 20px;\n  width: 552px;\n  display: flex;\n  justify-content: space-between;\n}\n\n.contactFlow-module__note_text_area__5cs5w {\n  text-align: start;\n  margin-top: 15px;\n}\n\n.contactFlow-module__reassign_selects_wrapper__08-hB {\n  margin-top: 20px;\n  width: 552px;\n  display: flex;\n  justify-content: space-between;\n  margin-bottom: 12px;\n}\n\n.contactFlow-module__add_task_module__G44XQ {\n  margin-top: 16px;\n  display: flex;\n  flex-direction: column;\n  width: 100%;\n  align-content: center;\n}\n\n.contactFlow-module__add_task_title__EHZA3 {\n  margin-bottom: 12px;\n}\n\n.contactFlow-module_box__EFva2 {\n  position: relative;\n  z-index: 99;\n\n  bottom: 73%;\n  left: 50%;\n  transform: translateX(-50%);\n\n  width: 700px;\n  background: #ffffff;\n\n  /* Main/peanut-light */\n  border: 1px solid #d4e0f1;\n\n  /* snackbar-shadow */\n  box-shadow: 0 2px 8px rgba(70, 79, 87, 0.33);\n  border-radius: 4px;\n}\n\n.contactFlow-module__nurturing_bottom__G1ept {\n  bottom: 68%;\n}\n\n.contactFlow-module_ccfModalHeader__aa1ch {\n  background: var(--veryLightBloobirds) !important;\n}\n\n.contactFlow-module_ccfModalHeader__aa1ch h2 {\n  font-size: 18px;\n}\n";
+var styles$1 = {"_modal_header":"contactFlow-module__modal_header__Uu5nm","_modal_content":"contactFlow-module__modal_content__8na81","_modal_footer":"contactFlow-module__modal_footer__LrSto","_sections_container":"contactFlow-module__sections_container__F6Gan","_informationPanel":"contactFlow-module__informationPanel__YDE9i","_info_header":"contactFlow-module__info_header__QTNns","_stage_callout__wrapper":"contactFlow-module__stage_callout__wrapper__C1Yrk","_stage_callout__icon":"contactFlow-module__stage_callout__icon__wkcK-","actions_wrapper":"contactFlow-module_actions_wrapper__MLVql","_cadence_preview_wrapper":"contactFlow-module__cadence_preview_wrapper__oTrKu","_nurturing_preview_wrapper":"contactFlow-module__nurturing_preview_wrapper__HtiNS","_section__wrapper":"contactFlow-module__section__wrapper__nzshl","_list__wrapper":"contactFlow-module__list__wrapper__gpHwu","hidden":"contactFlow-module_hidden__lHFsy","_text_block":"contactFlow-module__text_block__kuKbA","_nurturing_text_block":"contactFlow-module__nurturing_text_block__ucPYJ","_selects_wrapper":"contactFlow-module__selects_wrapper__kknUQ","_note_text_area":"contactFlow-module__note_text_area__5cs5w","_reassign_selects_wrapper":"contactFlow-module__reassign_selects_wrapper__08-hB","_add_task_module":"contactFlow-module__add_task_module__G44XQ","_add_task_title":"contactFlow-module__add_task_title__EHZA3","box":"contactFlow-module_box__EFva2","_nurturing_bottom":"contactFlow-module__nurturing_bottom__G1ept","ccfModalHeader":"contactFlow-module_ccfModalHeader__aa1ch"};
+styleInject(css_248z$1);
+
+function _typeof$3(obj) { "@babel/helpers - typeof"; return _typeof$3 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$3(obj); }
+function _defineProperty$3(obj, key, value) { key = _toPropertyKey$3(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$3(arg) { var key = _toPrimitive$3(arg, "string"); return _typeof$3(key) === "symbol" ? key : String(key); }
+function _toPrimitive$3(input, hint) { if (_typeof$3(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$3(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var MODAL_STEPS = Object.seal({
+  CONTACT_FLOW: 'CONTACT_FLOW',
+  CADENCE_CONTROL: 'CADENCE_CONTROL',
+  CHANGE_STATUS: 'CHANGE_STATUS'
+});
+var closeModals = function closeModals(context) {
+  return context.handleClose();
+};
+var modalStepsMachine = createMachine({
+  id: 'contact_flow_modal_control',
+  context: {
+    handleClose: null
+  },
+  initial: MODAL_STEPS.CONTACT_FLOW,
+  states: _defineProperty$3(_defineProperty$3(_defineProperty$3({}, MODAL_STEPS.CONTACT_FLOW, {
+    on: _defineProperty$3(_defineProperty$3({}, MODAL_STEPS.CADENCE_CONTROL, MODAL_STEPS.CADENCE_CONTROL), MODAL_STEPS.CHANGE_STATUS, MODAL_STEPS.CHANGE_STATUS)
+  }), MODAL_STEPS.CADENCE_CONTROL, {
+    on: _defineProperty$3(_defineProperty$3({}, EVENTS.NEXT, closeModals), MODAL_STEPS.CHANGE_STATUS, MODAL_STEPS.CHANGE_STATUS)
+  }), MODAL_STEPS.CHANGE_STATUS, {
+    on: _defineProperty$3(_defineProperty$3({}, EVENTS.NEXT, closeModals), MODAL_STEPS.CHANGE_STATUS, MODAL_STEPS.CHANGE_STATUS)
+  })
+});
+
+function _typeof$2(obj) { "@babel/helpers - typeof"; return _typeof$2 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$2(obj); }
+var _excluded$1 = ["convertedLeads"];
+function _objectWithoutProperties$1(source, excluded) { if (source == null) return {}; var target = _objectWithoutPropertiesLoose$1(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
+function _objectWithoutPropertiesLoose$1(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
+function _slicedToArray$2(arr, i) { return _arrayWithHoles$2(arr) || _iterableToArrayLimit$2(arr, i) || _unsupportedIterableToArray$2(arr, i) || _nonIterableRest$2(); }
+function _nonIterableRest$2() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$2(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$2(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$2(o, minLen); }
+function _arrayLikeToArray$2(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$2(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$2(arr) { if (Array.isArray(arr)) return arr; }
+function ownKeys$2(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$2(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$2(Object(source), !0).forEach(function (key) { _defineProperty$2(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$2(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$2(obj, key, value) { key = _toPropertyKey$2(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$2(arg) { var key = _toPrimitive$2(arg, "string"); return _typeof$2(key) === "symbol" ? key : String(key); }
+function _toPrimitive$2(input, hint) { if (_typeof$2(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$2(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _objectDestructuringEmpty$1(obj) { if (obj == null) throw new TypeError("Cannot destructure " + obj); }
+function _extends$1() { _extends$1 = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends$1.apply(this, arguments); }
+var visibilityHandler$2 = function visibilityHandler(Component) {
+  return function (_ref) {
+    var props = _extends$1({}, (_objectDestructuringEmpty$1(_ref), _ref));
+    var _useWizardContext = useWizardContext(),
+      getWizardProperties = _useWizardContext.getWizardProperties;
+    var wizardKey = props.wizardKey;
+    var wizardContext = getWizardProperties(wizardKey);
+    return wizardContext && wizardContext.visible && /*#__PURE__*/jsx(Component, _objectSpread$2({
+      wizardKey: wizardKey
+    }, props));
+  };
+};
+var invalidOppStatuses$1 = _defineProperty$2(_defineProperty$2({}, OPPORTUNITY_FIELDS_LOGIC_ROLE.STATUS, [OPPORTUNITY_STATUS_LOGIC_ROLE.CLOSED_LOST, OPPORTUNITY_STATUS_LOGIC_ROLE.CLOSED_WON]), "SALESFORCE_OPPPORTUNITY__STAGE", ['Closed Lost', 'Closed Won']);
+var ContactFlow = function ContactFlow(_ref2) {
+  var _useUserSettings, _useUserSettings$user, _getFieldByLogicRole4, _buttonStepConfig3, _FIELDS_LOGIC_ROLE3, _referenceBobject$id, _FIELDS_LOGIC_ROLE4, _referenceBobject$id2, _buttonStepConfig4;
+  var props = _extends$1({}, (_objectDestructuringEmpty$1(_ref2), _ref2));
+  var wizardKey = props.wizardKey;
+  var userId = (_useUserSettings = useUserSettings()) === null || _useUserSettings === void 0 ? void 0 : (_useUserSettings$user = _useUserSettings.user) === null || _useUserSettings$user === void 0 ? void 0 : _useUserSettings$user.id;
+  var _useWizardContext2 = useWizardContext(),
+    getWizardProperties = _useWizardContext2.getWizardProperties,
+    getMachine = _useWizardContext2.getMachine,
+    hasCustomWizardsEnabled = _useWizardContext2.hasCustomWizardsEnabled,
+    getMetaInfoStep = _useWizardContext2.getMetaInfoStep,
+    accountId = _useWizardContext2.accountId,
+    addMetaToWizardProperties = _useWizardContext2.addMetaToWizardProperties;
+  var _useActivityRelatedIn = useActivityRelatedInfo(wizardKey),
+    activityLead = _useActivityRelatedIn.activityLead,
+    activityCompany = _useActivityRelatedIn.activityCompany,
+    activityOpportunity = _useActivityRelatedIn.activityOpportunity,
+    referenceBobjectIsSales = _useActivityRelatedIn.referenceBobjectIsSales;
+  var _useMinimizableModals = useMinimizableModals(),
+    openMinimizableModal = _useMinimizableModals.openMinimizableModal;
+  var _getWizardProperties = getWizardProperties(wizardKey),
+    handleClose = _getWizardProperties.handleClose,
+    referenceBobject = _getWizardProperties.referenceBobject,
+    activity = _getWizardProperties.bobject,
+    contactFlowStep = _getWizardProperties.openAtStep;
+  var _useState = useState(true),
+    _useState2 = _slicedToArray$2(_useState, 2),
+    isCadenceControlOpen = _useState2[0],
+    setIsCadenceControlOpen = _useState2[1];
+  var _useState3 = useState(false),
+    _useState4 = _slicedToArray$2(_useState3, 2),
+    opportunityChecked = _useState4[0],
+    setOpportunityChecked = _useState4[1];
+  var _useState5 = useState(false),
+    _useState6 = _slicedToArray$2(_useState5, 2),
+    referenceObjectChecked = _useState6[0],
+    setReferenceObjectChecked = _useState6[1];
+  var _useState7 = useState({
+      activityUpdated: activity,
+      referenceBobjectUpdated: referenceBobject
+    }),
+    _useState8 = _slicedToArray$2(_useState7, 2),
+    updatedObjects = _useState8[0],
+    setUpdatedObjects = _useState8[1];
+  var _useMachine = useMachine(modalStepsMachine, {
+      context: {
+        handleClose: handleClose
+      }
+    }),
+    _useMachine2 = _slicedToArray$2(_useMachine, 2),
+    modalStep = _useMachine2[0].value,
+    modalControlSend = _useMachine2[1];
+  var hasSalesFeatureEnabled = useFullSalesEnabled(accountId);
+  var hasNoStatusPlanEnabled = useIsNoStatusPlanAccount();
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards'
+    }),
+    t = _useTranslation.t;
+  var markAsReported = function markAsReported() {
+    var _wizardConfig;
+    if (hasCustomWizardsEnabled && ((_wizardConfig = wizardConfig) === null || _wizardConfig === void 0 ? void 0 : _wizardConfig.markReportedAtStart) === false) {
+      var _activity$id, _activity$id2;
+      api.patch("/bobjects/".concat(accountId, "/").concat(activity === null || activity === void 0 ? void 0 : (_activity$id = activity.id) === null || _activity$id === void 0 ? void 0 : _activity$id.typeName, "/").concat(activity === null || activity === void 0 ? void 0 : (_activity$id2 = activity.id) === null || _activity$id2 === void 0 ? void 0 : _activity$id2.objectId, "/raw"), _defineProperty$2({}, ACTIVITY_FIELDS_LOGIC_ROLE.REPORTED, REPORTED_VALUES_LOGIC_ROLE.YES)).then(function () {
+        window.dispatchEvent(new CustomEvent('ACTIVE_BOBJECT_UPDATED', {
+          detail: {
+            type: BobjectTypes.Activity
+          }
+        }));
+      });
+    }
+  };
+  function checkExistingOpportunity() {
+    var _activityLead$id, _activityCompany$id;
+    searchOppByLeadOrCompany(accountId, activityLead === null || activityLead === void 0 ? void 0 : (_activityLead$id = activityLead.id) === null || _activityLead$id === void 0 ? void 0 : _activityLead$id.value, activityCompany === null || activityCompany === void 0 ? void 0 : (_activityCompany$id = activityCompany.id) === null || _activityCompany$id === void 0 ? void 0 : _activityCompany$id.value, userId).then(function (response) {
+      var _response$data;
+      if ((response === null || response === void 0 ? void 0 : (_response$data = response.data) === null || _response$data === void 0 ? void 0 : _response$data.totalMatching) > 0) {
+        var _response$data2, _response$data2$conte;
+        var idealOpps = response === null || response === void 0 ? void 0 : (_response$data2 = response.data) === null || _response$data2 === void 0 ? void 0 : (_response$data2$conte = _response$data2.contents) === null || _response$data2$conte === void 0 ? void 0 : _response$data2$conte.filter(function (opp) {
+          return !Object.entries(invalidOppStatuses$1).some(function (_ref3) {
+            var _getFieldByLogicRole;
+            var _ref4 = _slicedToArray$2(_ref3, 2),
+              key = _ref4[0],
+              value = _ref4[1];
+            return value.includes((_getFieldByLogicRole = getFieldByLogicRole(opp, key)) === null || _getFieldByLogicRole === void 0 ? void 0 : _getFieldByLogicRole.valueLogicRole);
+          });
+        });
+        send === null || send === void 0 ? void 0 : send('UPDATE_CONTEXT_OPP', _objectSpread$2({
+          selectedOpportunityObject: idealOpps[0]
+        }, (idealOpps === null || idealOpps === void 0 ? void 0 : idealOpps.length) > 1 && {
+          selectedOpportunityArray: idealOpps
+        }));
+      }
+    });
+    setOpportunityChecked(true);
+  }
+  function checkReferenceBobject(phoneNumber) {
+    var _searchReferenceLeadB;
+    (_searchReferenceLeadB = searchReferenceLeadBobject(phoneNumber)) === null || _searchReferenceLeadB === void 0 ? void 0 : _searchReferenceLeadB.then(function (referenceBobjectFound) {
+      if (referenceBobjectFound) {
+        var _activity$id3, _referenceBobjectFoun;
+        api.patch("/bobjects/".concat(activity === null || activity === void 0 ? void 0 : (_activity$id3 = activity.id) === null || _activity$id3 === void 0 ? void 0 : _activity$id3.value, "/raw"), _defineProperty$2({}, ACTIVITY_FIELDS_LOGIC_ROLE.LEAD, referenceBobjectFound === null || referenceBobjectFound === void 0 ? void 0 : (_referenceBobjectFoun = referenceBobjectFound.id) === null || _referenceBobjectFoun === void 0 ? void 0 : _referenceBobjectFoun.value)).then(function () {
+          var _activity$id4;
+          api.get("/bobjects/".concat(activity === null || activity === void 0 ? void 0 : (_activity$id4 = activity.id) === null || _activity$id4 === void 0 ? void 0 : _activity$id4.value, "/form?injectReferences=true"), {}).then(function (updatedActivity) {
+            if (updatedActivity !== null && updatedActivity !== void 0 && updatedActivity.data) {
+              var activityBobjectUpdated = injectReferencesGetProcess(updatedActivity === null || updatedActivity === void 0 ? void 0 : updatedActivity.data);
+              setUpdatedObjects({
+                activityUpdated: activityBobjectUpdated,
+                referenceBobjectUpdated: referenceBobjectFound
+              });
+            }
+          });
+        });
+        send === null || send === void 0 ? void 0 : send('UPDATE_REFERENCE_BOBJECT', {
+          referenceBobjectSelected: referenceBobjectFound
+        });
+      }
+    });
+    setReferenceObjectChecked(true);
+  }
+  var handleOpenMinimizableModal = function handleOpenMinimizableModal(type) {
+    var _activity$id5, _getFieldByLogicRole2, _FIELDS_LOGIC_ROLE, _getFieldByLogicRole3, _FIELDS_LOGIC_ROLE2;
+    var bobjectType = activity === null || activity === void 0 ? void 0 : (_activity$id5 = activity.id) === null || _activity$id5 === void 0 ? void 0 : _activity$id5.typeName;
+    var relatedCompany = (_getFieldByLogicRole2 = getFieldByLogicRole(activity, (_FIELDS_LOGIC_ROLE = FIELDS_LOGIC_ROLE[bobjectType]) === null || _FIELDS_LOGIC_ROLE === void 0 ? void 0 : _FIELDS_LOGIC_ROLE.COMPANY)) === null || _getFieldByLogicRole2 === void 0 ? void 0 : _getFieldByLogicRole2.referencedBobject;
+    var relatedLead = (_getFieldByLogicRole3 = getFieldByLogicRole(activity, (_FIELDS_LOGIC_ROLE2 = FIELDS_LOGIC_ROLE[bobjectType]) === null || _FIELDS_LOGIC_ROLE2 === void 0 ? void 0 : _FIELDS_LOGIC_ROLE2.LEAD)) === null || _getFieldByLogicRole3 === void 0 ? void 0 : _getFieldByLogicRole3.referencedBobject;
+    var companyName = relatedCompany ? getValueFromLogicRole(relatedCompany, COMPANY_FIELDS_LOGIC_ROLE.NAME) : '';
+    openMinimizableModal({
+      type: type,
+      title: companyName && companyName !== '' ? companyName.slice(0, 10) : t('common.untitledCompany'),
+      data: {
+        mode: ACTIVITY_MODE.CREATE,
+        company: {
+          name: getValueFromLogicRole(relatedCompany, COMPANY_FIELDS_LOGIC_ROLE.NAME),
+          url: companyUrl(relatedCompany),
+          data: relatedCompany
+        },
+        lead: relatedLead && {
+          name: getValueFromLogicRole(relatedLead, LEAD_FIELDS_LOGIC_ROLE.FULL_NAME),
+          url: leadUrl(relatedLead, null),
+          data: relatedLead
+        }
+      }
+    });
+  };
+  var isCopilotEnabled = useCopilotEnabled(accountId);
+  var machineDefinition = getMachine(wizardKey);
+  var _useMachine3 = useMachine(machineDefinition, {
+      context: {
+        referenceBobject: referenceBobject,
+        hasSalesFeatureEnabled: hasSalesFeatureEnabled,
+        handleClose: handleClose,
+        openCadenceControl: function openCadenceControl() {
+          modalControlSend(MODAL_STEPS.CADENCE_CONTROL);
+        },
+        handleOpenMinimizableModal: handleOpenMinimizableModal,
+        isCalendarEnabled: true,
+        isCopilotEnabled: isCopilotEnabled,
+        markAsReported: markAsReported,
+        hasNoStatusPlanEnabled: hasNoStatusPlanEnabled
+      }
+    }),
+    _useMachine4 = _slicedToArray$2(_useMachine3, 3),
+    _useMachine4$ = _useMachine4[0],
+    step = _useMachine4$.value,
+    _useMachine4$$context = _useMachine4$.context,
+    convertedLeads = _useMachine4$$context.convertedLeads,
+    machineContext = _objectWithoutProperties$1(_useMachine4$$context, _excluded$1),
+    send = _useMachine4[1],
+    service = _useMachine4[2];
+  var buttonStepConfig = null;
+  var customObjectConfig = null;
+  var wizardConfig = null;
+  useBuildCRMUpdates(activity, function (hasUpdates) {
+    send('CRM_UPDATES_LOADED', {
+      hasCRMUpdates: hasUpdates
+    });
+  });
+  if (hasCustomWizardsEnabled) {
+    var _buttonStepConfig, _buttonStepConfig2;
+    service.onTransition(function (state) {
+      var metaInfoStep = getMetaInfoStep(state.meta);
+      buttonStepConfig = metaInfoStep === null || metaInfoStep === void 0 ? void 0 : metaInfoStep.buttonStepConfig;
+      if (buttonStepConfig) {
+        buttonStepConfig.hasPreviousStep = state.can(EVENTS.PREVIOUS);
+        buttonStepConfig.hasNextStep = state.can(EVENTS.NEXT);
+        buttonStepConfig.hideSaveButton = metaInfoStep.buttonStepConfig.hideSaveButton;
+      }
+      customObjectConfig = metaInfoStep === null || metaInfoStep === void 0 ? void 0 : metaInfoStep.customObjectConfig;
+      wizardConfig = machineContext === null || machineContext === void 0 ? void 0 : machineContext.wizardConfig;
+    });
+    if ((_buttonStepConfig = buttonStepConfig) !== null && _buttonStepConfig !== void 0 && _buttonStepConfig.checkExistingOpportunity && !opportunityChecked) {
+      checkExistingOpportunity();
+    }
+    if ((_buttonStepConfig2 = buttonStepConfig) !== null && _buttonStepConfig2 !== void 0 && _buttonStepConfig2.checkReferenceBobject && !referenceBobject && !referenceObjectChecked) {
+      var phone = getTextFromLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.CALL_LEAD_PHONE_NUMBER);
+      checkReferenceBobject(phone);
+    }
+  }
+  var direction = (_getFieldByLogicRole4 = getFieldByLogicRole(activity, ACTIVITY_FIELDS_LOGIC_ROLE.DIRECTION)) === null || _getFieldByLogicRole4 === void 0 ? void 0 : _getFieldByLogicRole4.valueLogicRole;
+  useLayoutEffect(function () {
+    if (contactFlowStep && send) {
+      send(contactFlowStep, {
+        activityDirection: direction
+      });
+    }
+  }, [send, contactFlowStep]);
+  useLayoutEffect(function () {
+    if (referenceBobject && send) {
+      var callResultUpdated = null;
+      if (direction !== DIRECTION_VALUES_LOGIC_ROLE.OUTGOING) {
+        var _machineContext$wizar, _activity$id6;
+        callResultUpdated = 'ACTIVITY__CALL_RESULT__CORRECT_CONTACT';
+        var dataToUpdate = _defineProperty$2({}, ACTIVITY_FIELDS_LOGIC_ROLE.CALL_RESULT, callResultUpdated);
+        if (!hasCustomWizardsEnabled || (machineContext === null || machineContext === void 0 ? void 0 : (_machineContext$wizar = machineContext.wizardConfig) === null || _machineContext$wizar === void 0 ? void 0 : _machineContext$wizar.markReportedAtStart) === true) {
+          dataToUpdate[ACTIVITY_FIELDS_LOGIC_ROLE.REPORTED] = REPORTED_VALUES_LOGIC_ROLE.YES;
+        }
+        api.patch("/bobjects/".concat(activity === null || activity === void 0 ? void 0 : (_activity$id6 = activity.id) === null || _activity$id6 === void 0 ? void 0 : _activity$id6.value, "/raw"), dataToUpdate);
+      }
+      var payloadStep = {
+        activityDirection: direction,
+        callResult: callResultUpdated
+      };
+      if (referenceBobjectIsSales) {
+        send(STEPS$1.CALL_RESULTS_OPP, payloadStep);
+      } else {
+        activityOpportunity ? send(STEPS$1.CHANGE_STATUS, payloadStep) : send(STEPS$1.CALL_RESULTS, payloadStep);
+      }
+    } else {
+      send(STEPS$1.CALL_RESULTS);
+    }
+  }, [send, activityLead, activityCompany]);
+  useEffect(function () {
+    return function () {
+      handleClose();
+    };
+  }, []);
+  addMetaToWizardProperties(wizardKey, (_buttonStepConfig3 = buttonStepConfig) !== null && _buttonStepConfig3 !== void 0 && _buttonStepConfig3.checkReferenceBobject && !referenceBobject ? {
+    referenceBobject: updatedObjects.referenceBobjectUpdated,
+    bobject: updatedObjects.activityUpdated
+  } : {});
+  var otherProps = STEPS_PROPS[step];
+  var cadenceEnded = (referenceBobject === null || referenceBobject === void 0 ? void 0 : referenceBobject.cadenceEnded) || getValueFromLogicRole(referenceBobject, (_FIELDS_LOGIC_ROLE3 = FIELDS_LOGIC_ROLE[referenceBobject === null || referenceBobject === void 0 ? void 0 : (_referenceBobject$id = referenceBobject.id) === null || _referenceBobject$id === void 0 ? void 0 : _referenceBobject$id.typeName]) === null || _FIELDS_LOGIC_ROLE3 === void 0 ? void 0 : _FIELDS_LOGIC_ROLE3.CADENCE_ENDED, true);
+  var cadence = (referenceBobject === null || referenceBobject === void 0 ? void 0 : referenceBobject.cadence) || getValueFromLogicRole(referenceBobject, (_FIELDS_LOGIC_ROLE4 = FIELDS_LOGIC_ROLE[referenceBobject === null || referenceBobject === void 0 ? void 0 : (_referenceBobject$id2 = referenceBobject.id) === null || _referenceBobject$id2 === void 0 ? void 0 : _referenceBobject$id2.typeName]) === null || _FIELDS_LOGIC_ROLE4 === void 0 ? void 0 : _FIELDS_LOGIC_ROLE4.CADENCE, true);
+  return /*#__PURE__*/jsxs(Fragment, {
+    children: [modalStep === MODAL_STEPS.CONTACT_FLOW && /*#__PURE__*/jsxs(Modal, {
+      open: true,
+      onClose: handleClose,
+      width: otherProps === null || otherProps === void 0 ? void 0 : otherProps.width,
+      children: [/*#__PURE__*/jsxs(ModalHeader, {
+        variant: "gradient",
+        className: styles$1.ccfModalHeader,
+        children: [/*#__PURE__*/jsx(ModalTitle, {
+          children: ((_buttonStepConfig4 = buttonStepConfig) === null || _buttonStepConfig4 === void 0 ? void 0 : _buttonStepConfig4.modalTitle) || t("titles.".concat(otherProps === null || otherProps === void 0 ? void 0 : otherProps.titleKey))
+        }), /*#__PURE__*/jsx(ModalCloseIcon, {
+          onClick: handleClose,
+          size: "small",
+          color: "peanut"
+        })]
+      }), /*#__PURE__*/jsx(WizardStepFactory, _objectSpread$2({
+        step: step,
+        send: send,
+        buttonsConfig: buttonStepConfig,
+        bobject: activity,
+        wizardKey: wizardKey,
+        convertedLeads: convertedLeads,
+        machineContext: machineContext,
+        customObjectConfig: customObjectConfig,
+        wizardConfig: wizardConfig
+      }, props))]
+    }), modalStep === MODAL_STEPS.CADENCE_CONTROL && isCadenceControlOpen && /*#__PURE__*/jsx(CadenceControlModal, {
+      bobject: machineContext !== null && machineContext !== void 0 && machineContext.selectedOpportunityObject ? machineContext === null || machineContext === void 0 ? void 0 : machineContext.selectedOpportunityObject : referenceBobject,
+      initialStep: {
+        step: 'NEXT_STEPS',
+        hadStartedCadence: !(cadence && cadenceEnded !== 'true' && cadenceEnded !== 'Yes')
+      },
+      setIsOpen: setIsCadenceControlOpen,
+      callbackOnClose: handleClose
+    })]
+  });
+};
+var ContactFlowModal = visibilityHandler$2( /*#__PURE__*/React.memo(ContactFlow));
+
+var css_248z = ".inactiveHandlingModal-module__modal_header__bRDsq {\n  box-sizing: border-box;\n  padding: 16px;\n}\n\n.inactiveHandlingModal-module__modal_header__bRDsq > div > svg{\n  transform: rotate(180deg);\n}\n\n.inactiveHandlingModal-module__modal_content__uK3TU {\n  box-sizing: border-box;\n  padding: 32px 58px 10px ;\n  min-height: 583px;\n  max-height: calc(100vh - 130px);\n}\n\n.inactiveHandlingModal-module__modal_footer__ZGmtQ {\n  box-sizing: border-box;\n  padding: 8px 32px 40px 32px;\n  height: 80px;\n}\n\n.inactiveHandlingModal-module__modal_content__uK3TU > div > section > div {\n  display: flex;\n  flex-direction: column;\n}\n\n.inactiveHandlingModal-module__sections_container__1dgVC {\n  display: flex;\n  height: 272px;\n}\n\n.inactiveHandlingModal-module__sections_container__1dgVC + main {\n  padding: 0;\n}\n\n.inactiveHandlingModal-module__informationPanel__aTuxO {\n  border: 1px solid var(--lightPurple);\n  border-radius: 4px;\n  background-color: var(--lightestPurple);\n  margin-left: 30px;\n  width: 198px;\n  padding: 16px;\n}\n\n.inactiveHandlingModal-module__info_header__h-OHn {\n  margin-bottom: 8px;\n  line-height: 16px;\n}\n\n.inactiveHandlingModal-module__stage_callout__wrapper__G-FEr {\n  display: flex;\n  flex-direction: row;\n  padding: 0 30px;\n}\n\n.inactiveHandlingModal-module__stage_callout__icon__vY6Zs {\n  align-self: center;\n  width: 50px;\n  margin-right: 16px;\n}\n\n.inactiveHandlingModal-module_actions_wrapper__EowjF {\n  width: 302px;\n}\n\n.inactiveHandlingModal-module_actions_wrapper__EowjF > div {\n  display: flex;\n  flex-direction: column;\n}\n\n.inactiveHandlingModal-module__cadence_preview_wrapper__bsyWL {\n  width: 564px;\n  margin-bottom: 24px;\n}\n\n.inactiveHandlingModal-module__nurturing_preview_wrapper__A-Wz6 {\n  width: 564px;\n  margin-bottom: 24px;\n}\n\n.inactiveHandlingModal-module__nurturing_preview_wrapper__A-Wz6 > div > span {\n  padding: 8px 0;\n}\n\n.inactiveHandlingModal-module__section__wrapper__8dUkJ {\n  margin-bottom: 12px;\n  display: flex;\n  flex-wrap: wrap;\n  flex-direction: row;\n  position: relative;\n}\n\n.inactiveHandlingModal-module__list__wrapper__Q-y9a {\n  flex-direction: column;\n  flex-basis: 100%;\n  flex: 1;\n  margin-right: 15px;\n}\n\n.inactiveHandlingModal-module_hidden__Os6vG {\n  display: none;\n}\n\n.inactiveHandlingModal-module_actions_wrapper__EowjF > div > div {\n  margin-bottom: 8px;\n}\n\n.inactiveHandlingModal-module__text_block__ctDwF {\n  margin-bottom: 12px;\n}\n\n.inactiveHandlingModal-module__text_block__ctDwF > a {\n  text-decoration: none;\n  color: var(--bloobirds);\n}\n\n.inactiveHandlingModal-module__nurturing_text_block__WQblY {\n  font-size: 11px;\n  margin-bottom: 8px;\n}\n\n.inactiveHandlingModal-module__nurturing_text_block__WQblY > a {\n  text-decoration: none;\n  color: var(--bloobirds);\n}\n\n.inactiveHandlingModal-module__selects_wrapper__T0EnQ {\n  margin-top: 20px;\n  width: 552px;\n  display: flex;\n  justify-content: space-between;\n}\n\n.inactiveHandlingModal-module__note_text_area__l4Kik {\n  text-align: start;\n  margin-top: 15px;\n}\n\n.inactiveHandlingModal-module__reassign_selects_wrapper__Ek6Mh {\n  margin-top: 20px;\n  width: 552px;\n  display: flex;\n  justify-content: space-between;\n  margin-bottom: 12px;\n}\n\n.inactiveHandlingModal-module__add_task_module__0SqiJ {\n  margin-top: 16px;\n  display: flex;\n  flex-direction: column;\n  width: 100%;\n  align-content: center;\n}\n\n.inactiveHandlingModal-module__add_task_title__etpPp {\n  margin-bottom: 12px;\n}\n\n.inactiveHandlingModal-module_box__NKPPv {\n  position: relative;\n  z-index: 99;\n\n  bottom: 73%;\n  left: 50%;\n  transform: translateX(-50%);\n\n  width: 700px;\n  background: #ffffff;\n\n  /* Main/peanut-light */\n  border: 1px solid #d4e0f1;\n\n  /* snackbar-shadow */\n  box-shadow: 0 2px 8px rgba(70, 79, 87, 0.33);\n  border-radius: 4px;\n}\n\n.inactiveHandlingModal-module__nurturing_bottom__szvjP {\n  bottom: 68%;\n}\n\n@media (max-height: 800px) {\n  .inactiveHandlingModal-module__modal_content__uK3TU {\n    height: calc(100vh - 155px);\n    min-height: auto;\n  }\n}\n";
+var styles = {"_modal_header":"inactiveHandlingModal-module__modal_header__bRDsq","_modal_content":"inactiveHandlingModal-module__modal_content__uK3TU","_modal_footer":"inactiveHandlingModal-module__modal_footer__ZGmtQ","_sections_container":"inactiveHandlingModal-module__sections_container__1dgVC","_informationPanel":"inactiveHandlingModal-module__informationPanel__aTuxO","_info_header":"inactiveHandlingModal-module__info_header__h-OHn","_stage_callout__wrapper":"inactiveHandlingModal-module__stage_callout__wrapper__G-FEr","_stage_callout__icon":"inactiveHandlingModal-module__stage_callout__icon__vY6Zs","actions_wrapper":"inactiveHandlingModal-module_actions_wrapper__EowjF","_cadence_preview_wrapper":"inactiveHandlingModal-module__cadence_preview_wrapper__bsyWL","_nurturing_preview_wrapper":"inactiveHandlingModal-module__nurturing_preview_wrapper__A-Wz6","_section__wrapper":"inactiveHandlingModal-module__section__wrapper__8dUkJ","_list__wrapper":"inactiveHandlingModal-module__list__wrapper__Q-y9a","hidden":"inactiveHandlingModal-module_hidden__Os6vG","_text_block":"inactiveHandlingModal-module__text_block__ctDwF","_nurturing_text_block":"inactiveHandlingModal-module__nurturing_text_block__WQblY","_selects_wrapper":"inactiveHandlingModal-module__selects_wrapper__T0EnQ","_note_text_area":"inactiveHandlingModal-module__note_text_area__l4Kik","_reassign_selects_wrapper":"inactiveHandlingModal-module__reassign_selects_wrapper__Ek6Mh","_add_task_module":"inactiveHandlingModal-module__add_task_module__0SqiJ","_add_task_title":"inactiveHandlingModal-module__add_task_title__etpPp","box":"inactiveHandlingModal-module_box__NKPPv","_nurturing_bottom":"inactiveHandlingModal-module__nurturing_bottom__szvjP"};
+styleInject(css_248z);
+
+function _typeof$1(obj) { "@babel/helpers - typeof"; return _typeof$1 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof$1(obj); }
+function _slicedToArray$1(arr, i) { return _arrayWithHoles$1(arr) || _iterableToArrayLimit$1(arr, i) || _unsupportedIterableToArray$1(arr, i) || _nonIterableRest$1(); }
+function _nonIterableRest$1() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray$1(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$1(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$1(o, minLen); }
+function _arrayLikeToArray$1(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit$1(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles$1(arr) { if (Array.isArray(arr)) return arr; }
+function ownKeys$1(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread$1(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$1(Object(source), !0).forEach(function (key) { _defineProperty$1(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$1(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty$1(obj, key, value) { key = _toPropertyKey$1(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey$1(arg) { var key = _toPrimitive$1(arg, "string"); return _typeof$1(key) === "symbol" ? key : String(key); }
+function _toPrimitive$1(input, hint) { if (_typeof$1(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof$1(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _objectDestructuringEmpty(obj) { if (obj == null) throw new TypeError("Cannot destructure " + obj); }
+function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+var visibilityHandler$1 = function visibilityHandler(Component) {
+  return function (_ref) {
+    var props = _extends({}, (_objectDestructuringEmpty(_ref), _ref));
+    var _useWizardContext = useWizardContext(),
+      getWizardProperties = _useWizardContext.getWizardProperties;
+    var wizardKey = props.wizardKey;
+    var wizardContext = getWizardProperties(wizardKey);
+    return wizardContext && wizardContext.visible && /*#__PURE__*/jsx(Component, _objectSpread$1({}, props));
+  };
+};
+var InactiveHandlingModal = function InactiveHandlingModal(props) {
+  var _bobject$id;
+  var wizardKey = props.wizardKey;
+  var _useWizardContext2 = useWizardContext(),
+    getMachine = _useWizardContext2.getMachine,
+    hasCustomWizardsEnabled = _useWizardContext2.hasCustomWizardsEnabled,
+    getWizardProperties = _useWizardContext2.getWizardProperties,
+    getMetaInfoStep = _useWizardContext2.getMetaInfoStep,
+    resetWizardProperties = _useWizardContext2.resetWizardProperties;
+  var _getWizardProperties = getWizardProperties(wizardKey),
+    bobject = _getWizardProperties.bobject;
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards.modals.inactiveHandlingModal'
+    }),
+    t = _useTranslation.t;
+  var _useTranslation2 = useTranslation('translation', {
+      keyPrefix: 'bobjectTypes'
+    }),
+    bobjectT = _useTranslation2.t;
+
+  /*const hasOnHoldReasons =
+    useGlobalPicklistValues({
+      logicRole: GLOBAL_PICKLISTS.ON_HOLD_REASONS,
+    })?.filter(reason => reason.enabled)?.length !== 0;*/
+
+  useEffect(function () {
+    removeScrollOfBox();
+    return function () {
+      recoverScrollOfBox();
+      handleClose();
+    };
+  }, []);
+  function handleClose() {
+    resetWizardProperties(wizardKey);
+  }
+  var machineDefinition = getMachine(wizardKey);
+  var _useMachine = useMachine(machineDefinition, {
+      context: {},
+      actions: {
+        handleSkip: handleClose
+      }
+    }),
+    _useMachine2 = _slicedToArray$1(_useMachine, 3),
+    step = _useMachine2[0].value,
+    send = _useMachine2[1],
+    service = _useMachine2[2];
+  var buttonStepConfig = null;
+  var customObjectConfig = null;
+  if (hasCustomWizardsEnabled) {
+    service.onTransition(function (state) {
+      var metaInfoStep = getMetaInfoStep(state.meta);
+      buttonStepConfig = metaInfoStep === null || metaInfoStep === void 0 ? void 0 : metaInfoStep.buttonStepConfig;
+      if (buttonStepConfig) {
+        buttonStepConfig.hasPreviousStep = state.can(EVENTS.PREVIOUS);
+        buttonStepConfig.hasNextStep = state.can(EVENTS.NEXT);
+      }
+      customObjectConfig = metaInfoStep === null || metaInfoStep === void 0 ? void 0 : metaInfoStep.customObjectConfig;
+    });
+  }
+  return /*#__PURE__*/jsx(Fragment, {
+    children: /*#__PURE__*/jsx(Modal, {
+      width: 680,
+      open: true,
+      onClose: handleClose,
+      children: /*#__PURE__*/jsxs("div", {
+        className: styles._modal_wrapper,
+        children: [/*#__PURE__*/jsxs(ModalHeader, {
+          className: styles._modal_header,
+          children: [/*#__PURE__*/jsx(ModalTitle, {
+            color: "peanut",
+            icon: "rewind",
+            size: "small",
+            children: t('title', {
+              bobjectType: bobjectT(bobject === null || bobject === void 0 ? void 0 : (_bobject$id = bobject.id) === null || _bobject$id === void 0 ? void 0 : _bobject$id.typeName.toLowerCase())
+            })
+          }), /*#__PURE__*/jsx(ModalCloseIcon, {
+            color: "peanut",
+            size: "small",
+            onClick: handleClose
+          })]
+        }), /*#__PURE__*/jsx(WizardStepFactory, {
+          step: step,
+          send: send,
+          buttonsConfig: buttonStepConfig,
+          bobject: bobject,
+          wizardKey: wizardKey,
+          customObjectConfig: customObjectConfig
+        })]
+      })
+    })
+  });
+};
+var InactiveModal = visibilityHandler$1(InactiveHandlingModal);
+
+var _excluded = ["wizardContext"];
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+function _objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = _objectWithoutPropertiesLoose(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
+function _objectWithoutPropertiesLoose(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var invalidOppStatuses = _defineProperty(_defineProperty({}, OPPORTUNITY_FIELDS_LOGIC_ROLE.STATUS, [OPPORTUNITY_STATUS_LOGIC_ROLE.CLOSED_LOST, OPPORTUNITY_STATUS_LOGIC_ROLE.CLOSED_WON]), "SALESFORCE_OPPPORTUNITY__STAGE", ['Closed Lost', 'Closed Won']);
+var visibilityHandler = function visibilityHandler(Component) {
+  return function (props) {
+    var _useWizardContext = useWizardContext(),
+      getWizardProperties = _useWizardContext.getWizardProperties;
+    var wizardKey = props.wizardKey;
+    var wizardContext = getWizardProperties(wizardKey);
+    return wizardContext && wizardContext.visible && /*#__PURE__*/jsx(Component, _objectSpread({
+      wizardContext: wizardContext
+    }, props));
+  };
+};
+
+/**
+ * Meeting result modal, used to report a meeting, all props required.
+ * @constructor
+ */
+var MeetingReportResultModal = function MeetingReportResultModal(_ref) {
+  var _useUserSettings, _useUserSettings$user, _buttonStepConfig, _buttonStepConfig2, _activity$id;
+  var wizardContext = _ref.wizardContext,
+    props = _objectWithoutProperties(_ref, _excluded);
+  var _useWizardContext2 = useWizardContext(),
+    resetWizardProperties = _useWizardContext2.resetWizardProperties,
+    addMetaToWizardProperties = _useWizardContext2.addMetaToWizardProperties,
+    getMachine = _useWizardContext2.getMachine,
+    hasCustomWizardsEnabled = _useWizardContext2.hasCustomWizardsEnabled,
+    getMetaInfoStep = _useWizardContext2.getMetaInfoStep,
+    wizardsMap = _useWizardContext2.wizardsMap,
+    accountId = _useWizardContext2.accountId;
+  var userId = (_useUserSettings = useUserSettings()) === null || _useUserSettings === void 0 ? void 0 : (_useUserSettings$user = _useUserSettings.user) === null || _useUserSettings$user === void 0 ? void 0 : _useUserSettings$user.id;
+  var oppChecked = useRef(false);
+  var _ref2 = [oppChecked.current, function (value) {
+      oppChecked.current = value;
+    }],
+    opportunityChecked = _ref2[0],
+    setOpportunityChecked = _ref2[1];
+  var isCopilotEnabled = useCopilotEnabled(accountId);
+  var hasNoStatusPlanEnabled = useIsNoStatusPlanAccount();
+  var _useTranslation = useTranslation('translation', {
+      keyPrefix: 'wizards.modals.meetingReportResultModal'
+    }),
+    t = _useTranslation.t;
+  var wizardKey = props.wizardKey;
+  var activity = wizardContext.bobject,
+    onSaveCallback = wizardContext.onSaveCallback,
+    referenceBobject = wizardContext.referenceBobject;
+  var _useActivityRelatedIn = useActivityRelatedInfo(wizardKey),
+    activityLead = _useActivityRelatedIn.activityLead,
+    activityCompany = _useActivityRelatedIn.activityCompany,
+    referenceBobjectIsSales = _useActivityRelatedIn.referenceBobjectIsSales;
+  var hasSalesFeatureEnabled = useFullSalesEnabled(accountId);
+  var _useMarkAsReported = useMarkAsReported(),
+    markAsReported = _useMarkAsReported.markAsReported;
+  function handleCloseWithoutSave() {
+    resetWizardProperties(wizardKey);
+  }
+  useSWR('meetingModal/opp/search' + (referenceBobject === null || referenceBobject === void 0 ? void 0 : referenceBobject.id.value), function () {
+    var _activityLead$id, _activityCompany$id;
+    return searchOppByLeadOrCompany(accountId, activityLead === null || activityLead === void 0 ? void 0 : (_activityLead$id = activityLead.id) === null || _activityLead$id === void 0 ? void 0 : _activityLead$id.value, activityCompany === null || activityCompany === void 0 ? void 0 : (_activityCompany$id = activityCompany.id) === null || _activityCompany$id === void 0 ? void 0 : _activityCompany$id.value, userId).then(function (response) {
+      var _response$data;
+      if ((response === null || response === void 0 ? void 0 : (_response$data = response.data) === null || _response$data === void 0 ? void 0 : _response$data.totalMatching) > 0) {
+        var _response$data2, _response$data2$conte;
+        var idealOpps = response === null || response === void 0 ? void 0 : (_response$data2 = response.data) === null || _response$data2 === void 0 ? void 0 : (_response$data2$conte = _response$data2.contents) === null || _response$data2$conte === void 0 ? void 0 : _response$data2$conte.filter(function (opp) {
+          return !Object.entries(invalidOppStatuses).some(function (_ref3) {
+            var _getFieldByLogicRole;
+            var _ref4 = _slicedToArray(_ref3, 2),
+              key = _ref4[0],
+              value = _ref4[1];
+            return value.includes((_getFieldByLogicRole = getFieldByLogicRole(opp, key)) === null || _getFieldByLogicRole === void 0 ? void 0 : _getFieldByLogicRole.valueLogicRole);
+          });
+        });
+        send === null || send === void 0 ? void 0 : send('UPDATE_CONTEXT_OPP', _objectSpread({
+          selectedOpportunityObject: idealOpps[0]
+        }, (idealOpps === null || idealOpps === void 0 ? void 0 : idealOpps.length) > 1 && {
+          selectedOpportunityArray: idealOpps
+        }));
+      }
+    })["finally"](function () {
+      setOpportunityChecked(true);
+    });
+  });
+  function handleClose() {
+    mixpanel.track(MIXPANEL_EVENTS.CLICK_ON_CLOSE_IN_WIZARD_STEP_ + wizardKey);
+    markAsReported === null || markAsReported === void 0 ? void 0 : markAsReported(activity).then(function () {
+      window.dispatchEvent(new CustomEvent('ACTIVE_BOBJECT_UPDATED', {
+        detail: {
+          type: BobjectTypes.Activity
+        }
+      }));
+      resetWizardProperties(wizardKey);
+      setTimeout(function () {
+        onSaveCallback === null || onSaveCallback === void 0 ? void 0 : onSaveCallback();
+      }, 500);
+    });
+  }
+  useEffect(function () {
+    return function () {
+      handleCloseWithoutSave();
+    };
+  }, []);
+  addMetaToWizardProperties(wizardKey, {
+    handleClose: handleClose
+  });
+  var machineDefinition = getMachine(wizardKey);
+  var _useMachine = useMachine(machineDefinition, {
+      context: {
+        hasNoStatusPlanEnabled: hasNoStatusPlanEnabled,
+        referenceBobject: referenceBobject,
+        hasSalesFeatureEnabled: hasSalesFeatureEnabled,
+        isCopilotEnabled: isCopilotEnabled,
+        isReferencedObjectInSales: referenceBobjectIsSales,
+        handleClose: handleClose
+      }
+    }),
+    _useMachine2 = _slicedToArray(_useMachine, 3),
+    _useMachine2$ = _useMachine2[0],
+    step = _useMachine2$.value,
+    machineContext = _useMachine2$.context,
+    send = _useMachine2[1],
+    service = _useMachine2[2];
+  useBuildCRMUpdates(activity, function (hasUpdates) {
+    send('CRM_UPDATES_LOADED', {
+      hasCRMUpdates: hasUpdates
+    });
+  });
+  var buttonStepConfig = null;
+  var customObjectConfig = null;
+  useEffect(function () {
+    if (hasCustomWizardsEnabled) {
+      service.onTransition(function (state) {
+        var metaInfoStep = getMetaInfoStep(state.meta);
+        buttonStepConfig = metaInfoStep === null || metaInfoStep === void 0 ? void 0 : metaInfoStep.buttonStepConfig;
+        if (buttonStepConfig) {
+          buttonStepConfig.hasPreviousStep = state.can(EVENTS.PREVIOUS);
+          buttonStepConfig.hasNextStep = state.can(EVENTS.NEXT);
+          buttonStepConfig.hideSaveButton = metaInfoStep.buttonStepConfig.hideSaveButton;
+        }
+        customObjectConfig = metaInfoStep === null || metaInfoStep === void 0 ? void 0 : metaInfoStep.customObjectConfig;
+      });
+    }
+  }, [hasCustomWizardsEnabled, opportunityChecked]);
+  var showModalHeader = ((_buttonStepConfig = buttonStepConfig) === null || _buttonStepConfig === void 0 ? void 0 : _buttonStepConfig.showModalHeader) === undefined || ((_buttonStepConfig2 = buttonStepConfig) === null || _buttonStepConfig2 === void 0 ? void 0 : _buttonStepConfig2.showModalHeader) === true;
+  return !hasCustomWizardsEnabled || !!wizardsMap ? showModalHeader ? /*#__PURE__*/jsx(Fragment, {
+    children: /*#__PURE__*/jsxs(Modal, {
+      width: 972,
+      open: true,
+      onClose: handleCloseWithoutSave,
+      children: [/*#__PURE__*/jsxs(ModalHeader, {
+        children: [/*#__PURE__*/jsx(ModalTitle, {
+          color: "peanut",
+          icon: "company",
+          size: "small",
+          children: t('title')
+        }), /*#__PURE__*/jsx(ModalCloseIcon, {
+          color: "peanut",
+          size: "small",
+          onClick: handleCloseWithoutSave
+        })]
+      }), /*#__PURE__*/jsx(WizardStepFactory, {
+        step: step,
+        send: send,
+        buttonsConfig: buttonStepConfig,
+        bobject: activity,
+        wizardKey: wizardKey,
+        customObjectConfig: customObjectConfig,
+        machineContext: machineContext
+      })]
+    }, activity === null || activity === void 0 ? void 0 : (_activity$id = activity.id) === null || _activity$id === void 0 ? void 0 : _activity$id.value)
+  }) : /*#__PURE__*/jsx(WizardStepFactory, {
+    step: step,
+    send: send,
+    buttonsConfig: buttonStepConfig,
+    bobject: activity,
+    wizardKey: wizardKey,
+    customObjectConfig: customObjectConfig,
+    machineContext: machineContext
+  }) : /*#__PURE__*/jsx(Fragment, {});
+};
+var MeetingReportResultWizard = visibilityHandler(MeetingReportResultModal);
+
+var WizardModalFactory = function WizardModalFactory(props) {
+  var _useWizardContext = useWizardContext(),
+    wizardsMap = _useWizardContext.wizardsMap;
+  var children = props.children;
+  var wizardComponents = [];
+  var wizardComponent = null;
+  var _loop = function _loop(key) {
+    wizardComponent = null;
+    var matchingChild = null;
+    switch (key) {
+      case WIZARD_MODALS.NEXT_STEP:
+        wizardComponent = /*#__PURE__*/jsx(InactiveModal, {});
+        break;
+      case WIZARD_MODALS.MEETING_RESULT:
+        wizardComponent = /*#__PURE__*/jsx(MeetingReportResultWizard, {});
+        break;
+      case WIZARD_MODALS.CONTACT_FLOW_OTO:
+      case WIZARD_MODALS.CONTACT_FLOW_APP:
+        wizardComponent = /*#__PURE__*/jsx(ContactFlowModal, {});
+        break;
+      case WIZARD_MODALS.CHANGE_STATUS:
+        wizardComponent = /*#__PURE__*/jsx(ChangeStatusWizard, {});
+        break;
+    }
+    if (children) {
+      if (Array.isArray(children)) {
+        matchingChild = children.find(function (child) {
+          return child.key === key;
+        });
+      } else if (children.key === key) {
+        matchingChild = children;
+      }
+    }
+    if (wizardComponent) {
+      var _wizardComponent, _wizardComponent$prop, _wizardComponent2, _wizardComponent2$pro, _matchingChild;
+      wizardComponents.push( /*#__PURE__*/React.cloneElement(wizardComponent, {
+        wizardKey: (_wizardComponent = wizardComponent) !== null && _wizardComponent !== void 0 && (_wizardComponent$prop = _wizardComponent.props) !== null && _wizardComponent$prop !== void 0 && _wizardComponent$prop.wizardKey ? (_wizardComponent2 = wizardComponent) === null || _wizardComponent2 === void 0 ? void 0 : (_wizardComponent2$pro = _wizardComponent2.props) === null || _wizardComponent2$pro === void 0 ? void 0 : _wizardComponent2$pro.wizardKey : key,
+        key: key
+      }, (_matchingChild = matchingChild) === null || _matchingChild === void 0 ? void 0 : _matchingChild.props.children));
+    }
+  };
+  for (var key in wizardsMap) {
+    _loop(key);
+  }
+  return /*#__PURE__*/jsx(Fragment, {
+    children: wizardComponents
+  });
+};
+
+export { WizardModalFactory, WizardStepFactory };
+//# sourceMappingURL=index.js.map

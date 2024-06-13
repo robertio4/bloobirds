@@ -1,0 +1,12 @@
+._content > div[class*='ModalContent-module_inner'] {
+  overflow-x: hidden
+}
+
+._footer_buttons {
+  display: flex;
+  gap: 8px;
+}
+
+._save_buttons > button:nth-child(1) {
+  margin-right: 16px;
+}

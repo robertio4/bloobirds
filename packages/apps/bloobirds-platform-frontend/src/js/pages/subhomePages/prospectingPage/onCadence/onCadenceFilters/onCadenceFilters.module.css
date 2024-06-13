@@ -1,0 +1,25 @@
+._more_filter_input {
+  composes: _more_filter_input from '../../prospectingFilters.module.css';
+}
+
+._more_filters_icon {
+  composes: _more_filters_icon from '../../prospectingFilters.module.css';
+}
+._clear_button {
+  display: flex;
+  align-items: center;
+  width: 85px;
+}
+
+._clear_button > button {
+  padding-bottom: 0;
+  padding-top: 0;
+}
+
+._title {
+  margin-right: 12px;
+}
+
+._quick_filter > div {
+  margin-right: 8px;
+}

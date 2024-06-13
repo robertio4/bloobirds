@@ -1,0 +1,34 @@
+._emptyContentRoot {
+  background-color: var(--lighterGray);
+  padding: 0 0 24px 0;
+}
+
+._emptyContentDescription {
+  margin: 0;
+  padding: 20px 0 0 0;
+}
+
+._emptyContentSubDescription {
+  margin: 10px 0;
+  color: var(--softPeanut);
+}
+
+._header {
+  border-spacing: 0 8px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: var(--lighterGray);
+}
+
+._title {
+  font-size: 20px;
+  line-height: 41px;
+  color: var(--peanut);
+  margin: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  margin-right: 10px;
+}

@@ -1,0 +1,768 @@
+._callCard_body {
+  flex: 1;
+  overflow: hidden;
+}
+
+._callCard_body__text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.note_text {
+  padding-right: 8px;
+  align-self: auto;
+}
+
+.note_text * {
+  font-size: 12px !important;
+}
+
+._lead_block {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+._callCard_body__bobjectLink {
+  composes: _callCard_body__text;
+  display: inherit;
+}
+
+._callCard_body__source {
+  margin-left: 8px;
+}
+
+._filters__title {
+  margin-right: 12px;
+}
+
+._list_header {
+  display: flex;
+  justify-content: space-between;
+}
+
+._comingSoon_label {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0 3px;
+
+  background: var(--veryLightBloobirds);
+  border-radius: 4px;
+
+  font-size: 12px;
+  line-height: 16px;
+  /* identical to box height, or 160% */
+
+  color: var(--white);
+  font-weight: 600;
+  flex-grow: 0;
+
+  white-space: nowrap;
+  margin: 0 5px;
+}
+
+._footer_wrapper {
+  margin-top: 25px;
+}
+
+._date_text_wrapper > div > div {
+  margin-left: 8px;
+}
+
+._text_wrapper {
+  margin-bottom: 5px;
+}
+
+._text_align_center {
+  text-align: center;
+}
+
+._link {
+  color: var(--bloobirds);
+  font-size: 14px;
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+._quick_filter_wrapper > div {
+  margin-right: 8px;
+}
+
+.filter_relative_date div[role='listbox'] {
+  background-color: var(--softPeanut);
+  max-width: 210px;
+  width: auto;
+  padding: 4px 6px;
+  max-height: none;
+  border: 0;
+  box-sizing: border-box;
+  height: 24px;
+}
+
+.filter_relative_date div[role='listbox'] > button {
+  background-color: var(--softPeanut);
+  color: white;
+}
+
+.filter_relative_date div[role='listbox'] > button > span {
+  color: white !important;
+}
+
+.filter_relative_date div[role='listbox'] svg > path {
+  fill: var(--white);
+}
+
+.filter_relative_date div[role='listbox'] > div:first-child > svg {
+  margin-bottom: 3px;
+}
+
+._assigned_circle {
+  margin-left: 8px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+._counter__button {
+  display: flex;
+  align-content: center;
+  height: 24px;
+}
+
+._counter__button > div {
+  margin-right: 8px;
+}
+
+._inbox_discovery {
+  position: absolute;
+  z-index: 1;
+}
+
+.relativeContainer {
+  position: relative;
+}
+
+.container {
+  overflow-y: hidden;
+  margin-bottom: 4px;
+  cursor: pointer;
+  height: 100%;
+}
+
+.container * {
+  font-family: var(--fontFamily);
+}
+
+.container_max_height {
+  max-height: 110px;
+}
+
+.hasBeenRead {
+  transition: max-height 500ms;
+  transition-timing-function: linear;
+  max-height: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.container > div {
+  padding: 12px 8px !important;
+  gap: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 43px;
+  justify-content: center;
+}
+
+.container > div > div {
+  width: 100%;
+  gap: 6px;
+}
+
+.container > div > div {
+  margin-top: 0;
+}
+
+.container > div > div:first-child > div:nth-last-child(1) > div {
+  padding: 0 8px !important;
+  gap: 4px;
+  right: 0;
+  top: 0;
+  border-radius: 4px;
+}
+
+.container > div > div > div:first-child {
+  margin-right: 0;
+}
+
+.emailCard_body {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.emailCard_cardIcons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.emailCard_bouncedEmail {
+  margin: 4px;
+}
+
+.div_not_collapsed {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.container:hover .div_not_collapsed > div:last-child {
+  transition-delay: 0ms, 100ms;
+  transition-property: height, opacity;
+  transition-duration: 250ms;
+  height: 40px;
+  opacity: 1;
+}
+
+.container .div_not_collapsed > div:last-child {
+  transition-delay: 200ms, 0ms;
+  transition-property: height, opacity;
+  transition-duration: 250ms;
+  height: 0;
+  opacity: 0;
+}
+
+.container_visible_buttons .div_not_collapsed > div:last-child {
+  height: 40px;
+  opacity: 1;
+}
+
+._card_hover_buttons {
+  display: flex;
+}
+
+.emailCard_buttons {
+  height: 0;
+  opacity: 0;
+  width: 100%;
+  background-color: var(--white);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  padding: 8px 2px;
+  gap: 4px;
+}
+
+.emailCard_buttons_collapse {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 8px 10px;
+}
+
+.visible_buttons {
+  height: 40px !important;
+  opacity: 1 !important;
+}
+
+.emailCard_button_reported {
+  background-color: var(--verySoftMelon);
+}
+
+._mark_as_read {
+  transition: background-color ease-in-out 0.3s;
+  margin-left: 4px;
+  width: 34px;
+  height: 24px;
+}
+
+._email_mark_as_read {
+  transition: background-color ease-in-out 0.3s;
+}
+
+._mark_as_read_clicked {
+  color: var(--melon) !important;
+}
+
+._mark_as_read_clicked > svg > path {
+  fill: var(--melon);
+}
+
+._mark_as_read_clicked > div {
+  width: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+._emailCard_body__text {
+  display: flex;
+  margin-right: 4px;
+  white-space: break-spaces;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: bold;
+  max-width: 312px;
+}
+
+._emailCard_body__text > div {
+  width: 100%;
+  white-space: break-spaces;
+}
+
+._emailCard_body__bobjectLink {
+  composes: _emailCard_body__text;
+  display: inherit;
+}
+
+._card_content {
+  flex-direction: column;
+  width: 100%;
+}
+
+._card_content > div > div > div {
+  width: 100%;
+}
+
+._title_wrapper {
+  max-width: 97%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  color: var(--peanut);
+}
+
+._html_message > p,
+._html_message {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--peanut);
+  margin: 0;
+  align-items: flex-start;
+  overflow: hidden;
+  max-width: 312px !important;
+}
+
+._html_message img {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+._html_message * {
+  max-width: 312px !important;
+  font-size: 13px;
+}
+
+._html_message ul,
+._html_message ol {
+  padding-left: 16px !important;
+}
+
+.noteContent {
+  width: 90%;
+  max-width: 315px;
+}
+
+._text_message {
+  overflow: auto;
+  overscroll-behavior-y: contain;
+}
+
+._text_message_collapsed > p > div {
+  display: inline-block;
+}
+
+._text_message_collapsed > p > div:not(:first-child)::before {
+  content: '. ';
+}
+
+._note_wrapper {
+  margin-top: 10px;
+}
+
+._message_wrapper {
+  display: flex;
+  align-items: flex-start;
+}
+
+._message_collapsed {
+  height: 50px;
+  overflow: hidden;
+}
+
+._message_collapsed > button {
+  display: flex;
+  align-items: center;
+  margin-top: 2px;
+}
+
+._message_wrapper > button {
+  margin-right: 4px;
+}
+
+._email_statistic_container {
+  border-top: 1px solid var(--lightPeanut);
+  padding-top: 10px;
+  margin-top: 10px;
+}
+
+._email_statistic_container > div > div {
+  margin: 0;
+}
+
+._email_statistic_container > div > div > svg {
+  width: 12px;
+  height: 12px;
+  margin-top: 3px;
+}
+
+._statistics_wrapper {
+  display: flex;
+}
+
+._statistics_wrapper > div:nth-child(1) {
+  margin-right: 20px;
+}
+
+._statistic_wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+._statistic_label {
+  margin-left: 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--peanut);
+  border-radius: 4px;
+  padding: 0 4px;
+  width: 9px;
+}
+
+._history_list {
+  margin: 0;
+  padding: 0;
+  padding-left: 12px;
+  margin-top: 10px;
+  list-style: none;
+}
+
+._history_item {
+  padding-bottom: 10px;
+  position: relative;
+  list-style: none;
+}
+
+._history_item > span {
+  margin-right: 8px;
+}
+
+._list_header {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+}
+
+._list_header > button {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+._bullet {
+  width: 8px;
+  height: 8px;
+  border-radius: 10px;
+  background-color: var(--verySoftPeanut);
+  display: inline-block;
+  margin-right: 8px;
+}
+
+._dashed_line {
+  position: absolute;
+  width: 0;
+  height: 24px;
+  left: 3px;
+  top: 16px;
+  border-left: 1px dashed #c5d1dd;
+}
+
+._assigned_circle {
+  margin-left: 8px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.buttonBulkAction {
+  margin-bottom: 4px;
+}
+
+.buttonBulkAction > button {
+  text-transform: none;
+}
+
+.button > button {
+  display: flex;
+  margin-right: 8px;
+}
+
+.container_linkedin {
+  overflow: hidden;
+}
+
+.container_linkedin > div {
+  padding: 8px !important;
+  gap: 6px;
+  display: flex;
+  flex-direction: column;
+}
+
+.container_linkedin > div > div {
+  width: 100%;
+  gap: 6px;
+}
+
+.container_linkedin > div > div > div:first-child {
+  margin-right: 0;
+}
+
+.container_linkedin > div > div:nth-last-child(1) {
+  margin-top: 0;
+}
+
+.container_linkedin > div > div:first-child > div:nth-last-child(1) > div {
+  padding: 8px !important;
+  gap: 0;
+  right: 0;
+  top: 0;
+  border-radius: 4px;
+}
+
+button:disabled {
+  border-width: 1px;
+}
+
+button:disabled > svg path {
+  fill: var(--softPeanut);
+}
+
+._header {
+  margin-bottom: 24px;
+  margin-top: 24px;
+}
+
+._header > p {
+  margin-top: 0;
+  margin-right: 8px;
+}
+
+._card_body__text {
+  margin-right: 4px;
+}
+
+._card_content_linkedin {
+  flex-direction: column;
+  width: 100%;
+  display: flex;
+  gap: 6px;
+}
+
+._card_content_linkedin > div > div > div {
+  width: 100%;
+}
+
+._conversation_wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+._spinner_wrapper {
+  margin: 16px 0;
+  display: flex;
+  align-self: center;
+}
+
+._html_message_linkedin > p,
+._html_message_linkedin {
+  font-size: 14px;
+  line-height: 16px;
+  color: var(--peanut);
+  margin: 0;
+}
+
+._messages_wrapper {
+  flex: 1;
+  flex-direction: column;
+  overflow-y: auto;
+  justify-content: flex-end;
+  background-color: var(--lightBloobirds);
+  min-height: 0;
+  max-height: 217px;
+  border-radius: 4px;
+}
+
+._messages_wrapper > div > div {
+  overflow-y: overlay !important;
+  overflow-x: unset;
+}
+
+._whatsaspp_messages_wrapper {
+  flex: 1;
+  flex-direction: column;
+  overflow-y: auto;
+  justify-content: flex-end;
+  background-color: #ECF3E5;
+  min-height: 0;
+  max-height: 217px;
+  border-radius: 4px;
+  margin-bottom: 23px;
+}
+
+._whatsaspp_messages_wrapper > div > div {
+  overflow-y: overlay !important;
+  overflow-x: unset;
+}
+
+._message {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 0 10px;
+}
+
+._message > p {
+  max-width: 75%;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+._message_outgoing {
+  justify-content: flex-end;
+}
+
+._message_outgoing > p {
+  background-color: var(--verySoftBloobirds);
+}
+
+._message_incoming > p {
+  background-color: var(--white);
+}
+
+._date_separator {
+  padding: 12px;
+}
+
+._reported_separator {
+  background-color: rgba(255, 255, 255, 0.4);
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+._collapsed_message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+._collapsed_message > svg {
+  margin-right: 10px;
+}
+
+.callHTMLContent > ol,
+.callHTMLContent > ul {
+  list-style: initial !important;
+  padding-left: 24px !important;
+}
+
+._text_message > b {
+  margin-right: 4px;
+}
+
+._linkedin_message {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.iconLabel_text {
+  margin-left: 4px;
+}
+
+.popup_buttons_wrapper {
+  height: 0;
+  opacity: 0;
+  width: 100%;
+  background: linear-gradient(#ffffff0d 2%, #ffffffdb 6%, var(--white) 100%);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  gap: 4px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 8px 10px;
+}
+
+.popup_buttons_wrapper > div {
+  width: 100%;
+  height: 100%;
+}
+
+.popup_button {
+  width: 100%;
+  height: 100%;
+  font-size: 10px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color ease-in-out 0.3s;
+}
+
+.popup_button > svg {
+  width: 14px;
+}
+
+._callCard_body__wrap {
+  align-content: center;
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: 2px;
+  gap: 2px;
+}
+
+._tooltip_wrapper {
+  width: 100%;
+  height: 100%;
+}
+
+._call_link, ._call_link:hover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  width: 100%;
+  height: 100%;
+  color: var(--white);
+  font-weight: bold;
+}
+
+.caseIconMargin {
+  margin-bottom: -9px;
+  margin-right: -8px;
+}
+
+.caseIcon {
+  cursor: pointer;
+}
+
+.caseIcon > p {
+  display: inline-block;
+}

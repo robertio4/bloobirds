@@ -1,0 +1,233 @@
+.container {
+  cursor: pointer;
+}
+
+.containerTaskFeed {
+  margin-bottom: 8px;
+}
+
+.containerSidePeek * {
+  font-size: 13px;
+}
+
+.container > div {
+  padding: 8px !important;
+}
+
+.containerSidePeek > div {
+  padding: 16px !important;
+  min-height: 54px;
+}
+
+.containerMinimized > div {
+  padding: 8px !important;
+  height: 36px;
+  min-height: 37px;
+}
+
+.container > div div[class*='CardContent-module_content'] {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.container > div div[class*="CardBody-module_body"] {
+  gap: 4px;
+}
+
+.verticalEllipsis {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.leadName {
+  display: flex;
+  margin-left: 6px;
+  cursor: pointer;
+  align-items: center;
+  overflow: hidden;
+  gap: 2px;
+}
+
+.leadName > svg {
+  min-width: 14px;
+}
+
+.leadName > p {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+._dashed_line {
+  position: absolute;
+  width: 0;
+  height: 8px;
+  left: 28px;
+  border-left: 1px dashed #c5d1dd;
+}
+
+._dashed_line {
+  position: absolute;
+  width: 0;
+  height: 8px;
+  left: 28px;
+  border-left: 1px dashed #c5d1dd;
+}
+
+._datetime {
+  display: flex;
+  gap: 4px;
+}
+
+._datetime > p {
+  white-space: nowrap;
+}
+
+.cardButtons {
+  display: flex;
+  align-self: center;
+  max-height: 30px;
+}
+
+.cardButtonsSidePeek > div {
+  padding: 14px 14px 4px 4px !important;
+}
+
+.cardButtonsBubble > div {
+  padding: 6px 8px 6px 4px !important;
+}
+
+.cardButtonsSidePeekMinimized > div {
+  padding: 7px 8px 4px 4px !important;
+}
+
+.cardButtons > div {
+  top: 0;
+  right: 0;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.cardButtons > div > button {
+  width: 32px;
+  height: 21px;
+  padding: 4px 6px;
+}
+
+.cardButtons > div > div {
+  width: 32px;
+}
+
+.cardButtons > div > div > button {
+  width: 32px;
+  height: 21px;
+  padding: 4px 6px;
+}
+
+.meetingIcon {
+  height: 18.6px;
+  margin-right: 2px;
+  display: flex;
+  align-items: center;
+}
+
+.activityTitle {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.activityTitleMinimized {
+  -webkit-line-clamp: 1;
+}
+
+.taskTitle {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-left: -4px;
+  min-width: fit-content;
+}
+
+.taskTitleEllipsis {
+  max-width: 60%;
+}
+
+.taskTitleGrown {
+  flex: 1;
+}
+
+.rightSide {
+  margin-left: auto;
+  margin-right: 4px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.priorityLabelWrapper {
+  padding-left: 4px;
+  padding-right: 4px;
+  margin-top: -2px;
+}
+
+.secondLine {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+
+._icons {
+  display: flex;
+  flex-shrink: 0;
+}
+
+._icons > svg {
+  margin-right: 2px;
+}
+
+.scheduledDateTime {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: flex;
+}
+
+.borderGreen > div:not(._dashed_line) {
+  border-color: #d9fdee !important;
+  border-left: 4px solid var(--verySoftGrape) !important;
+}
+
+.borderGray > div:not(._dashed_line) {
+  border-color: #e5ecf5 !important;
+  border-left: 4px solid var(--softPeanut) !important;
+}
+
+.border > div:not(._dashed_line) {
+  border-color: var(--lightestBloobirds) !important;
+  border-left: 4px solid var(--lightPeanut) !important;
+}
+
+.borderRed > div:not(._dashed_line) {
+  border-color: var(--extraMeeting) !important;
+  border-left: 4px solid var(--extraMeeting) !important;
+}
+
+.label {
+  padding: 2px 8px;
+  background-color: #f9f8fb;
+  color: var(--softBloobirds);
+  font-size: 12px;
+  border-radius: 4px;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.bottomLeftContainer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

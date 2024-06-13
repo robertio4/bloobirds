@@ -1,0 +1,16 @@
+._container {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  margin-top: 60px;
+}
+
+._empty_data__icon {
+  height: 80px;
+  width: 80px;
+  margin-bottom: 32px;
+}
+
+._empty_data__icon > path {
+  fill: var(--verySoftPeanut);
+}

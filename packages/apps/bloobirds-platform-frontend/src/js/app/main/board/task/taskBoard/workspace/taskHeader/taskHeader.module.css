@@ -1,0 +1,20 @@
+.root {
+  display: flex;
+  border-bottom: 1px solid var(--verySoftPeanut);
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+}
+
+.left {
+  flex-grow: 1;
+}
+
+.right {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.title {
+  margin-bottom: 12px;
+}

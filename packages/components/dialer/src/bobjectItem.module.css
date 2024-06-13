@@ -1,0 +1,111 @@
+.bobjectItemCompressed {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 2px 12px;
+  cursor: pointer;
+}
+
+.bobjectItemCompressed:hover {
+  background-color: var(--veryLightBloobirds);
+}
+
+.circleIcon {
+  height: 33px;
+  width: 33px;
+  min-width: 33px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--lightestBloobirds);
+  border-radius: 50%;
+}
+
+.circleIconLightBloobirds {
+  height: 24px;
+  width: 24px;
+  min-width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--lightBloobirds);
+  border-radius: 50%;
+}
+
+.bobjectItemContent {
+  margin-left: 8px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: space-around;
+  width: 220px;
+}
+
+.bobjectItemName {
+  height: 20px;
+  width: fit-content;
+  cursor: pointer;
+}
+
+.bobjectItemNameSpan {
+  max-width: 216px;
+  white-space: nowrap;
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bobjectItemContentInfoRow {
+  display: flex;
+  flex-direction: row;
+}
+
+.bobjectItemContentSpan {
+  height: 16px;
+  white-space: nowrap;
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 110px;
+}
+
+.bobjectItemContentInfoRowSeparator {
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 1px;
+  margin-right: 2px;
+  margin-left: 2px;
+}
+
+.searchResultsList {
+  max-height: 700px;
+}
+
+.bobjectItemCompressed {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 2px 12px;
+  cursor: pointer;
+}
+
+.bobjectItemCompressed:hover {
+  background-color: var(--veryLightBloobirds);
+}
+
+.noResultFound {
+  position: relative;
+  width: 100%;
+  height: 272px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 30px;
+}

@@ -1,0 +1,31 @@
+._check_wrapper {
+  padding-right: 8px;
+}
+
+._callCard_body__text {
+  padding-right: 8px;
+  align-self: auto;
+}
+
+._callCard_body__link {
+  padding-right: 5px;
+}
+
+._button_reported_container {
+  background-color: var(--verySoftMelon);
+  padding: 0 8px 4px 8px;
+  border-radius: 4px;
+}
+
+._separator {
+  display: flex;
+  align-self: center;
+  margin-right: 8px;
+  width: 1px;
+  height: 8px;
+  background-color: var(--softPeanut);
+}
+
+.source {
+  margin-left: 8px;
+}

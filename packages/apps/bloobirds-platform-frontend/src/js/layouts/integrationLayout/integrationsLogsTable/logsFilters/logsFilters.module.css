@@ -1,0 +1,92 @@
+._sync_logs_content > p {
+  padding-bottom: 12px;
+}
+
+._sync_logs_header {
+  display: flex;
+  padding: 0 32px;
+  justify-content: space-between;
+}
+
+._sync_logs_header_title {
+  display: flex;
+  justify-content: space-between;
+}
+._sync_logs_header > div {
+  align-items: center;
+  display: flex;
+}
+._sync_logs_header > div:first-child > button {
+  width: 102px;
+  height: 24px;
+}
+._sync_logs_header > div:first-child > p {
+  padding-left: 12px;
+  padding-right: 16px;
+}
+._sync_logs_header > div:last-child > p {
+  padding-top: 4px;
+  padding-left: 8px;
+}
+
+._sync_logs_table {
+  box-sizing: border-box;
+  padding-top: 18px;
+}
+
+._sync_logs_table_filters {
+  display: flex;
+  box-sizing: border-box;
+  align-items: center;
+  background-color: var(--veryLightBloobirds);
+  height: 45px;
+  padding: 0 20px;
+  justify-content: space-between;
+}
+._sync_logs_table_filters > div:first-child {
+  display: flex;
+}
+
+._sync_logs_log_tracing {
+  display: flex;
+  align-items: center;
+}
+._sync_logs_log_tracing > p {
+  margin-left: 4px;
+}
+
+._sync_logs_time_filter {
+  display: flex;
+  align-items: center;
+}
+._sync_logs_separator {
+  width: 1px;
+  height: 16px;
+  margin-left: 16px;
+  margin-right: 16px;
+  position: relative;
+  bottom: 2px;
+  background-color: var(--lightPeanut);
+}
+
+._sync_logs_object_filter {
+  display: flex;
+  align-items: center;
+  margin-right: 12px;
+}
+._sync_logs_status_filter {
+  display: flex;
+  align-items: center;
+  margin-right: 12px;
+}
+._sync_logs_search_filter {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  padding-bottom: 3px;
+}
+._sync_logs_table_body {
+  box-sizing: border-box;
+  box-shadow: 0 2px 4px rgba(92, 92, 255, 0.0837296);
+  border-radius: 4px;
+}

@@ -1,0 +1,73 @@
+._banner {
+  margin-top: 62px;
+}
+
+.line {
+  color: var(--lightPeanut);
+  border-top: 1px solid currentColor;
+  margin: 26px auto -62px;
+  width: 100%;
+}
+
+.badge {
+  width: 84px;
+  height: 84px;
+  border: 1px solid currentColor;
+  border-radius: 48px;
+  box-sizing: border-box;
+  margin: 22px auto 0;
+  box-shadow: 0 0 6px var(--softPeanut);
+  color: var(--softPeanut);
+  background-color: var(--lightestBloobirds);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+._modal_content {
+  padding: 0 83px 60px 83px;
+}
+
+._modal_content_text {
+  display: flex;
+  flex-direction: column;
+  margin: 12px 0;
+}
+
+._modal_content_text > p {
+  margin-bottom: 8px;
+}
+
+._modal_content_text > p:last-child {
+  margin-bottom: 16px;
+}
+
+._inputs_container > div:first-child {
+  margin-bottom: 32px;
+}
+
+._modal_buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+._check_input > div {
+  display: flex;
+  justify-content: end;
+}
+
+._check_input {
+  display: flex;
+  margin-right: 8px;
+}
+
+._save_button {
+  display: flex;
+  flex: none;
+}
+
+._end_buttons {
+  display: flex;
+}
