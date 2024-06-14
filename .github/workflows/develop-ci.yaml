@@ -27,13 +27,13 @@ jobs:
         run: npm run build
         env:
           NODE_OPTIONS: --max_old_space_size=4096
-      - name: Archive dist folder
-        run: zip -r dist.zip packages/apps/bloobirds-chrome-extension/dist
+      # - name: Archive dist folder
+      #   run: zip -r dist.zip packages/apps/bloobirds-chrome-extension/dist
       - name: Upload dist artifact
         uses: actions/upload-artifact@v2
         with:
-          name: dist.zip
-          path: ./
+          name: build
+          path: packages/apps/bloobirds-chrome-extension/dist
       # - uses: marceloprado/has-changed-path@v1
       #   name: Check if the frontend app has changed
       #   id: changed-front
