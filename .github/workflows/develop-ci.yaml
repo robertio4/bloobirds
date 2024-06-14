@@ -33,13 +33,11 @@ jobs:
           name: build
           path: packages/apps/bloobirds-chrome-extension/dist
       - name: Add Artifact to Comments
-        uses: thollander/actions-comment-pull-request@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: peter-evans/create-or-update-comment@v1
         with:
-          message: |
-            Dist:
-            [Download the artifact](https://github.com/${{ github.repository }}/suites/${{ github.run_id }}/artifacts/${{ steps.upload.outputs.artifact_id }})
+          issue-number: ${{ github.event.number }}
+          body: |
+            Dist: (https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ steps.upload.outputs.artifact_id }})
       # - uses: marceloprado/has-changed-path@v1
       #   name: Check if the frontend app has changed
       #   id: changed-front
