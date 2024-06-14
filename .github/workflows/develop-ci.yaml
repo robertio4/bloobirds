@@ -31,7 +31,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: dist
-          path: packages/apps/bloobirds-chrome-extension
+          path: packages/apps/bloobirds-chrome-extension/
       # - uses: marceloprado/has-changed-path@v1
       #   name: Check if the frontend app has changed
       #   id: changed-front
