@@ -28,7 +28,7 @@ jobs:
         env:
           NODE_OPTIONS: --max_old_space_size=4096
       - name: Archive dist folder
-        run: zip -r dist.zip packages/apps/bloobirds-chrome-extension/dist.zip
+        run: zip -r dist.zip packages/apps/bloobirds-chrome-extension/dist
       - name: Create comment with dist
         uses: peter-evans/create-or-update-comment@v1
         with:
