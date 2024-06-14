@@ -27,13 +27,19 @@ jobs:
         run: npm run build
         env:
           NODE_OPTIONS: --max_old_space_size=4096
-      # - name: Archive dist folder
-      #   run: zip -r dist.zip packages/apps/bloobirds-chrome-extension/dist
       - name: Upload dist artifact
         uses: actions/upload-artifact@v2
         with:
           name: build
           path: packages/apps/bloobirds-chrome-extension/dist
+      - name: Add Artifact to Comments
+        uses: thollander/actions-comment-pull-request@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          message: |
+            Dist:
+            [Download the artifact](https://github.com/${{ github.repository }}/suites/${{ github.run_id }}/artifacts/${{ steps.upload.outputs.artifact_id }})
       # - uses: marceloprado/has-changed-path@v1
       #   name: Check if the frontend app has changed
       #   id: changed-front
