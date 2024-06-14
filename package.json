@@ -3,15 +3,8 @@
   "private": true,
   "workspaces": [
     "packages/apps/*",
-    "packages/assets",
     "packages/components/*",
-    "packages/hooks",
-    "packages/internationalization",
-    "packages/utils",
-    "packages/types",
-    "packages/internationalization",
-    "packages/vite-plugin",
-    "packages/locales"
+    "packages/vite-plugin"
   ],
   "dependencies": {
     "@react-spring/web": "^9.7.2",
