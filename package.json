@@ -14,7 +14,6 @@
     "packages/locales"
   ],
   "dependencies": {
-    "@bloobirds-it/flamingo-ui": "1.221.0",
     "@react-spring/web": "^9.7.2",
     "@sentry/cli": "^2.23.0",
     "@sentry/react": "7.90.0",
