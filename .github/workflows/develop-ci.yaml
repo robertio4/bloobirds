@@ -27,26 +27,31 @@ jobs:
         run: npm run build
         env:
           NODE_OPTIONS: --max_old_space_size=4096
-      - uses: marceloprado/has-changed-path@v1
-        name: Check if the frontend app has changed
-        id: changed-front
+      - name: Download dist artifact
+        uses: actions/download-artifact@v2
         with:
-          paths: packages/apps/bloobirds-platform-frontend
-      - name: Build the frontend app for dev
-        if: steps.changed-front.outputs.changed == 'true'
-        run: |
-          cd packages/apps/bloobirds-platform-frontend
-          npm run build:dev
-      - name: Publish
-        id: publish
-        uses: cloudflare/pages-action@1
-        if: steps.changed-front.outputs.changed == 'true'
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: bloobirds-platform-frontend # e.g. 'my-project'
-          directory: packages/apps/bloobirds-platform-frontend/build # e.g. 'dist'
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          name: dist
+          path: packages/apps/bloobirds-chrome-extension
+      # - uses: marceloprado/has-changed-path@v1
+      #   name: Check if the frontend app has changed
+      #   id: changed-front
+      #   with:
+      #     paths: packages/apps/bloobirds-platform-frontend
+      # - name: Build the frontend app for dev
+      #   if: steps.changed-front.outputs.changed == 'true'
+      #   run: |
+      #     cd packages/apps/bloobirds-platform-frontend
+      #     npm run build:dev
+      # - name: Publish
+      #   id: publish
+      #   uses: cloudflare/pages-action@1
+      #   if: steps.changed-front.outputs.changed == 'true'
+      #   with:
+      #     apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      #     accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      #     projectName: bloobirds-platform-frontend # e.g. 'my-project'
+      #     directory: packages/apps/bloobirds-platform-frontend/build # e.g. 'dist'
+      #     gitHubToken: ${{ secrets.GITHUB_TOKEN }}
       - name: Comment the PR with the URL
         uses: peter-evans/create-or-update-comment@v1
         if: steps.changed-front.outputs.changed == 'true'
