@@ -205,11 +205,11 @@ if (customElements && !customElements.get(overlayId)) {
 console.debug('[vite] connecting...');
 const importMetaUrl = new URL(import.meta.url);
 // use server configuration, then fallback to inference
-const serverHost = "localhost:5173/";
+const serverHost = "localhost:5174/";
 const socketProtocol = null || (location.protocol === 'https:' ? 'wss' : 'ws');
 const hmrPort = null;
 const socketHost = `${"localhost" || importMetaUrl.hostname}:${hmrPort || importMetaUrl.port}${"/"}`;
-const directSocketHost = "localhost:5173/";
+const directSocketHost = "localhost:5174/";
 const base = "/" || '/';
 const messageBuffer = [];
 let socket;

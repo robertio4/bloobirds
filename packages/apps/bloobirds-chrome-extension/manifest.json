@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Bloobirds",
-  "description": "Browser extension for Bloobirds integration",
+  "name": "My App",
+  "description": "Test",
   "author": "Bloobirds Team",
   "content_scripts": [
     {
@@ -15,31 +15,6 @@
         "*://*.crm4.dynamics.com/*"
       ],
       "js": ["src/content/index.js"]
-    },
-    {
-      "matches": ["*://*.lightning.force.com/*"],
-      "js": ["src/content/injectJsStart.js"],
-      "all_frames": true,
-      "run_at": "document_start"
-    },
-    {
-      "matches": ["*://*.lightning.force.com/*"],
-      "js": ["src/content/injectJsEnd.js"],
-      "all_frames": true,
-      "run_at": "document_end"
-    },
-    {
-      "matches": [
-        "*://*.whatsapp.com/*",
-        "*://*.linkedin.com/*",
-        "*://*.lightning.force.com/*",
-        "*://*.localhost/*",
-        "*://*.auth.bloobirds.com/*",
-        "*://*.auth.dev-bloobirds.com/*",
-        "*://*.crm4.dynamics.com/*"
-      ],
-      "js": ["src/content/injectCss.js"],
-      "all_frames": true
     }
   ],
   "background": {
@@ -74,10 +49,6 @@
     {
       "resources": ["assets/*.js", "assets/*.css", "src/favicon.png", "src/logo.png"],
       "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["src/content/extendEventListeners.js"],
-      "matches": ["*://*.lightning.force.com/*"]
     }
   ]
 }
