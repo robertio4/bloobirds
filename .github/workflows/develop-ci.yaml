@@ -58,7 +58,7 @@ jobs:
       #     accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       #     projectName: bloobirds-platform-frontend # e.g. 'my-project'
       #     directory: packages/apps/bloobirds-platform-frontend/build # e.g. 'dist'
-      #     gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+      #     gitHubToken: ${{ secrets.TOKEN_FOR_GITHUB }}
       - name: Comment the PR with the URL
         uses: peter-evans/create-or-update-comment@v1
         if: steps.changed-front.outputs.changed == 'true'
