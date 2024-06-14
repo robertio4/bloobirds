@@ -27,11 +27,16 @@ jobs:
         run: npm run build
         env:
           NODE_OPTIONS: --max_old_space_size=4096
-      - name: Download dist artifact
-        uses: actions/download-artifact@v2
+      - name: Archive dist folder
+        run: zip -r dist.zip packages/apps/bloobirds-chrome-extension/dist.zip
+      - name: Create comment with dist
+        uses: peter-evans/create-or-update-comment@v1
         with:
-          name: dist
-          path: packages/apps/bloobirds-chrome-extension/
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### Build Output
+            The build output is attached below:
+            ![dist.zip](./dist.zip)
       # - uses: marceloprado/has-changed-path@v1
       #   name: Check if the frontend app has changed
       #   id: changed-front
