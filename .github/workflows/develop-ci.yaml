@@ -29,14 +29,11 @@ jobs:
           NODE_OPTIONS: --max_old_space_size=4096
       - name: Archive dist folder
         run: zip -r dist.zip packages/apps/bloobirds-chrome-extension/dist
-      - name: Create comment with dist
-        uses: peter-evans/create-or-update-comment@v1
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v2
         with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            ### Build Output
-            The build output is attached below:
-            ![dist.zip](./dist.zip)
+          name: dist.zip
+          path: ./
       # - uses: marceloprado/has-changed-path@v1
       #   name: Check if the frontend app has changed
       #   id: changed-front
