@@ -50,7 +50,7 @@ jobs:
           sed -i 's/"name": ".*"/"name": "$NAME"/' ./manifest.json
           sed -i 's/"default_icon": ".*"/"default_icon": "$ICON"/' ./manifest.json
 
-      - name: Update package.json
+      - name: Update version in package.json
         run: |
           VERSION=${{ env.VERSION }}
           git add *
