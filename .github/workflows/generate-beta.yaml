@@ -5,8 +5,12 @@ on:
     branches:
       - production
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
-  update-manifest:
+  create_beta_version:
     if: contains(github.event.head_commit.message, 'Prerelease')
     runs-on: ubuntu-latest
 
@@ -14,7 +18,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Extract version from PR title
+      # - name: Setup Node.js
+      #   uses: actions/setup-node@v2
+      #   with:
+      #     node-version: '16'
+
+      # - name: Install dependencies
+      #   run: npm install
+
+      - name: Generate changelog
+        run: npm run changelog
+
+      - name: Extract version from commit message
         id: extract_version
         run: |
           TITLE="${{ github.event.head_commit.message }}"
@@ -45,8 +60,11 @@ jobs:
       - name: Push commits and tags
         run: |
           git push --follow-tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create a new branch for testing
         run: |
+          VERSION=${{ env.VERSION }}
           git checkout -b "v$VERSION"
           git push origin "v$VERSION"
