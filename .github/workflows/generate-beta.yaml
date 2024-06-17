@@ -1,9 +1,9 @@
-name: Update Manifest Version
+name: Generate Beta Version
 
 on:
   push:
     branches:
-      - produccion
+      - production
 
 jobs:
   update-manifest:
