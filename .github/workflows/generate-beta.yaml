@@ -59,6 +59,7 @@ jobs:
 
       - name: Push commits and tags
         run: |
+          git commit -m "chore: bump version to v$VERSION"
           git push --follow-tags
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
