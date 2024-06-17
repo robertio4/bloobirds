@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "My App",
+  "name": "Bloobirds Beta",
   "description": "Test",
   "author": "Bloobirds Team",
   "content_scripts": [
@@ -24,7 +24,7 @@
   "action": {
     "default_title": "Bloobirds Extension",
     "default_popup": "src/popup/index.html",
-    "default_icon": "src/favicon.png"
+    "default_icon": "src/beta.png"
   },
   "permissions": [
     "tabs",
