@@ -43,8 +43,8 @@ jobs:
       - name: Update manifest.json
         run: |
           cd packages/apps/bloobirds-chrome-extension
-          sed -i 's/"name": ".*"/"name": "Bloobirds Beta"/' ./manifest.json
-          sed -i 's/"default_icon": ".*"/"default_icon": "src/beta.png"/' ./manifest.json
+          sed -i '' 's/"name": ".*"/"name": "Bloobirds Beta"/' manifest.json
+          sed -i '' 's/"default_icon": ".*"/"default_icon": "src/beta.png"/' manifest.json
 
       - name: Update version in package.json
         run: |
@@ -53,7 +53,6 @@ jobs:
           cd packages/apps/bloobirds-chrome-extension
           npm version $VERSION
           git add package.json
-
       - name: Push commits and tags
         run: |
           VERSION=${{ env.VERSION }}
