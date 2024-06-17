@@ -42,9 +42,11 @@ jobs:
 
       - name: Update manifest.json
         run: |
+          NAME="Bloobirds Beta"
+          ICON="src/beta.png"
           cd packages/apps/bloobirds-chrome-extension
-          sed -i 's/"name": ".*"/"name": "Bloobirds Beta"/' manifest.json
-          sed -i 's/"default_icon": ".*"/"default_icon": "src/beta.png"/' manifest.json
+          sed -i "s/\"name\": \".*\"/\"name\": \"$NAME\"/" ./manifest.json
+          sed -i "s/\"default_icon\": \".*\"/\"default_icon\": \"$ICON\"/" ./manifest.json
 
       - name: Update version in package.json
         run: |
