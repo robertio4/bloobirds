@@ -31,8 +31,8 @@ jobs:
             exit 1
           fi
 
-          sed -i "s/\"name\": \".*\"/\"name\": \"$NAME\"/" packages/apps/bloobirds-chrome-extension/manifest.json
-          sed -i "s/\"default_icon\": \".*\"/\"default_icon\": \"$ICON\"/" packages/apps/bloobirds-chrome-extension/manifest.json
+          sed -i "" "s/\"name\": \".*\"/\"name\": \"$NAME\"/" packages/apps/bloobirds-chrome-extension/manifest.json
+          sed -i "" "s/\"default_icon\": \".*\"/\"default_icon\": \"$ICON\"/" packages/apps/bloobirds-chrome-extension/manifest.json
 
       - name: Update package.json
         run: |
