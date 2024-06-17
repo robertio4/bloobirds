@@ -14,7 +14,9 @@
         "*://*.auth.dev-bloobirds.com/*",
         "*://*.crm4.dynamics.com/*"
       ],
-      "js": ["src/content/index.js"]
+      "js": [
+        "src/content/index.js"
+      ]
     }
   ],
   "background": {
@@ -24,7 +26,7 @@
   "action": {
     "default_title": "Bloobirds Extension",
     "default_popup": "src/popup/index.html",
-    "default_icon": "src/favicon.png"
+    "default_icon": "icono_nuevo123456.png"
   },
   "permissions": [
     "tabs",
@@ -47,8 +49,16 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["assets/*.js", "assets/*.css", "src/favicon.png", "src/logo.png"],
-      "matches": ["*://*/*"]
+      "resources": [
+        "assets/*.js",
+        "assets/*.css",
+        "src/favicon.png",
+        "src/logo.png"
+      ],
+      "matches": [
+        "*://*/*"
+      ]
     }
-  ]
+  ],
+  "version": "1.0.0"
 }
