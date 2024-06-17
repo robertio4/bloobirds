@@ -39,6 +39,7 @@ jobs:
           issue-number: ${{ github.event.number }}
           body: |
             Dist: (${{ steps.artifact-upload-step.outputs.artifact-url }})
+          reactions: '+1'
       # - uses: marceloprado/has-changed-path@v1
       #   name: Check if the frontend app has changed
       #   id: changed-front
