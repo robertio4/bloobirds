@@ -1,8 +1,0 @@
-.datepicker > div > div {
-    box-sizing: border-box;
-}
-
-.datepicker > div > div > input {
-    border: none !important;
-    box-shadow: none !important;
-}

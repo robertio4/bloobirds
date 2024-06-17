@@ -1,6 +1,0 @@
-._row > div {
-  margin-top: 0;
-  margin-bottom: 8px !important; /* For virtual infinite scroll cards only, empty when all infinite scroll has been migrated */
-  margin-left: 0;
-  margin-right: 0;
-}

@@ -1,4 +1,0 @@
-export const MUST_APPEAR_FIELDS = Object.freeze({
-  CADENCE: 'COMPANY__CADENCE',
-  SCENARIO: 'COMPANY__SCENARIO',
-});

@@ -1,9 +1,0 @@
-
-> @bloobirds-it/discovery-tooltips@0.0.0 build:dev
-> cross-env NODE_ENV=development rollup -c=../../../rollup.config.js
-
-[36m
-[1m/Users/robertorf/Workspace/frontend-monorepo/packages/components/discoveryTooltips/src/index.tsx[22m → [1mdist/index.js[22m...[39m
-[1m[33m(!) Unused external imports[39m[22m
-default imported from external module "react" but never used in "src/bubbleTooltipWrapper/bubbleTooltipWrapper.tsx", "src/contactView/emailActionTooltip.tsx", "src/contactView/similarDealsTooltip.tsx", "src/contactView/createTasksTooltip.tsx", "src/slots/slotsDiscoveryTooltip.tsx", "src/customTasks/customTasksTooltip.tsx", "src/playbook/snippetsTooltip.tsx" and "src/invitees/inviteesDiscoveryTooltip.tsx"
-[32mcreated [1mdist/index.js[22m in [1m1.4s[22m[39m

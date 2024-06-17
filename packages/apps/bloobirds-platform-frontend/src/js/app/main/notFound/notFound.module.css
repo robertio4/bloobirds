@@ -1,9 +1,0 @@
-.root {
-  height: 100vh;
-  width: 100vw;
-  position: absolute;
-  display: flex;
-  background-color: rgb(197 209 221 / 60%);
-  align-items: center;
-  justify-content: center;
-}

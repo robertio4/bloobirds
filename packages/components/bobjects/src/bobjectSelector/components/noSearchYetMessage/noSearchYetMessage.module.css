@@ -1,9 +1,0 @@
-.noResultFound {
-  display: flex;
-  align-items: center;
-  margin: 8px 16px 20px 16px;
-}
-
-.noResultFound > * {
-  margin-right: 4px;
-}

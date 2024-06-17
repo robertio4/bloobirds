@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="100%" height="100%" viewBox="0 0 29 28" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
-    <g id="Group">
-        <path id="Path" d="M14.443,14.932C10.88,14.932 7.988,17.828 7.988,21.393C7.988,24.959 10.88,27.854 14.443,27.854C18.005,27.854 20.898,24.959 20.898,21.393C20.898,17.797 18.005,14.932 14.443,14.932Z" style="fill:rgb(98,182,212);"/>
-        <path id="Path1" serif:id="Path" d="M22.298,12.952C26.044,12.952 29.119,9.813 28.906,6.064C28.693,2.682 25.891,0 22.451,0L6.618,0C2.842,0 -0.203,3.078 0.011,6.857C0.193,10.239 3.025,12.952 6.466,12.952L22.298,12.952Z" style="fill:rgb(46,158,198);"/>
-    </g>
-</svg>

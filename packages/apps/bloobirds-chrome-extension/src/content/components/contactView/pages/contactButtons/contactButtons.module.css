@@ -1,9 +1,0 @@
-.buttonsContainer {
-  display: flex;
-  padding: 0 8px 16px 0;
-}
-
-.noTooltipIcon {
-  display: flex;
-  align-items: flex-end;
-}
