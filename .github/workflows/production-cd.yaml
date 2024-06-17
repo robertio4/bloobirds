@@ -80,25 +80,25 @@ jobs:
         with:
           name: build
           path: packages/apps/bloobirds-platform-frontend/build
-  upload-translations:
-    name: Upload translations
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
-      - name: Upload json files
-        run: |
-          cd packages/locales
-          npm i @localazy/cli
-          npm run translations:upload
-  release-frontend:
-    name: Release frontend app
-    needs: build
-    if: needs.build.outputs.changed-front == 'true'
-    uses: ./.github/workflows/production-app-release.yaml
-    secrets: inherit
-    with:
-      version: ${{ needs.build.outputs.app-version }}
+  # upload-translations:
+  #   name: Upload translations
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v2
+  #       with:
+  #         fetch-depth: 2
+  #     - name: Upload json files
+  #       run: |
+  #         cd packages/locales
+  #         npm i @localazy/cli
+  #         npm run translations:upload
+  # release-frontend:
+  #   name: Release frontend app
+  #   needs: build
+  #   if: needs.build.outputs.changed-front == 'true'
+  #   uses: ./.github/workflows/production-app-release.yaml
+  #   secrets: inherit
+  #   with:
+  #     version: ${{ needs.build.outputs.app-version }}

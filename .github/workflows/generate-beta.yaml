@@ -1,0 +1,59 @@
+name: Update Manifest Version
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - produccion
+
+jobs:
+  update-manifest:
+    if: github.event.pull_request.merged == true && contains(github.event.pull_request.title, 'Prerelease')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Extract version from PR title
+        id: extract_version
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          VERSION=$(echo "$PR_TITLE" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Update manifest.json
+        run: |
+          NAME="Bloobirds Beta"
+          ICON="src/beta.png"
+
+          if [ -z "$VERSION" ]; then
+            echo "No version number found in the PR title."
+            exit 1
+          fi
+
+          sed -i "s/\"name\": \".*\"/\"name\": \"$NAME\"/" packages/apps/bloobirds-chrome-extension/manifest.json
+          sed -i "s/\"default_icon\": \".*\"/\"default_icon\": \"$ICON\"/" packages/apps/bloobirds-chrome-extension/manifest.json
+
+      - name: Update package.json
+        run: |
+          VERSION=${{ env.VERSION }}
+          npm version $VERSION
+
+      - name: Commit changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add *
+          git commit -m "chore: bump version to ${{ env.VERSION }}"
+          git push
+
+      - name: Create a new tag
+        run: |
+          git tag "v$VERSION"
+          git push origin "v$VERSION"
+
+      - name: Create a new branch for testing
+        run: |
+          git checkout -b "v$VERSION"
+          git push origin "v$VERSION"
