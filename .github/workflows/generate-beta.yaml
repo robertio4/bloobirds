@@ -34,22 +34,17 @@ jobs:
           cd packages/apps/bloobirds-chrome-extension
           sed -i 's/"name": ".*"/"name": "$NAME"/' ./manifest.json
           sed -i 's/"default_icon": ".*"/"default_icon": "$ICON"/' ./manifest.json
+          git add *
 
       - name: Update package.json
         run: |
           VERSION=${{ env.VERSION }}
+          cd packages/apps/bloobirds-chrome-extension
           npm version $VERSION
 
-      - name: Commit changes
+      - name: Push commits and tags
         run: |
-          git add *
-          git commit -m "chore: bump version to ${{ env.VERSION }}"
-          git push
-
-      - name: Create a new tag
-        run: |
-          git tag "v$VERSION"
-          git push origin "v$VERSION"
+          git push --follow-tags
 
       - name: Create a new branch for testing
         run: |
