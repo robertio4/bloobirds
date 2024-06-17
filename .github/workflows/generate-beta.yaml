@@ -1,14 +1,13 @@
 name: Update Manifest Version
 
 on:
-  pull_request:
-    types: [closed]
+  push:
     branches:
       - produccion
 
 jobs:
   update-manifest:
-    if: github.event.pull_request.merged == true && contains(github.event.pull_request.title, 'Prerelease')
+    if: contains(github.event.head_commit.message, 'Prerelease')
     runs-on: ubuntu-latest
 
     steps:
