@@ -11,5 +11,24 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Release
-        uses: softprops/action-gh-release@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+
+      - name: Determine if prerelease
+        id: prerelease_check
+        run: |
+          if [[ "${GITHUB_REF#refs/tags/}" == *"beta"* ]]; then
+            echo "::set-output name=prerelease::true"
+          else
+            echo "::set-output name=prerelease::false"
+          fi
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          prerelease: ${{ steps.prerelease_check.outputs.prerelease }}
+          token: ${{ secrets.GITHUB_TOKEN }}
