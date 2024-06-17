@@ -39,11 +39,13 @@ jobs:
             exit 1
           fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+
       - name: Update manifest.json
         run: |
           cd packages/apps/bloobirds-chrome-extension
-          sed -i '' 's/"name": ".*"/"name": "Bloobirds Beta"/' ./manifest.json
-          sed -i '' 's/"default_icon": ".*"/"default_icon": "src/beta.png"/' ./manifest.json
+          sed -i '' 's/"name": ".*"/"name": "Bloobirds Beta"/' manifest.json
+          sed -i '' 's/"default_icon": ".*"/"default_icon": "src/beta.png"/' manifest.json
+
       - name: Update version in package.json
         run: |
           VERSION=${{ env.VERSION }}
