@@ -53,7 +53,7 @@ jobs:
       - name: Update version in package.json
         run: |
           VERSION=${{ env.VERSION }}
-          git add *
+          git add CHANGELOG.md packages/apps/bloobirds-chrome-extension/manifest.json
           cd packages/apps/bloobirds-chrome-extension
           npm version $VERSION
 
