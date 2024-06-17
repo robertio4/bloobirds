@@ -1,0 +1,11 @@
+.git
+.next
+.circleci
+tmp
+dist
+build
+node*modules
+src/js/misc/proto/message_pb.js
+*.d.ts
+\_.test.js
+sourcemaps

@@ -27,26 +27,38 @@ jobs:
         run: npm run build
         env:
           NODE_OPTIONS: --max_old_space_size=4096
-      - uses: marceloprado/has-changed-path@v1
-        name: Check if the frontend app has changed
-        id: changed-front
+      - name: Upload dist artifact
+        id: artifact-upload-step
+        uses: actions/upload-artifact@v4
         with:
-          paths: packages/apps/bloobirds-platform-frontend
-      - name: Build the frontend app for dev
-        if: steps.changed-front.outputs.changed == 'true'
-        run: |
-          cd packages/apps/bloobirds-platform-frontend
-          npm run build:dev
-      - name: Publish
-        id: publish
-        uses: cloudflare/pages-action@1
-        if: steps.changed-front.outputs.changed == 'true'
+          name: build
+          path: packages/apps/bloobirds-chrome-extension/dist
+      - name: Add Artifact to Comments
+        uses: peter-evans/create-or-update-comment@v1
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: bloobirds-platform-frontend # e.g. 'my-project'
-          directory: packages/apps/bloobirds-platform-frontend/build # e.g. 'dist'
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.number }}
+          body: |
+            Dist: (${{ steps.artifact-upload-step.outputs.artifact-url }})
+      # - uses: marceloprado/has-changed-path@v1
+      #   name: Check if the frontend app has changed
+      #   id: changed-front
+      #   with:
+      #     paths: packages/apps/bloobirds-platform-frontend
+      # - name: Build the frontend app for dev
+      #   if: steps.changed-front.outputs.changed == 'true'
+      #   run: |
+      #     cd packages/apps/bloobirds-platform-frontend
+      #     npm run build:dev
+      # - name: Publish
+      #   id: publish
+      #   uses: cloudflare/pages-action@1
+      #   if: steps.changed-front.outputs.changed == 'true'
+      #   with:
+      #     apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      #     accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      #     projectName: bloobirds-platform-frontend # e.g. 'my-project'
+      #     directory: packages/apps/bloobirds-platform-frontend/build # e.g. 'dist'
+      #     gitHubToken: ${{ secrets.TOKEN_FOR_GITHUB }}
       - name: Comment the PR with the URL
         uses: peter-evans/create-or-update-comment@v1
         if: steps.changed-front.outputs.changed == 'true'

@@ -1,9 +1,0 @@
-.structureTaskPage {
-  margin: 0;
-  padding: 0;
-  grid-gap: 0;
-  display: flex;
-  background-color: #f0f4f6;
-  flex-direction: row;
-  height: 100%;
-}

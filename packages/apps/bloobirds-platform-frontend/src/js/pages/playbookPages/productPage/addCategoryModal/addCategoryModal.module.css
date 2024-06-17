@@ -1,8 +1,0 @@
-.deleteInfo {
-  margin-top: 16px;
-  margin-bottom: 16px;
-}
-
-.deleteButtons > button:not(:last-child) {
-  margin-right: 8px;
-}

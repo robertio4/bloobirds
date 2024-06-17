@@ -1,9 +1,0 @@
-.integrationDetailsContainer {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 15px 27px 0 27px;
-  width: 100%;
-  border-bottom: 1px solid var(--verySoftPeanut);
-}

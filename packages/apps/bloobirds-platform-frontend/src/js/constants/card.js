@@ -1,6 +1,0 @@
-export const CARD_TYPES = Object.freeze({
-  TASK: 'TASK',
-  COMPANY: 'COMPANY',
-  COMPANY_TASK: 'COMPANY_TASK',
-  OPPORTUNITY: 'OPPORTUNITY',
-});
