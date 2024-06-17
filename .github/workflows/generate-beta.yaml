@@ -5,6 +5,10 @@ on:
     branches:
       - production
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   create_beta_version:
     if: contains(github.event.head_commit.message, 'Prerelease')
@@ -14,13 +18,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # - name: Setup Node.js
-      #   uses: actions/setup-node@v2
-      #   with:
-      #     node-version: '16'
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
 
-      # - name: Install dependencies
-      #   run: npm install
+      - name: Install dependencies
+        run: npm install
 
       - name: Generate changelog
         run: npm run changelog
