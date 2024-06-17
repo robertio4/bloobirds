@@ -55,13 +55,20 @@ jobs:
           cd packages/apps/bloobirds-chrome-extension
           npm version $VERSION
           git add package.json
-      - name: Push commits and tags
+
+      - name: Push commits
         run: |
           VERSION=${{ env.VERSION }}
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git commit -m "chore: bump version to v$VERSION"
-          git push 
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create a new tag
+        run: |
+          git tag "v$VERSION"
           git push origin "v$VERSION"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
