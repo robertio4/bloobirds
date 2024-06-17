@@ -34,11 +34,13 @@ jobs:
         run: |
           TITLE="${{ github.event.head_commit.message }}"
           VERSION=$(echo "$TITLE" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?')
+          BASE_VERSION=$(echo "$VERSION" | sed -E 's/(-[a-zA-Z0-9]+)?(\.[0-9]+)?$/\1/')
           if [ -z "$VERSION" ]; then
             echo "No version number found in the PR title."
             exit 1
           fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "BASE_VERSION=$BASE_VERSION" >> $GITHUB_ENV
 
       - name: Update manifest.json
         run: |
@@ -73,8 +75,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  create-beta-branch:
+    runs-on: ubuntu-latest
+    needs: create_beta_version
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
       - name: Create a new branch for testing
         run: |
-          VERSION=${{ env.VERSION }}
-          git checkout -b "v$VERSION"
-          git push origin "v$VERSION"
+          BASE_VERSION=${{ needs.update-manifest.outputs.BASE_VERSION }}
+          git checkout -b "$BASE_VERSION"
+          git push origin "$BASE_VERSION"
