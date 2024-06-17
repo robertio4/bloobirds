@@ -1,3 +1,9 @@
+## <small>3.0.9-beta.0 (2024-06-17)</small>
+
+* Merge pull request #22 from robertio4/develop ([5d9edbe](https://github.com/robertio4/bloobirds/commit/5d9edbe)), closes [#22](https://github.com/robertio4/bloobirds/issues/22)
+
+
+
 ##  (2024-06-13)
 
 
