@@ -39,25 +39,10 @@ jobs:
           name: dist
           path: packages/apps/bloobirds-chrome-extension/dist
 
-      - name: Create GitHub Release
+      - name: Create a new release
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }} # Utiliza solo el nombre del tag
-          release_name: Release ${{ github.ref_name }}
-          body_path: CHANGELOG.md
-          draft: false
-          prerelease: ${{ contains(github.ref_name, '-') }} # Detecta si es una pre-release
-
-      - name: Zip the build directory
-        run: |
-          zip -r dist.zip packages/apps/bloobirds-chrome-extension/dist
-
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.artifact-upload-step.outputs.artifact-url }}
+          files: |
+            packages/apps/bloobirds-chrome-extension/dist/*
+          prerelease: ${{ contains(github.ref_name, '-') }}
