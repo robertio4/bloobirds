@@ -17,25 +17,17 @@ jobs:
         with:
           node-version: '14'
 
-      - name: Determine if prerelease
-        id: prerelease_check
-        run: |
-          if [[ "${GITHUB_REF#refs/tags/}" == *"beta"* ]]; then
-            echo "::set-output name=prerelease::true"
-          else
-            echo "::set-output name=prerelease::false"
-          fi
-
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }} # Usa el tag que activó el workflow
-          release_name: Release ${{ github.ref }}
+          tag_name: ${{ github.ref_name }} # Utiliza solo el nombre del tag
+          release_name: Release ${{ github.ref_name }}
           draft: false
-          prerelease: ${{ steps.prerelease_check.outputs.prerelease }}
+          prerelease: ${{ contains(github.ref_name, '-') }} # Detecta si es una pre-release
+
     #   - name: Upload Release Asset
     #     uses: actions/upload-release-asset@v1
     #     env:
