@@ -1,5 +1,12 @@
 ##  (2024-06-18)
 
+* chore: bump version to v3.1.3-beta.2 ([cf571c7](https://github.com/robertio4/bloobirds/commit/cf571c7))
+* Merge pull request #48 from robertio4/develop ([edec70f](https://github.com/robertio4/bloobirds/commit/edec70f)), closes [#48](https://github.com/robertio4/bloobirds/issues/48)
+
+
+
+##  (2024-06-18)
+
 * chore: bump version to v3.2.0-beta.0 ([1c66bde](https://github.com/robertio4/bloobirds/commit/1c66bde))
 * Merge pull request #47 from robertio4/develop ([af3e481](https://github.com/robertio4/bloobirds/commit/af3e481)), closes [#47](https://github.com/robertio4/bloobirds/issues/47)
 
