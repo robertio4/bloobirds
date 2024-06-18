@@ -47,7 +47,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }} # Utiliza solo el nombre del tag
           release_name: Release ${{ github.ref_name }}
-          body_path: ./changelog.md
+          body_path: CHANGELOG.md
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }} # Detecta si es una pre-release
 
