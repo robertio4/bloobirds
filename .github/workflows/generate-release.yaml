@@ -28,7 +28,20 @@ jobs:
 
       - name: Create GitHub Release
         id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          tag_name: ${{ github.ref }} # Usa el tag que activó el workflow
+          release_name: Release ${{ github.ref }}
+          draft: false
           prerelease: ${{ steps.prerelease_check.outputs.prerelease }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+    #   - name: Upload Release Asset
+    #     uses: actions/upload-release-asset@v1
+    #     env:
+    #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #     with:
+    #       upload_url: ${{ steps.create_release.outputs.upload_url }}
+    #       asset_path: ./path/to/your/asset.zip
+    #       asset_name: your-asset.zip
+    #       asset_content_type: application/zip
