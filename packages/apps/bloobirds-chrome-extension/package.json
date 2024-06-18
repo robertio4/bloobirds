@@ -1,6 +1,6 @@
 {
   "name": "@bloobirds-it/bloobirds-chrome-extension",
-  "version": "3.1.2-beta.1",
+  "version": "3.1.2-beta.2",
   "description": "Bloobirds Chrome extension",
   "private": true,
   "type": "module",
