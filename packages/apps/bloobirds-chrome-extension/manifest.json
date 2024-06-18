@@ -24,7 +24,7 @@
   "action": {
     "default_title": "Bloobirds Extension",
     "default_popup": "src/popup/index.html",
-    "default_icon": "src/favicon..svg"
+    "default_icon": "src/favicon.png"
   },
   "permissions": [
     "tabs",

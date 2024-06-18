@@ -32,17 +32,17 @@ jobs:
       - name: Build the project
         run: npm run $build_command
 
-      - name: Upload dist artifact
-        id: artifact-upload-step
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: packages/apps/bloobirds-chrome-extension/dist
+      - name: Read changelog entry
+        id: changelog
+        run: |
+          VERSION=$(echo "${GITHUB_REF#refs/tags/}")
+          CHANGELOG_ENTRY=$(awk "/^## ${VERSION}/,/^## / { print }" CHANGELOG.md)
+          echo "changelog=${CHANGELOG_ENTRY}" >> $GITHUB_OUTPUT
 
       - name: Create a new release
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            packages/apps/bloobirds-chrome-extension/dist/*
+          files: packages/apps/bloobirds-chrome-extension/dist
           prerelease: ${{ contains(github.ref_name, '-') }}
+          body: ${{ steps.changelog.outputs.changelog }}
