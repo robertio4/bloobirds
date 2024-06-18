@@ -94,7 +94,7 @@
     "word-wrap": "1.2.4"
   },
   "scripts": {
-    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
     "version": "conventional-changelog -p angular -i CHANGELOG.md -s && git add CHANGELOG.md",
     "clean": "turbo run clean && rm -r ./node_modules",
     "setup": "npm run clean && npm install && npm run build",
