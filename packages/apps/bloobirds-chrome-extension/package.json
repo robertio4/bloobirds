@@ -9,6 +9,7 @@
     "build": "rm -rf dist && cross-env NODE_OPTIONS=--max-old-space-size=8192 NODE_ENV=production ENV=production BASE_URL=https://gateway.bloobirds.com vite build --sourcemap=false",
     "build:dev": "cross-env NODE_OPTIONS=--max-old-space-size=8192 NODE_ENV=development ENV=development BASE_URL=https://gateway.dev-bloobirds.com vite build --sourcemap=true",
     "build:release": "rm -rf dist && cross-env NODE_OPTIONS=--max-old-space-size=8192 NODE_ENV=production ENV=production BASE_URL=https://gateway.bloobirds.com vite build --sourcemap=true",
+    "build:beta": "rm -rf dist && cross-env NODE_OPTIONS=--max-old-space-size=8192 NODE_ENV=production ENV=production BUILD_ENV=beta BASE_URL=https://gateway.beta-bloobirds.com vite build --sourcemap=true",
     "start": "vite",
     "test:unit:watch": "jest -c jest.config.js --watch",
     "test:unit": "jest -c jest.config.js",

@@ -16,6 +16,11 @@
       "outputs": ["dist/**"],
       "dependsOn": ["^build:release"]
     },
+    "build:beta": {
+      "cache": false,
+      "outputs": ["dist/**"],
+      "dependsOn": ["^build:release"]
+    },
     "build:dev": {
       "outputs": ["dist/**"],
       "dependsOn": ["^build:dev"]

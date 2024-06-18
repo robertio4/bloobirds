@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Bloobirds",
+  "name": "Bloobirds Beta",
   "description": "Test",
   "author": "Bloobirds Team",
   "content_scripts": [
@@ -22,9 +22,9 @@
     "type": "module"
   },
   "action": {
-    "default_title": "Bloobirds Extension",
+    "default_title": "Bloobirds Beta Extension",
     "default_popup": "src/popup/index.html",
-    "default_icon": "src/favicon..svg"
+    "default_icon": "src/beta.svg"
   },
   "permissions": [
     "tabs",
@@ -43,11 +43,11 @@
     "https://mail.google.com/*"
   ],
   "icons": {
-    "128": "src/favicon.png"
+    "128": "src/beta.svg"
   },
   "web_accessible_resources": [
     {
-      "resources": ["assets/*.js", "assets/*.css", "src/favicon.png", "src/logo.png"],
+      "resources": ["assets/*.js", "assets/*.css", "src/beta.svg", "src/logo.png"],
       "matches": ["*://*/*"]
     }
   ],

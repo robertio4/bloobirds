@@ -20,12 +20,24 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build the project
-        run: npm run extension:build:release
-
-      - name: Zip the build directory
+      - name: Determine build command
+        id: build_command
         run: |
-          zip -r dist.zip packages/apps/bloobirds-chrome-extension/dist
+          if [[ "${{ github.ref_name }}" == *-* ]]; then
+            echo "build_command=extension:build:beta" >> $GITHUB_ENV
+          else
+            echo "build_command=extension:build:release" >> $GITHUB_ENV
+          fi
+
+      - name: Build the project
+        run: npm run $build_command
+
+      - name: Upload dist artifact
+        id: artifact-upload-step
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: packages/apps/bloobirds-chrome-extension/dist
 
       - name: Extract latest changelog entry
         id: changelog
@@ -43,7 +55,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }} # Utiliza solo el nombre del tag
           release_name: Release ${{ github.ref_name }}
-          body: ${{ env.changelog_entry }}
+          body: $changelog_entry
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }} # Detecta si es una pre-release
 
@@ -52,7 +64,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ steps.artifact-upload-step.outputs.artifact-url }}
           asset_path: ./dist.zip
           asset_name: your-asset.zip
           asset_content_type: application/zip

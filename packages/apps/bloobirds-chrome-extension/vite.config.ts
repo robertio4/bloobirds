@@ -3,19 +3,22 @@ import react from '@vitejs/plugin-react';
 import fs from 'fs';
 import { resolve } from 'path';
 import { defineConfig, loadEnv, UserConfig, ConfigEnv, PluginOption } from 'vite';
-import tsconfigPaths from 'vite-tsconfig-paths';
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
+import betaManifest from './manifest.beta.json';
 import manifest from './manifest.json';
 import pkg from './package.json';
 
 const outDir = resolve(__dirname, 'dist');
 
 const isDev = process.env.NODE_ENV === 'development';
+const isBeta = process.env.BUILD_ENV === 'beta';
 const isProduction = !isDev;
 
 const extensionManifest = {
   ...manifest,
+  ...(isBeta ? betaManifest : ({} as ManifestV3Export)),
   name: isDev ? `DEV: ${manifest.name}` : manifest.name,
   version: pkg.version,
 };

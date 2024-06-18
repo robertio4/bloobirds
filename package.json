@@ -117,6 +117,7 @@
     "extension:build:dev": "turbo run build:dev --filter=@bloobirds-it/bloobirds-chrome-extension",
     "extension:build:prod": "turbo run build --filter=@bloobirds-it/bloobirds-chrome-extension",
     "extension:build:release": "turbo run build:release --filter=@bloobirds-it/bloobirds-chrome-extension",
+    "extension:build:beta": "turbo run build:beta --filter=@bloobirds-it/bloobirds-chrome-extension",
     "app:build": "turbo run build --filter=bloobirds-platform-frontend",
     "scheduler:start:dev": "turbo run start --filter=@bloobirds-it/bloobirds-scheduler...",
     "scheduler:start:prod": "turbo run prod --filter=@bloobirds-it/bloobirds-scheduler... --concurrency 50",
