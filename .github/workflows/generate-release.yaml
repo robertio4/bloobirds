@@ -39,24 +39,6 @@ jobs:
           name: dist
           path: packages/apps/bloobirds-chrome-extension/dist
 
-      - name: Get current tag
-        id: current_tag
-        run: echo "CURRENT_TAG=${GITHUB_REF##*/}" >> $GITHUB_ENV
-
-      - name: Get previous tag
-        id: previous_tag
-        run: |
-          PREVIOUS_TAG=$(git describe --tags --abbrev=0 --exclude=$CURRENT_TAG)
-          echo "PREVIOUS_TAG=$PREVIOUS_TAG" >> $GITHUB_ENV
-
-      - name: Generate release notes
-        id: generate_release_notes
-        run: |
-          RELEASE_NOTES=$(git log ${PREVIOUS_TAG}..${CURRENT_TAG} --pretty=format:"%h - %s (%an)" --abbrev-commit)
-          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
-          echo "$RELEASE_NOTES" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
@@ -65,7 +47,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }} # Utiliza solo el nombre del tag
           release_name: Release ${{ github.ref_name }}
-          body: $RELEASE_NOTES
+          body_path: ./changelog.md
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }} # Detecta si es una pre-release
 
