@@ -43,6 +43,6 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          files: packages/apps/bloobirds-chrome-extension/dist
+          files: packages/apps/bloobirds-chrome-extension/dist/**
           prerelease: ${{ contains(github.ref_name, '-') }}
           body: ${{ steps.changelog.outputs.changelog }}
