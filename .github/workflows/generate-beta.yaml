@@ -56,6 +56,7 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git commit -m "chore: bump version to v$VERSION"
           git push
+          cd ../..
           npm run changelog
           git add CHANGELOG.md
           git commit -m "chore: update changelog"
