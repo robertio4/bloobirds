@@ -46,7 +46,7 @@ jobs:
           latest_entry="${latest_entry//'%'/'%25'}"
           latest_entry="${latest_entry//$'\n'/'%0A'}"
           latest_entry="${latest_entry//$'\r'/'%0D'}"
-          echo "entry::$latest_entry" >> $GITHUB_OUTPUT
+          echo "entry=$latest_entry" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         id: create_release
