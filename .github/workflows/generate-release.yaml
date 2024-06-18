@@ -39,14 +39,23 @@ jobs:
           name: dist
           path: packages/apps/bloobirds-chrome-extension/dist
 
-      - name: Extract latest changelog entry
-        id: changelog
+      - name: Get current tag
+        id: current_tag
+        run: echo "CURRENT_TAG=${GITHUB_REF##*/}" >> $GITHUB_ENV
+
+      - name: Get previous tag
+        id: previous_tag
         run: |
-          latest_entry=$(awk '/^## \[/{flag=0} flag; /^## \[/{flag=1}' CHANGELOG.md)
-          latest_entry="${latest_entry//'%'/'%25'}"
-          latest_entry="${latest_entry//$'\n'/'%0A'}"
-          latest_entry="${latest_entry//$'\r'/'%0D'}"
-          echo "entry=$latest_entry" >> $GITHUB_OUTPUT
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^)
+          echo "PREVIOUS_TAG=$PREVIOUS_TAG" >> $GITHUB_ENV
+
+      - name: Generate release notes
+        id: generate_release_notes
+        run: |
+          RELEASE_NOTES=$(git log ${PREVIOUS_TAG}..${CURRENT_TAG} --pretty=format:"%h - %s (%an)" --abbrev-commit)
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
+          echo "$RELEASE_NOTES" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Create GitHub Release
         id: create_release
@@ -56,9 +65,13 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }} # Utiliza solo el nombre del tag
           release_name: Release ${{ github.ref_name }}
-          body: ${{ steps.changelog.outputs.entry }}
+          body: $RELEASE_NOTES
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }} # Detecta si es una pre-release
+
+      - name: Zip the build directory
+        run: |
+          zip -r dist.zip packages/apps/bloobirds-chrome-extension/dist
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
@@ -66,6 +79,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.artifact-upload-step.outputs.artifact-url }}
-          asset_path: packages/apps/bloobirds-chrome-extension/dist
+          asset_path: dist.zip
           asset_name: dist.zip
           asset_content_type: application/zip
