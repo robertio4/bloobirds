@@ -118,13 +118,17 @@ jobs:
           body: $changelog_entry
           draft: false
           prerelease: true
-      - name: Upload release asset
+      - name: Zip the build directory
+        run: |
+          zip -r dist.zip packages/apps/bloobirds-chrome-extension/dist
+
+      - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.create_beta_version.outputs.upload_url }}
-          asset_path: packages/apps/bloobirds-chrome-extension/dist
+          asset_path: dist.zip
           asset_name: dist.zip
           asset_content_type: application/zip
 
