@@ -103,7 +103,6 @@ const githubApi = axios.create({
 // Función para crear una Pull Request
 async function createPullRequest() {
   const title = await getVersionPrompt(currentVersion);
-  console.log('title', title);
 
   try {
     const response = await githubApi.post(`/repos/${OWNER}/${REPO}/pulls`, {

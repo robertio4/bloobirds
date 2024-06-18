@@ -89,8 +89,12 @@ jobs:
           TITLE="${{ github.event.head_commit.message }}"
           VERSION=$(echo "$TITLE" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?')
           BASE_VERSION=$(echo "$VERSION" | sed -E 's/(-[a-zA-Z0-9]+)?(\.[0-9]+)?$/\1/')
-          git checkout -b "$BASE_VERSION"
-          git push origin "$BASE_VERSION"
+          if git ls-remote --exit-code --heads origin "$BASE_VERSION"; then
+            echo "Branch $BASE_VERSION already exists, skipping creation."
+          else
+            git checkout -b "$BASE_VERSION"
+            git push origin "$BASE_VERSION"
+          fi
 
   create-release:
     runs-on: ubuntu-latest
@@ -104,7 +108,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ needs.create_beta_version.outputs.version }}
-          release_name: Release ${{ needs.create_beta_version.outputs.version }}
+          tag_name: v${{ needs.create_beta_version.outputs.version }}
+          release_name: Release v${{ needs.create_beta_version.outputs.version }}
           draft: false
           prerelease: true
