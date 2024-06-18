@@ -12,6 +12,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the project
+        run: npm run extension:build:release
+
+      - name: Zip the build directory
+        run: |
+          zip -r dist.zip packages/apps/bloobirds-chrome-extension/dist
+
+      - name: Extract latest changelog entry
+        id: changelog
+        run: |
+          latest_entry=$(awk '/^## \[/{flag=0} flag; /^## \[/{flag=1}' CHANGELOG.md)
+          echo "changelog_entry<<EOF" >> $GITHUB_ENV
+          echo "$latest_entry" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
@@ -20,14 +43,16 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }} # Utiliza solo el nombre del tag
           release_name: Release ${{ github.ref_name }}
+          body: ${{ env.changelog_entry }}
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }} # Detecta si es una pre-release
-    #   - name: Upload Release Asset
-    #     uses: actions/upload-release-asset@v1
-    #     env:
-    #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #     with:
-    #       upload_url: ${{ steps.create_release.outputs.upload_url }}
-    #       asset_path: ./path/to/your/asset.zip
-    #       asset_name: your-asset.zip
-    #       asset_content_type: application/zip
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist.zip
+          asset_name: your-asset.zip
+          asset_content_type: application/zip
