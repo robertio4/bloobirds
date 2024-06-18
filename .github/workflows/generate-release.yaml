@@ -36,16 +36,17 @@ jobs:
         id: artifact-upload-step
         uses: actions/upload-artifact@v4
         with:
-          name: build
+          name: dist
           path: packages/apps/bloobirds-chrome-extension/dist
 
       - name: Extract latest changelog entry
         id: changelog
         run: |
           latest_entry=$(awk '/^## \[/{flag=0} flag; /^## \[/{flag=1}' CHANGELOG.md)
-          echo "changelog_entry<<EOF" >> $GITHUB_ENV
-          echo "$latest_entry" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          latest_entry="${latest_entry//'%'/'%25'}"
+          latest_entry="${latest_entry//$'\n'/'%0A'}"
+          latest_entry="${latest_entry//$'\r'/'%0D'}"
+          echo "entry::$latest_entry" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         id: create_release
@@ -55,7 +56,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }} # Utiliza solo el nombre del tag
           release_name: Release ${{ github.ref_name }}
-          body: $changelog_entry
+          body: ${{ steps.changelog.outputs.entry }}
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }} # Detecta si es una pre-release
 
@@ -65,6 +66,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.artifact-upload-step.outputs.artifact-url }}
-          asset_path: ./dist.zip
-          asset_name: your-asset.zip
+          asset_path: packages/apps/bloobirds-chrome-extension/dist
+          asset_name: dist.zip
           asset_content_type: application/zip
