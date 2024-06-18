@@ -46,7 +46,7 @@ jobs:
 
       - name: Update version in package.json
         run: |
-          git add CHANGELOG.md packages/apps/bloobirds-chrome-extension/manifest.json
+          git add packages/apps/bloobirds-chrome-extension/manifest.json
           cd packages/apps/bloobirds-chrome-extension
           npm version $VERSION
           git add package.json
