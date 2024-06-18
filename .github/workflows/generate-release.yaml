@@ -19,7 +19,7 @@ jobs:
 
       - name: Generate changelog
         run: |
-          npm add -D conventional-changelog-cli
+          npm install
           npm run changelog
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@users.noreply.github.com"
