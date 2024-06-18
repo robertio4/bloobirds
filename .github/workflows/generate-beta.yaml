@@ -34,8 +34,7 @@ jobs:
             echo "No version number found in the PR title."
             exit 1
           fi
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "BASE_VERSION=$BASE_VERSION" >> $GITHUB_ENV
+          echo "::set-output name=version::$VERSION"
 
       - name: Update manifest.json
         run: |
@@ -47,7 +46,6 @@ jobs:
 
       - name: Update version in package.json
         run: |
-          VERSION=${{ env.VERSION }}
           git add CHANGELOG.md packages/apps/bloobirds-chrome-extension/manifest.json
           cd packages/apps/bloobirds-chrome-extension
           npm version $VERSION
@@ -56,7 +54,11 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git commit -m "chore: bump version to v$VERSION"
           git push
-          cd ../../..
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update changelog
+        run: |
           npm run changelog
           git add CHANGELOG.md
           git commit -m "chore: update changelog"
@@ -98,7 +100,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
+          tag_name: ${{ needs.create_beta_version.outputs.version }}
+          release_name: Release ${{ needs.create_beta_version.outputs.version }}
           draft: false
           prerelease: true
