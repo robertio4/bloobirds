@@ -25,9 +25,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Generate changelog
-        run: npm run changelog
-
       - name: Extract version from commit message
         id: extract_version
         run: |

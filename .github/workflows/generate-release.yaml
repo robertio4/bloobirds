@@ -3,7 +3,7 @@ name: Generate Release
 on:
   push:
     tags:
-      - '*'
+      - 'v*'
 
 jobs:
   build:
@@ -16,6 +16,17 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '14'
+
+      - name: Generate changelog
+        run: |
+          npm run changelog
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "chore: update changelog [skip ci]"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create GitHub Release
         id: create_release
