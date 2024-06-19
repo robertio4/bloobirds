@@ -1,3 +1,23 @@
+## <small>3.1.3-beta.3 (2024-06-19)</small>
+
+* chore: bump version to v3.1.3-beta.1 ([d0147d9](https://github.com/robertio4/bloobirds/commit/d0147d9))
+* chore: bump version to v3.1.3-beta.2 ([d999c20](https://github.com/robertio4/bloobirds/commit/d999c20))
+* 1 ([9c0cfa4](https://github.com/robertio4/bloobirds/commit/9c0cfa4))
+* 2 ([f7b6512](https://github.com/robertio4/bloobirds/commit/f7b6512))
+* fas ([1c15888](https://github.com/robertio4/bloobirds/commit/1c15888))
+* fasdf ([5741c2a](https://github.com/robertio4/bloobirds/commit/5741c2a))
+* fasdf ([7f8a9ca](https://github.com/robertio4/bloobirds/commit/7f8a9ca))
+* firt commit ([ded9300](https://github.com/robertio4/bloobirds/commit/ded9300))
+* other change ([f596a3d](https://github.com/robertio4/bloobirds/commit/f596a3d))
+* tercer commit ([4429331](https://github.com/robertio4/bloobirds/commit/4429331))
+* test ([0d702e3](https://github.com/robertio4/bloobirds/commit/0d702e3))
+* test ([e2a322f](https://github.com/robertio4/bloobirds/commit/e2a322f))
+* test again ([56fd391](https://github.com/robertio4/bloobirds/commit/56fd391))
+* test PR ([4bafb19](https://github.com/robertio4/bloobirds/commit/4bafb19))
+* feat: second commit ([7fad77c](https://github.com/robertio4/bloobirds/commit/7fad77c))
+
+
+
 ## <small>3.1.3-beta.2 (2024-06-19)</small>
 
 * 1 ([9c0cfa4](https://github.com/robertio4/bloobirds/commit/9c0cfa4))
