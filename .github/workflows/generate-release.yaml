@@ -37,6 +37,9 @@ jobs:
         run: |
           VERSION=$(echo "${GITHUB_REF#refs/tags/}")
           CHANGELOG_ENTRY=$(awk "/^## ${VERSION}/,/^## [0-9]+\.[0-9]+\.[0-9]+/ { print }" CHANGELOG.md | sed '$d')
+
+          echo "Changelog Entry: ${CHANGELOG_ENTRY}" 
+
           echo "CHANGELOG_ENTRY<<EOF" >> $GITHUB_ENV
           echo "${CHANGELOG_ENTRY}" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
