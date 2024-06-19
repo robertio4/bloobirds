@@ -1,3 +1,10 @@
+## <small>3.1.3-beta.7 (2024-06-19)</small>
+
+* taseta ([394a946](https://github.com/robertio4/bloobirds/commit/394a946))
+* test ([2992a1c](https://github.com/robertio4/bloobirds/commit/2992a1c))
+
+
+
 ## <small>3.1.3-beta.6 (2024-06-19)</small>
 
 
