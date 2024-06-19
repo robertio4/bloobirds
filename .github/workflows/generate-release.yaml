@@ -48,7 +48,7 @@ jobs:
             print $0;  # Imprime el resultado formateado
           }
           ' CHANGELOG.md)
-          echo "changelog ${CHANGELOG_ENTRY}"
+          echo "changelog $CHANGELOG_ENTRY"
           echo "changelog=${CHANGELOG_ENTRY}" >> $GITHUB_OUTPUT
 
       - name: Upload dist artifact
