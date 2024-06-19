@@ -47,12 +47,12 @@ jobs:
           path: packages/apps/bloobirds-chrome-extension/dist
 
       - name: Commpress dist artifact
-        run: tar -czvf packages/apps/bloobirds-chrome-extension/dist.tar.gz packages/apps/bloobirds-chrome-extension/dist
+        run: tar -czvf dist.tar.gz -C packages/apps/bloobirds-chrome-extension dist
 
       - name: Create a new release
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          files: packages/apps/bloobirds-chrome-extension/dist/dist.tar.gz
+          files: dist.tar.gz
           prerelease: ${{ contains(github.ref_name, '-') }}
           body: ${{ steps.changelog.outputs.changelog }}
