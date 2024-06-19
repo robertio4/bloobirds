@@ -87,10 +87,8 @@ jobs:
         id: changed-front
         with:
           paths: packages/apps/bloobirds-chrome-extension
-      - name: Install dependencies
-        if: steps.changed-front.outputs.changed == 'true'
-        run: npm install
       - name: Build dev
+        if: steps.changed-front.outputs.changed == 'true'
         run: npm run extension:build:dev
         env:
           NODE_OPTIONS: --max_old_space_size=4096
