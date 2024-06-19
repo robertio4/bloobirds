@@ -1,3 +1,9 @@
+## <small>3.1.3-beta.9 (2024-06-19)</small>
+
+* esta vez si si ([e0c8075](https://github.com/robertio4/bloobirds/commit/e0c8075))
+
+
+
 ## <small>3.1.3-beta.8 (2024-06-19)</small>
 
 * esta vez si ([fb7ffe0](https://github.com/robertio4/bloobirds/commit/fb7ffe0))
