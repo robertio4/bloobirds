@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Bloobirds Beta",
-  "description": "Test",
+  "description": "Browser extension for Bloobirds integration (beta version to test new features)",
   "author": "Bloobirds Team",
   "content_scripts": [
     {
@@ -24,7 +24,7 @@
   "action": {
     "default_title": "Bloobirds Beta Extension",
     "default_popup": "src/popup/index.html",
-    "default_icon": "src/beta.svg"
+    "default_icon": "src/beta.png"
   },
   "permissions": [
     "tabs",
@@ -43,11 +43,11 @@
     "https://mail.google.com/*"
   ],
   "icons": {
-    "128": "src/beta.svg"
+    "128": "src/beta.png"
   },
   "web_accessible_resources": [
     {
-      "resources": ["assets/*.js", "assets/*.css", "src/beta.svg", "src/logo.png"],
+      "resources": ["assets/*.js", "assets/*.css", "src/beta.png", "src/logo.png"],
       "matches": ["*://*/*"]
     }
   ],
