@@ -36,8 +36,19 @@ jobs:
         id: changelog
         run: |
           VERSION=$(echo "${GITHUB_REF#refs/tags/}")
-          echo "version $VERSION"
-          CHANGELOG_ENTRY=$(awk '/^## / { if (found) exit; found=1 } found' CHANGELOG.md)
+          CHANGELOG_ENTRY=$(awk -v version="$VERSION" '
+          BEGIN { found=0 }
+          /^## / {
+            if (found) exit
+            if ($0 ~ version) { found=1 }
+          }
+          found {
+            gsub(/^\* /, "", $0);  # Elimina el asterisco inicial
+            gsub(/\[([^\]]+)\]\([^)]+\)/, "\\1", $0);  # Extrae solo el código de commit entre paréntesis
+            print $0;  # Imprime el resultado formateado
+          }
+          ' CHANGELOG.md)
+          echo "changelog ${CHANGELOG_ENTRY}"
           echo "changelog=${CHANGELOG_ENTRY}" >> $GITHUB_OUTPUT
 
       - name: Upload dist artifact
