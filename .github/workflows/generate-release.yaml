@@ -36,15 +36,7 @@ jobs:
         id: changelog
         run: |
           VERSION=$(echo "${GITHUB_REF#refs/tags/}")
-          changelog_entry=$(awk -v version="$VERSION" '
-          BEGIN { found=0 }
-          /^## / {
-            if (found) exit
-            if ($0 ~ version) { found=1 }
-          }
-          found { print }
-          ' CHANGELOG.md)
-          echo "test $changelog_entry"
+          changelog_entry=$(npm run release:commits "$VERSION")
           echo "changelog_entry=$changelog_entry" >> $GITHUB_OUTPUT
 
       - name: Upload dist artifact
