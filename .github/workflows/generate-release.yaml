@@ -37,6 +37,7 @@ jobs:
         run: |
           VERSION=$(echo "${GITHUB_REF#refs/tags/}")
           awk '/^## / { if (found) exit; found=1 } found' CHANGELOG.md > changelog_commits.txt
+          sed -i '1s/.*/What'\''s Changed/' changelog_commits.txt
           cat changelog_commits.txt
 
       - name: Upload dist artifact
@@ -48,9 +49,6 @@ jobs:
 
       - name: Commpress dist artifact
         run: tar -czvf dist.tar.gz -C packages/apps/bloobirds-chrome-extension dist
-
-      - name: Change file first line
-        run: sed -i '1s/.*/What'\''s Changed/' changelog_commits.txt
 
       - name: Create a new release
         id: create_release
