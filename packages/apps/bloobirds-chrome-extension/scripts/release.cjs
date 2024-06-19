@@ -9,7 +9,16 @@ const DIST_PATH = 'packages/apps/bloobirds-chrome-extension/dist';
 const RELEASES_PATH = 'packages/apps/bloobirds-chrome-extension/releases';
 
 const getVersionPrompt = async currentVersion => {
-  const choices = ['Patch', 'Minor', 'Major', 'Prerelease', 'custom'];
+  const choices = [
+    'Prerelease',
+    'Prepatch',
+    'Preminor',
+    'Premajor',
+    'Patch',
+    'Minor',
+    'Major',
+    'custom',
+  ];
 
   const formattedChoices = choices.map(choice => {
     if (choice === 'custom') {
@@ -18,7 +27,7 @@ const getVersionPrompt = async currentVersion => {
         value: choice,
       };
     } else {
-      const newVersion = semver.inc(currentVersion, choice.toLowerCase());
+      const newVersion = semver.inc(currentVersion, choice.toLowerCase(), 'beta');
       return {
         name: `${choice} (${newVersion})`,
         value: choice,
@@ -60,7 +69,7 @@ const getVersionPrompt = async currentVersion => {
   if (version === 'custom') {
     newVersion = customVersion;
   } else {
-    newVersion = semver.inc(currentVersion, version.toLowerCase());
+    newVersion = semver.inc(currentVersion, version.toLowerCase(), 'beta');
   }
 
   console.log(`The new version is: ${newVersion}`);
@@ -77,29 +86,17 @@ const main = async () => {
   // Incrementar la versión en package.json
   execSync(`cd packages/apps/bloobirds-chrome-extension && npm version ${newVersion}`);
 
-  // Incrementar la versión en manifest.json
-  //const manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH));
-  //manifest.version = newVersion;
-  //fs.writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2));
-
-  //execSync(`echo ${newVersion} > ../version.txt`);
+  // Actualizar changelog
+  execSync(`npm run changelog`);
 
   // 2. Crear el build
-  console.log('Building...');
-  execSync(`npm run extension:build:release`, { stdio: 'ignore' });
-
-  //console.log('Minimize...');
-  //execSync(
-  //  'npx uglifyjs packages/apps/bloobirds-chrome-extension/dist/content/index.js -o packages/apps/bloobirds-chrome-extension/dist/content/index.js --compress --mangle'
-  //);
-  //const files = glob.sync('packages/apps/bloobirds-chrome-extension/dist/chunks/core-*.js');
-  //files.forEach(file => {
-  //  try {
-  //    execSync(`uglifyjs "${file}" -o "${file}" --compress --mangle`);
-  //  } catch (error) {
-  //    console.error(`Error al minificar el archivo ${file}: ${error.stderr.toString()}`);
-  //  }
-  //});
+  if (newVersion.includes('beta')) {
+    console.log('Building beta version...');
+    execSync(`npm run extension:build:beta`, { stdio: 'ignore' });
+  } else {
+    console.log('Building prod version...');
+    execSync(`npm run extension:build:release`, { stdio: 'ignore' });
+  }
 
   // 3. Crear la release en sentry
   console.log('Creating release and upload sourcemaps in sentry...');
