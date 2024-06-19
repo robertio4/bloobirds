@@ -17,21 +17,25 @@ const isDev = process.env.NODE_ENV === 'development';
 const isBeta = process.env.BUILD_ENV === 'beta';
 const isProduction = !isDev;
 
-function transformVersion(version: string): string {
+function transformVersion(version: string, isBeta: boolean): string {
   const parsedVersion = semver.parse(version);
   if (!parsedVersion) {
     throw new Error(`Invalid version: ${version}`);
   }
-  return `${parsedVersion.major}.${parsedVersion.minor}.${parsedVersion.patch}.${
-    parsedVersion.prerelease.length ? 0 : ''
-  }`;
+  if (isBeta) {
+    return `${parsedVersion.major}.${parsedVersion.minor}.${parsedVersion.patch}.${
+      parsedVersion.prerelease.length ? 0 : ''
+    }`;
+  } else {
+    return `${parsedVersion.major}.${parsedVersion.minor}.${parsedVersion.patch}`;
+  }
 }
 
 const extensionManifest = {
   ...manifest,
   ...(isBeta ? betaManifest : ({} as ManifestV3Export)),
   name: isBeta ? betaManifest.name : isDev ? `DEV: ${manifest.name}` : manifest.name,
-  version: isBeta ? transformVersion(pkg.version) : pkg.version,
+  version: transformVersion(pkg.version, isBeta),
   version_name: pkg.version,
 };
 
