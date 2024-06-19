@@ -36,7 +36,7 @@ jobs:
         id: changelog
         run: |
           VERSION=$(echo "${GITHUB_REF#refs/tags/}")
-          CHANGELOG_ENTRY=$(awk "/^## ${VERSION}/,/^## / { print }" CHANGELOG.md)
+          CHANGELOG_ENTRY=$(awk "/^## ${VERSION}/,/^## [0-9]/ { print }" CHANGELOG.md | sed '$d')
           echo "changelog=${CHANGELOG_ENTRY}" >> $GITHUB_OUTPUT
 
       - name: Upload dist artifact
