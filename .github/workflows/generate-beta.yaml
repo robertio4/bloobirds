@@ -67,7 +67,7 @@ jobs:
         id: artifact-upload-step
         uses: actions/upload-artifact@v4
         with:
-          name: build
+          name: dist
           path: packages/apps/bloobirds-chrome-extension/dist
       - name: Set outputs
         id: set_outputs
@@ -103,34 +103,20 @@ jobs:
       - name: Extract latest changelog entry
         id: changelog
         run: |
-          latest_entry=$(awk '/^## \[/{flag=0} flag; /^## \[/{flag=1}' CHANGELOG.md)
-          echo "changelog_entry<<EOF" >> $GITHUB_ENV
-          echo "$latest_entry" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          VERSION=$(echo "${GITHUB_REF#refs/tags/}")
+          CHANGELOG_ENTRY=$(awk "/^## ${VERSION}/,/^## / { print }" CHANGELOG.md)
+          echo "changelog=${CHANGELOG_ENTRY}" >> $GITHUB_OUTPUT
+
+      - name: Commpress dist artifact
+        run: tar -czvf dist.tar.gz -C packages/apps/bloobirds-chrome-extension dist
 
       - name: Create a new release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        id: create_release
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ needs.create_beta_version.outputs.version }}
-          release_name: Release v${{ needs.create_beta_version.outputs.version }}
-          body: $changelog_entry
-          draft: false
-          prerelease: true
-      - name: Zip the build directory
-        run: |
-          zip -r dist.zip packages/apps/bloobirds-chrome-extension/dist
-
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create_beta_version.outputs.upload_url }}
-          asset_path: dist.zip
-          asset_name: dist.zip
-          asset_content_type: application/zip
+          files: dist.tar.gz
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          body: ${{ steps.changelog.outputs.changelog }}
 
   merge-to-develop:
     runs-on: ubuntu-latest

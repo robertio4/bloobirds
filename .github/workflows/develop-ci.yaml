@@ -9,6 +9,8 @@ jobs:
   linting:
     name: Linters
     runs-on: ubuntu-latest
+    outputs:
+      artifact-url: ${{ steps.set_outputs.outputs.upload_url }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -31,40 +33,78 @@ jobs:
         id: artifact-upload-step
         uses: actions/upload-artifact@v4
         with:
-          name: build
+          name: dist-prod
+          path: packages/apps/bloobirds-chrome-extension/dist
+      - name: set outputs
+        id: set_outputs
+        run: echo "upload_url=${{ steps.artifact-upload-step.outputs.artifact-url }}" >> $GITHUB_OUTPUT
+
+  deploy_app:
+    name: Deploy WebApp
+    runs-on: ubuntu-latest
+    needs: linting
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+      - uses: marceloprado/has-changed-path@v1
+        name: Check if the frontend app has changed
+        id: changed-front
+        with:
+          paths: packages/apps/bloobirds-platform-frontend
+      - name: Build the frontend app for dev
+        if: steps.changed-front.outputs.changed == 'true'
+        run: |
+          cd packages/apps/bloobirds-platform-frontend
+          npm run build:dev
+      - name: Publish
+        id: publish
+        uses: cloudflare/pages-action@1
+        if: steps.changed-front.outputs.changed == 'true'
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: bloobirds-platform-frontend
+          directory: packages/apps/bloobirds-platform-frontend/build
+          gitHubToken: ${{ secrets.TOKEN_FOR_GITHUB }}
+
+  upload_dist_extension:
+    name: Upload Artifact and Comment
+    runs-on: ubuntu-latest
+    needs: linting
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - uses: marceloprado/has-changed-path@v1
+        name: Check if the extension has changed
+        id: changed-front
+        with:
+          paths: packages/apps/bloobirds-chrome-extension
+      - name: Install dependencies
+        if: steps.changed-front.outputs.changed == 'true'
+        run: npm install
+      - name: Build dev
+        run: npm run extension:build:dev
+        env:
+          NODE_OPTIONS: --max_old_space_size=4096
+      - name: Upload dev dist artifact
+        id: artifact-upload-step
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-dev
           path: packages/apps/bloobirds-chrome-extension/dist
       - name: Add Artifact to Comments
         uses: peter-evans/create-or-update-comment@v1
         with:
           issue-number: ${{ github.event.number }}
           body: |
-            Dist: (${{ steps.artifact-upload-step.outputs.artifact-url }})
-          reactions: '+1'
-      # - uses: marceloprado/has-changed-path@v1
-      #   name: Check if the frontend app has changed
-      #   id: changed-front
-      #   with:
-      #     paths: packages/apps/bloobirds-platform-frontend
-      # - name: Build the frontend app for dev
-      #   if: steps.changed-front.outputs.changed == 'true'
-      #   run: |
-      #     cd packages/apps/bloobirds-platform-frontend
-      #     npm run build:dev
-      # - name: Publish
-      #   id: publish
-      #   uses: cloudflare/pages-action@1
-      #   if: steps.changed-front.outputs.changed == 'true'
-      #   with:
-      #     apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      #     accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      #     projectName: bloobirds-platform-frontend # e.g. 'my-project'
-      #     directory: packages/apps/bloobirds-platform-frontend/build # e.g. 'dist'
-      #     gitHubToken: ${{ secrets.TOKEN_FOR_GITHUB }}
-      - name: Comment the PR with the URL
-        uses: peter-evans/create-or-update-comment@v1
-        if: steps.changed-front.outputs.changed == 'true'
-        with:
-          issue-number: ${{ github.event.number }}
-          body: |
-            The frontend app has been deployed to ${{ steps.publish.outputs.url }}
-          reactions: rocket
+            Dist Prod: (${{ needs.linting.outputs.artifact-url }})
+            Dist Dev: (${{ steps.artifact-upload-step.outputs.artifact-url }})
+          reactions: 'rocket'
