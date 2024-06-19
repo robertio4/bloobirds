@@ -37,7 +37,7 @@ jobs:
         run: |
           VERSION=$(echo "${GITHUB_REF#refs/tags/}")
           CHANGELOG_ENTRY="$(awk -v version="${VERSION}" 'BEGIN { found=0 } /^## / { if (found) exit; if ($0 ~ version) { found=1 } } found { print }' CHANGELOG.md)"
-          echo "changelog=${CHANGELOG_ENTRY}" >> $GITHUB_OUTPUT
+          echo "changelog=${CHANGELOG_ENTRY}" >> $GITHUB_ENV
 
       - name: Upload dist artifact
         id: artifact-upload-step
@@ -55,4 +55,4 @@ jobs:
         with:
           files: dist.tar.gz
           prerelease: ${{ contains(github.ref_name, '-') }}
-          body: ${{ steps.changelog.outputs.changelog }}
+          body: $changelog
