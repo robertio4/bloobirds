@@ -13,7 +13,7 @@ import pkg from './package.json';
 
 const outDir = resolve(__dirname, 'dist');
 
-const isDev = process.env.NODE_ENV === 'development';
+const isDev = process.env.ENV === 'development';
 const isBeta = process.env.BUILD_ENV === 'beta';
 const isProduction = !isDev;
 

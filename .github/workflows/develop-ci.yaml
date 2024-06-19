@@ -33,7 +33,7 @@ jobs:
         id: artifact-upload-step
         uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: dist-prod
           path: packages/apps/bloobirds-chrome-extension/dist
       - name: set outputs
         id: set_outputs
@@ -82,7 +82,13 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '16'
+      - uses: marceloprado/has-changed-path@v1
+        name: Check if the extension has changed
+        id: changed-front
+        with:
+          paths: packages/apps/bloobirds-chrome-extension
       - name: Install dependencies
+        if: steps.changed-front.outputs.changed == 'true'
         run: npm install
       - name: Build dev
         run: npm run extension:build:dev
@@ -101,4 +107,4 @@ jobs:
           body: |
             Dist Prod: (${{ needs.linting.outputs.artifact-url }})
             Dist Dev: (${{ steps.artifact-upload-step.outputs.artifact-url }})
-          reactions: 'runner'
+          reactions: 'rocket'
