@@ -1,3 +1,9 @@
+## <small>3.1.3-beta.19 (2024-06-19)</small>
+
+* other ([86ace1e](https://github.com/robertio4/bloobirds/commit/86ace1e))
+
+
+
 ## <small>3.1.3-beta.18 (2024-06-19)</small>
 
 * other ([8db52ea](https://github.com/robertio4/bloobirds/commit/8db52ea))
