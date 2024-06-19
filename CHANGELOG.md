@@ -1,3 +1,9 @@
+## <small>3.1.3-beta.8 (2024-06-19)</small>
+
+* esta vez si ([fb7ffe0](https://github.com/robertio4/bloobirds/commit/fb7ffe0))
+
+
+
 ## <small>3.1.3-beta.7 (2024-06-19)</small>
 
 * taseta ([394a946](https://github.com/robertio4/bloobirds/commit/394a946))
