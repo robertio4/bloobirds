@@ -1,3 +1,9 @@
+## <small>3.1.3-beta.4 (2024-06-19)</small>
+
+* test ([6d68ac2](https://github.com/robertio4/bloobirds/commit/6d68ac2))
+
+
+
 ## <small>3.1.3-beta.3 (2024-06-19)</small>
 
 * chore: bump version to v3.1.3-beta.1 ([d0147d9](https://github.com/robertio4/bloobirds/commit/d0147d9))
