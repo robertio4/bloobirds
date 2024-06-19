@@ -5,5 +5,3 @@ const Test = () => {
 };
 
 export default Test;
-
-// const cssInjectedByJsPlugin = () => {
