@@ -128,7 +128,6 @@
     "prettier": "prettier \"**/*.{md,css,scss,yaml,yml}\"",
     "test:unit:watch": "jest -c jest.config.js --watch",
     "test:unit": "jest -c jest.config.js",
-    "test:unit:coverage": "jest -c jest.config.js --coverage --coverageReporters='text'",
-    "release:commits": "node packages/apps/bloobirds-chrome-extension/scripts/findChangelogSection.cjs"
+    "test:unit:coverage": "jest -c jest.config.js --coverage --coverageReporters='text'"
   }
 }
