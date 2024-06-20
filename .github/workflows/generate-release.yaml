@@ -37,7 +37,7 @@ jobs:
         run: |
           VERSION=$(echo "${GITHUB_REF#refs/tags/}")
           awk '/^## / { if (found) exit; found=1 } found' CHANGELOG.md > changelog_commits.txt
-          sed -i '1s/.*/What'\''s Changed/' changelog_commits.txt
+          sed -i '1s/.*/## <small>What'\''s Changed<\/small>/' changelog_commits.txt
           cat changelog_commits.txt
 
       - name: Upload dist artifact
