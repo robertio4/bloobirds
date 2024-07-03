@@ -13,6 +13,7 @@ const PopupFooter = (): JSX.Element => {
   );
 };
 const Popup = (): JSX.Element => {
+  console.log('Popup');
   return (
     <div className={styles._container}>
       <PopupFooter />
