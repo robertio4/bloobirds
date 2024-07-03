@@ -12,6 +12,8 @@ jobs:
     if: "! contains(toJSON(github.event.commits.*.message), '[skip-ci]')"
     outputs:
       changed-front: ${{ steps.changed-front.outputs.changed }}
+      changed-extension: ${{ steps.changed-extension.outputs.changed }}
+      artifact-url: ${{ steps.artifact-upload-step.outputs.artifact-url }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -99,11 +101,3 @@ jobs:
         with:
           name: dist-dev
           path: packages/apps/bloobirds-chrome-extension/dist
-      - name: Add Artifact to Comments
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          issue-number: ${{ github.event.number }}
-          body: |
-            Dist Prod: (${{ needs.build.outputs.artifact-url }})
-            Dist Dev: (${{ steps.artifact-upload-step.outputs.artifact-url }})
-          reactions: 'rocket'

@@ -111,7 +111,7 @@
     "auth:start:prod:local": "turbo run prod:local --filter=@bloobirds-it/bloobirds-auth... --concurrency 50",
     "auth:start:prod": "turbo run prod --filter=@bloobirds-it/bloobirds-auth... --concurrency 50",
     "auth:start:local": "turbo run localhost --filter=@bloobirds-it/bloobirds-auth... --concurrency 50",
-    "create:production:release:ext": "node packages/apps/bloobirds-chrome-extension/scripts/release.cjs",
+    "create:release": "node packages/apps/bloobirds-chrome-extension/scripts/release.cjs",
     "create:pr": "node packages/apps/bloobirds-chrome-extension/scripts/create-pr.cjs",
     "build": "turbo run build",
     "extension:build:dev": "turbo run build:dev --filter=@bloobirds-it/bloobirds-chrome-extension",
