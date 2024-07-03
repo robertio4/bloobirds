@@ -2,8 +2,8 @@ name: Production Deploy
 
 on:
   push:
-    branches:
-      - production
+    tags:
+      - 'v*.*.*'
 
 jobs:
   build:
